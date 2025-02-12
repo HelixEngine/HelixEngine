@@ -17,7 +17,7 @@ file(GLOB_RECURSE HELIX_ENGINE_INCLUDE
         "HelixEngine/include/*.h")
 file(GLOB_RECURSE HELIX_ENGINE_SOURCES "HelixEngine/src/*.cpp")
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
-target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
+target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm2/include")
 target_link_libraries(${PROJECT_NAME} PUBLIC SDL3-static)
 
 if (HELIX_ENGINE_TEST)
