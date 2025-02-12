@@ -4,9 +4,9 @@
 
 ## 支持
 ### 渲染
-AMD FidelityFX
+待定
 ### 物理
 |  2D   |  3D   |
 |:-----:|:-----:|
 | Box2D | PhysX |
-| plan  | plan  |~~~~
+| plan  | plan  |
