@@ -10,11 +10,11 @@ if (NOT DEFINED HELIX_ENGINE_TEST)
 endif ()
 
 file(GLOB_RECURSE HELIX_ENGINE_INCLUDE
-        HelixEngine/src/*.ixx
-        HelixEngine/src/*.hpp
-        HelixEngine/src/*.h
-        HelixEngine/src/*.cppm)
-file(GLOB_RECURSE HELIX_ENGINE_SOURCES HelixEngine/src/*.cpp)
+        "HelixEngine/include/*.ixx"
+        "HelixEngine/include/*.hpp"
+        "HelixEngine/include/*.h"
+        "HelixEngine/include/*.cppm")
+file(GLOB_RECURSE HELIX_ENGINE_SOURCES "HelixEngine/src/*.cpp")
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include)
 
