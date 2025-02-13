@@ -9,3 +9,8 @@ const std::u8string& helix::Object::getName() const
 {
 	return name;
 }
+
+uint64_t helix::Object::getRefCount() const
+{
+	return refCount;
+}
