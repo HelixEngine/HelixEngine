@@ -11,6 +11,7 @@ int main(int argc, char** argv)
 	auto* app = new QApplication{argc, argv};
 	Window window(u8"HelixEngine", 800, 600);
 
+
 	// bool isDone = false;
 	// SDL_Event event;
 	//
