@@ -1,14 +1,14 @@
 #include <HelixEngine/HelixEngine.hpp>
 #include <iostream>
-#include <HelixEngine/Base/Ref.hpp>
-#include <SDL3/SDL_events.h>
 #include <QtWidgets/qapplication.h>
 
 using namespace helix;
 
 int main(int argc, char** argv)
 {
-
+	Vector2F vec;
+	vec.x = 1;
+	vec.ktmVec = 1;
 	const auto* app = new QApplication{argc, argv};
 	Ref window = new Window(u8"你好，HelixEngine", 800, 600);
 
