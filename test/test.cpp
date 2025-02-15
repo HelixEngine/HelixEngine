@@ -1,5 +1,6 @@
 #include <HelixEngine/HelixEngine.hpp>
 #include <iostream>
+#include <HelixEngine/Base/Ref.hpp>
 #include <SDL3/SDL_events.h>
 #include <QtWidgets/qapplication.h>
 
@@ -8,9 +9,8 @@ using namespace helix;
 int main(int argc, char** argv)
 {
 
-	auto* app = new QApplication{argc, argv};
-	Window window(u8"HelixEngine", 800, 600);
-
+	const auto* app = new QApplication{argc, argv};
+	Ref window = new Window(u8"你好，HelixEngine", 800, 600);
 
 	// bool isDone = false;
 	// SDL_Event event;
@@ -27,5 +27,6 @@ int main(int argc, char** argv)
 	// 			break;
 	// 	}
 	// }
-	app->exec();
+
+	return QApplication::exec();
 }

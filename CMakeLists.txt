@@ -34,16 +34,29 @@ add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUD
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
 target_link_libraries(${PROJECT_NAME} PUBLIC SDL3-static Qt6::Core Qt6::Widgets)
 
-function(helix_engine_windeployqt6 qt_path target_name)
+function(helix_engine_windeployqt6 target_name)
     if (WIN32)
-        add_custom_target(
-                COMMAND "${qt_path}/bin/windeployqt6.exe" ${CMAKE_BINARY_DIR}/${target_name}.exe
-                DEPENDS ${target_name})
+        add_custom_command(TARGET ${target_name} POST_BUILD
+                COMMAND "${HELIX_ENGINE_QT_SDK_PATH}/bin/windeployqt6.exe"
+                --verbose 0  # 可选参数，静默模式
+                --no-compiler-runtime
+                --no-quick-import
+                "$<TARGET_FILE:${target_name}>"
+        )
     endif ()
 endfunction()
 
 if (HELIX_ENGINE_TEST)
     add_executable(CommonTest test/test.cpp)
     target_link_libraries(CommonTest PRIVATE ${PROJECT_NAME} Qt6::Core Qt6::Widgets)
-    helix_engine_windeployqt6(${HELIX_ENGINE_QT_SDK_PATH} CommonTest)
+    helix_engine_windeployqt6(CommonTest)
+    #    if (WIN32)
+    #        add_custom_command(TARGET CommonTest POST_BUILD
+    #                COMMAND "${HELIX_ENGINE_QT_SDK_PATH}/bin/windeployqt6.exe"
+    #                --verbose 0  # 可选参数，静默模式
+    #                --no-compiler-runtime
+    #                --no-quick-import
+    #                "$<TARGET_FILE:CommonTest>"
+    #        )
+    #    endif ()
 endif ()

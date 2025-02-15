@@ -4,9 +4,16 @@
 
 namespace helix
 {
+	class Object;
+	template<typename Type>
+	concept BasedObject = std::is_base_of_v<Object, Type>;
+
 	class Object
 	{
+		template<BasedObject TypeBasedObject>
+		friend class Ref;
 	public:
+		virtual ~Object() = default;
 		void setName(std::u8string name);
 		[[nodiscard]] const std::u8string& getName() const;
 		[[nodiscard]] uint64_t getRefCount() const;
