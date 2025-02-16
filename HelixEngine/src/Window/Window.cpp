@@ -8,3 +8,8 @@ helix::Window::Window(const std::u8string_view title, const int32_t width, const
 	qtWidget->resize(width, height);
 	qtWidget->show();
 }
+
+helix::Window::Window(const std::u8string_view title, const Vector2I32 size) :
+	Window(title, size.x, size.y)
+{
+}

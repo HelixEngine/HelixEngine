@@ -4,11 +4,35 @@
 namespace helix
 {
 	template<typename T>
+	concept Arithmetic = std::is_arithmetic_v<T>;
+	template<Arithmetic T>
+	class Vector2T;
+}
+
+
+template<helix::Arithmetic T>
+struct ktm::is_vector<helix::Vector2T<T>> : std::true_type
+{
+};
+
+namespace helix
+{
+	template<Arithmetic T>
 	class Vector2T
 	{
 	public:
 		T x;
 		T y;
+
+		auto length() const
+		{
+			return ktm::length(*this);
+		}
+
+		Vector2T& normalize()
+		{
+			return *this;
+		}
 	};
 
 	using Vector2F = Vector2T<float>;
