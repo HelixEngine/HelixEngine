@@ -1,6 +1,11 @@
 #include <SDL3/SDL.h>
 #include <HelixEngine/Core/Window.hpp>
 
+helix::Window::Flags::Flags() :
+	flags(MinimumButton | MaximumButton)
+{
+}
+
 helix::Window::Window(const std::u8string_view title, const int32_t initialWidth, const int32_t initialHeight) :
 	Window(title, Vector2I32{initialWidth, initialHeight})
 {
@@ -18,17 +23,21 @@ helix::Window::Window(const CreateInfo& info)
 	qWidget->setWindowTitle(info.title.c_str());
 	if (info.isShow)
 		qWidget->show();
+	auto flags = qWidget->windowFlags();
+	flags.setFlag(Qt::WindowMaximizeButtonHint, info.isEnabledMaximumButton);
+	//flags.setFlag(Qt::WindowMinimizeButtonHint, );
+
 }
 
-void helix::Window::resize(const Vector2I32 newSize) const
+void helix::Window::setSize(const Vector2I32 newSize) const
 {
 	qWidget->resize(QSize{newSize});
 }
 
-void helix::Window::setFixedSize(const Vector2I32 fixedSize) const
-{
-	qWidget->setFixedSize(QSize{fixedSize});
-}
+// void helix::Window::setFixedSize(const Vector2I32 fixedSize) const
+// {
+// 	qWidget->setFixedSize(QSize{fixedSize});
+// }
 
 void helix::Window::setFixedSize(const bool isFixed) const
 {
@@ -49,4 +58,9 @@ helix::Vector2I32 helix::Window::getSize() const
 const QWidget* helix::Window::getQWidget() const
 {
 	return qWidget;
+}
+
+helix::Window::Flags::ValueType helix::operator|(const Window::Flags::Value& value1, const Window::Flags::Value& value2)
+{
+	return static_cast<Window::Flags::ValueType>(value1) | static_cast<Window::Flags::ValueType>(value2);
 }

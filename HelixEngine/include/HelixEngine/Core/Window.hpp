@@ -8,6 +8,23 @@ namespace helix
 	class Window final : public Object
 	{
 	public:
+		class Flags
+		{
+		public:
+			Flags();
+			using ValueType = uint8_t;
+
+			enum class Value : ValueType
+			{
+				MaximumButton,
+				MinimumButton
+			};
+
+			using enum Value;
+		private:
+			ValueType flags{};
+		};
+
 		struct CreateInfo
 		{
 			std::u8string title = u8"HelixEngine";
@@ -15,6 +32,8 @@ namespace helix
 			Window* parent = nullptr;
 			bool isFixed = false;
 			bool isShow = true;
+			bool isEnabledMaximumButton = true;
+			bool isEnabledMinimumButton = true;
 		};
 
 		explicit Window(std::u8string_view title = u8"HelixEngine", int32_t initialWidth = 600,
@@ -27,14 +46,14 @@ namespace helix
 		 * @note 如需取消固定，请调用 setFixedSize(false) 取消固定
 		 * @param newSize 要设置的新窗口尺寸
 		 */
-		void resize(Vector2I32 newSize) const;
-		/**
-		 * @brief 设置窗口工作区的尺寸
-		 * @note 如果窗口尺寸未固定，则会将窗口尺寸设置为固定状态
-		 * @note 固定窗口尺寸后，无法使用光标修改窗口坐标
-		 * @param fixedSize 要设置的新窗口固定尺寸
-		 */
-		void setFixedSize(Vector2I32 fixedSize) const;
+		void setSize(Vector2I32 newSize) const;
+		// /**
+		//  * @brief 设置窗口工作区的尺寸
+		//  * @note 如果窗口尺寸未固定，则会将窗口尺寸设置为固定状态
+		//  * @note 固定窗口尺寸后，无法使用光标修改窗口坐标
+		//  * @param fixedSize 要设置的新窗口固定尺寸
+		//  */
+		// void setFixedSize(Vector2I32 fixedSize) const;
 		/**
 		 * @brief 设置是否固定当前的窗口尺寸
 		 * @param isFixed 是否固定
@@ -53,4 +72,6 @@ namespace helix
 	private:
 		QWidget* qWidget = nullptr;
 	};
+
+	Window::Flags::ValueType operator |(const Window::Flags::Value& value1, const Window::Flags::Value& value2);
 }

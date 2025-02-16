@@ -17,8 +17,7 @@ int main(int argc, char** argv)
 	const auto* app = new QApplication{argc, argv};
 	Ref window = new Window(u8"你好，HelixEngine", 800, 600);
 	window->setFixedSize();
-	window->resize({500, 600});
-	window->setFixedSize(false);
+	window->setSize({500, 600});
 
 	// bool isDone = false;
 	// SDL_Event event;
