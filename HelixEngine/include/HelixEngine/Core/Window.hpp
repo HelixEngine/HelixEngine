@@ -8,8 +8,6 @@ namespace helix
 	class Window final : public Object
 	{
 	public:
-		~Window() override;
-
 		class Flag
 		{
 		public:
@@ -83,7 +81,7 @@ namespace helix
 		void setTitle(std::u8string_view newTitle) const;
 		[[nodiscard]] std::u8string getTitle() const;
 	private:
-		QWidget* qWidget = nullptr;
+		std::unique_ptr<QWidget> qWidget;
 		static constexpr auto qtParentPropertyName = "HelixEngine.Window:Parent";
 	};
 }

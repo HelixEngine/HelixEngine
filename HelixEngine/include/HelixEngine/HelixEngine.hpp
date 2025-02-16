@@ -3,3 +3,4 @@
 #include <HelixEngine/Base/Object.hpp>
 #include <HelixEngine/Math/Vector2.hpp>
 #include <HelixEngine/Core/Window.hpp>
+#include <HelixEngine/Core/Game.hpp>

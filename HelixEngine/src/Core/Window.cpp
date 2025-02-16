@@ -1,11 +1,6 @@
 
 #include <HelixEngine/Core/Window.hpp>
 
-helix::Window::~Window()
-{
-	delete qWidget;
-}
-
 helix::Window::Flag::Flag() :
 	flags(static_cast<ValueType>(MinimumButton) | static_cast<ValueType>(MaximumButton))
 {
@@ -35,7 +30,7 @@ helix::Window::Window(const std::u8string_view title, const Vector2I32 size) :
 }
 
 helix::Window::Window(const Property& property) :
-	qWidget(new QWidget)
+	qWidget(std::make_unique<QWidget>())
 {
 	setProperty(property);
 }
@@ -70,7 +65,7 @@ helix::Vector2I32 helix::Window::getSize() const
 
 QWidget* helix::Window::getQWidget() const
 {
-	return qWidget;
+	return qWidget.get();
 }
 
 void helix::Window::setParent(Window* parent) const
