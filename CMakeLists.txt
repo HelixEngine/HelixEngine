@@ -16,9 +16,6 @@ if (NOT DEFINED HELIX_ENGINE_QT_SDK_PATH)
     set(HELIX_ENGINE_QT_SDK_PATH "D:/Qt/6.8.1/msvc2022_64/")
 endif ()
 
-set(SDL_STATIC ON)
-add_subdirectory(HelixEngine/extern/SDL3.2.4)
-
 # 有需要的自己往里面加Qt路径
 list(APPEND CMAKE_PREFIX_PATH "${HELIX_ENGINE_QT_SDK_PATH}/lib/cmake/")
 find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
@@ -32,7 +29,7 @@ file(GLOB_RECURSE HELIX_ENGINE_INCLUDE
 file(GLOB_RECURSE HELIX_ENGINE_SOURCES "HelixEngine/src/*.cpp")
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL3-static Qt6::Core Qt6::Widgets)
+target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets)
 
 function(helix_engine_windeployqt6 target_name)
     if (WIN32)

@@ -1,32 +1,43 @@
-#include <SDL3/SDL.h>
+
 #include <HelixEngine/Core/Window.hpp>
 
-helix::Window::Flags::Flags() :
-	flags(MinimumButton | MaximumButton)
+helix::Window::~Window()
+{
+	delete qWidget;
+}
+
+helix::Window::Flag::Flag() :
+	flags(static_cast<ValueType>(MinimumButton) | static_cast<ValueType>(MaximumButton))
 {
 }
 
-helix::Window::Window(const std::u8string_view title, const int32_t initialWidth, const int32_t initialHeight) :
-	Window(title, Vector2I32{initialWidth, initialHeight})
+void helix::Window::Flag::setItem(Item item, const bool isEnable)
+{
+	if (isEnable)
+		flags = static_cast<ValueType>(item);
+	else
+		flags &= ~static_cast<ValueType>(item);
+}
+
+bool helix::Window::Flag::getItem(Item item) const
+{
+	return static_cast<ValueType>(item) & flags;
+}
+
+helix::Window::Window(const std::u8string_view title, const int32_t width, const int32_t height) :
+	Window(title, Vector2I32{width, height})
 {
 }
 
-helix::Window::Window(const std::u8string_view title, const Vector2I32 initialSize) :
-	Window(CreateInfo{.title = title.data(), .initialSize = initialSize})
+helix::Window::Window(const std::u8string_view title, const Vector2I32 size) :
+	Window(Property{.title = title.data(), .size = size})
 {
 }
 
-helix::Window::Window(const CreateInfo& info)
+helix::Window::Window(const Property& property) :
+	qWidget(new QWidget)
 {
-	qWidget = new QWidget(info.parent ? info.parent->qWidget : nullptr);
-	qWidget->resize(static_cast<QSize>(info.initialSize));
-	qWidget->setWindowTitle(info.title.c_str());
-	if (info.isShow)
-		qWidget->show();
-	auto flags = qWidget->windowFlags();
-	flags.setFlag(Qt::WindowMaximizeButtonHint, info.isEnabledMaximumButton);
-	//flags.setFlag(Qt::WindowMinimizeButtonHint, );
-
+	setProperty(property);
 }
 
 void helix::Window::setSize(const Vector2I32 newSize) const
@@ -42,12 +53,14 @@ void helix::Window::setSize(const Vector2I32 newSize) const
 void helix::Window::setFixedSize(const bool isFixed) const
 {
 	if (isFixed)
-		qWidget->setFixedSize(qWidget->size());
-	else
 	{
-		qWidget->setMaximumSize(QWIDGETSIZE_MAX,QWIDGETSIZE_MAX);
-		qWidget->setMinimumSize(0, 0);
+		qWidget->setMaximumSize(qWidget->size());
+		qWidget->setMinimumSize(qWidget->size());
+		return;
 	}
+
+	qWidget->setMaximumSize(QWIDGETSIZE_MAX,QWIDGETSIZE_MAX);
+	qWidget->setMinimumSize(0, 0);
 }
 
 helix::Vector2I32 helix::Window::getSize() const
@@ -55,12 +68,80 @@ helix::Vector2I32 helix::Window::getSize() const
 	return Vector2I32{qWidget->size().width(), qWidget->size().height()};
 }
 
-const QWidget* helix::Window::getQWidget() const
+QWidget* helix::Window::getQWidget() const
 {
 	return qWidget;
 }
 
-helix::Window::Flags::ValueType helix::operator|(const Window::Flags::Value& value1, const Window::Flags::Value& value2)
+void helix::Window::setParent(Window* parent) const
 {
-	return static_cast<Window::Flags::ValueType>(value1) | static_cast<Window::Flags::ValueType>(value2);
+	qWidget->setParent(parent ? parent->getQWidget() : nullptr);
+	qWidget->setProperty(qtParentPropertyName, QVariant::fromValue(parent));
+}
+
+helix::Window* helix::Window::getParent() const
+{
+	return qWidget->parent()->property("HelixEngine.Window:Parent").value<Window*>();
+}
+
+void helix::Window::setFlag(const Flag flag) const
+{
+	Qt::WindowFlags flags = qWidget->windowFlags();
+	flags.setFlag(Qt::WindowMaximizeButtonHint, flag.getItem(Flag::MaximumButton));
+	flags.setFlag(Qt::WindowMinimizeButtonHint, flag.getItem(Flag::MinimumButton));
+	qWidget->setWindowFlags(flags);
+}
+
+helix::Window::Flag helix::Window::getFlag() const
+{
+	Flag flag;
+	flag.setItem(Flag::MaximumButton, qWidget->windowFlags().testFlag(Qt::WindowMaximizeButtonHint));
+	flag.setItem(Flag::MinimumButton, qWidget->windowFlags().testFlag(Qt::WindowMinimizeButtonHint));
+	return flag;
+}
+
+void helix::Window::setProperty(const Property& property) const
+{
+	setFlag(property.flag);
+	setParent(property.parent);
+
+	setSize(property.size);
+	setTitle(property.title);
+
+	setDisplay(property.isDisplay);
+}
+
+helix::Window::Property helix::Window::getProperty() const
+{
+	Property property;
+	property.parent = getParent();
+	property.size = getSize();
+	property.flag = getFlag();
+	property.isDisplay = isDisplay();
+	property.title = getTitle();
+	return property;
+}
+
+void helix::Window::setDisplay(const bool isDisplay) const
+{
+	if (isDisplay)
+		qWidget->show();
+	else
+		qWidget->hide();
+}
+
+bool helix::Window::isDisplay() const
+{
+	return !qWidget->isHidden();
+}
+
+void helix::Window::setTitle(const std::u8string_view newTitle) const
+{
+	qWidget->setWindowTitle(newTitle.data());
+}
+
+std::u8string helix::Window::getTitle() const
+{
+	auto title = qWidget->windowTitle().toUtf8();
+	return std::u8string{title.begin(), title.end()};
 }
