@@ -7,9 +7,18 @@ using namespace helix;
 int main(int argc, char** argv)
 {
 	Vector2F vec;
-	vec.x = 1;
+	Vector2F vec2{2, 1};
+	vec.x = 2;
+	vec.y = 1;
+	vec.normalize();
+	vec = vec2;
+	std::cout << std::boolalpha;
+	std::cout << vec.x << ' ' << vec.y << ' ' << (vec == vec2);
 	const auto* app = new QApplication{argc, argv};
 	Ref window = new Window(u8"你好，HelixEngine", 800, 600);
+	window->setFixedSize();
+	window->resize({500, 600});
+	window->setFixedSize(false);
 
 	// bool isDone = false;
 	// SDL_Event event;
