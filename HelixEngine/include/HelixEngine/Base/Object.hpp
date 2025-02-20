@@ -10,7 +10,7 @@ namespace helix
 
 	class Object
 	{
-		template<BasedObject TypeBasedObject>
+		template<typename PointType>
 		friend class Ref;
 	public:
 		virtual ~Object() = default;

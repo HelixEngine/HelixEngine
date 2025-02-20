@@ -3,7 +3,7 @@
 
 namespace helix
 {
-	template<BasedObject TypeBasedObject>
+	template<typename PointType>
 	class Ref
 	{
 	public:
@@ -22,6 +22,7 @@ namespace helix
 
 		// ReSharper disable once CppNonExplicitConvertingConstructor
 
+		template<BasedObject TypeBasedObject = PointType>
 		Ref(TypeBasedObject* object) : // NOLINT(*-explicit-constructor)
 			object(object)
 		{
@@ -54,24 +55,24 @@ namespace helix
 			std::swap(object, ref.object);
 		}
 
-		void reset(TypeBasedObject* ptr = nullptr)
+		void reset(PointType* ptr = nullptr)
 		{
 			Ref(ptr).swap(*this);
 		}
 
-		[[nodiscard]] TypeBasedObject* get() const
+		[[nodiscard]] PointType* get() const
 			noexcept
 		{
 			return object;
 		}
 
-		TypeBasedObject* operator->() const
+		PointType* operator->() const
 			noexcept
 		{
 			return object;
 		}
 
-		TypeBasedObject& operator*() const
+		PointType& operator*() const
 		{
 			return *object;
 		}
@@ -82,7 +83,7 @@ namespace helix
 			return ref.object == object;
 		}
 
-		bool operator==(const TypeBasedObject* ref) const
+		bool operator==(const PointType* ref) const
 			noexcept
 		{
 			return ref == object;
@@ -94,7 +95,7 @@ namespace helix
 			return ref.object != object;
 		}
 
-		bool operator!=(const TypeBasedObject* object) const
+		bool operator!=(const PointType* object) const
 			noexcept
 		{
 			return this->object != object;
@@ -118,6 +119,6 @@ namespace helix
 				delete object;
 		}
 
-		TypeBasedObject* object = nullptr;
+		PointType* object = nullptr;
 	};
 }
