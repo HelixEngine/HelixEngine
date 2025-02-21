@@ -28,6 +28,12 @@ namespace helix
 			increase();
 		}
 
+		// Ref(nullptr_t object) : // NOLINT(*-explicit-constructor)
+		// 	object(object)
+		// {
+		// 	increase();
+		// }
+
 		~Ref()
 		{
 			decrease();
