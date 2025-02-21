@@ -22,8 +22,7 @@ namespace helix
 
 		// ReSharper disable once CppNonExplicitConvertingConstructor
 
-		template<BasedObject TypeBasedObject = PointType>
-		Ref(TypeBasedObject* object) : // NOLINT(*-explicit-constructor)
+		Ref(PointType* object) requires BasedObject<PointType> : // NOLINT(*-explicit-constructor)
 			object(object)
 		{
 			increase();
