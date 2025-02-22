@@ -119,10 +119,7 @@ helix::Window::Property helix::Window::getProperty() const
 
 void helix::Window::setDisplay(const bool isDisplay) const
 {
-	if (isDisplay)
-		qWidget->show();
-	else
-		qWidget->hide();
+	qWidget->setHidden(!isDisplay);
 }
 
 bool helix::Window::isDisplay() const
@@ -139,4 +136,9 @@ std::u8string helix::Window::getTitle() const
 {
 	auto title = qWidget->windowTitle().toUtf8();
 	return std::u8string{title.begin(), title.end()};
+}
+
+void helix::Window::enter(Ref<Scene> scene)
+{
+	this->scene = std::move(scene);
 }

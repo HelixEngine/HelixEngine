@@ -8,7 +8,7 @@ namespace helix
 	{
 	public:
 		void addNode(Ref<Node> child);
-
+	protected:
 		virtual void onTick(Duration deltaTime)
 		{
 		}

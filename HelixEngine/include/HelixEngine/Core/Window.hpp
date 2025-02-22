@@ -1,7 +1,13 @@
 #pragma once
 #include <HelixEngine/Base/Object.hpp>
 #include <HelixEngine/Math/Vector2.hpp>
+#include <HelixEngine/Base/Ref.hpp>
 #include <QWidget>
+
+namespace helix
+{
+	class Scene;
+}
 
 namespace helix
 {
@@ -83,5 +89,10 @@ namespace helix
 	private:
 		std::unique_ptr<QWidget> qWidget;
 		static constexpr auto qtParentPropertyName = "HelixEngine.Window:Parent";
+	public:
+		//Scene
+		void enter(Ref<Scene> scene);
+	private:
+		Ref<Scene> scene;
 	};
 }
