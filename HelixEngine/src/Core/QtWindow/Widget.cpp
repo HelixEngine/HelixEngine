@@ -20,4 +20,6 @@ void helix::qt::Widget::sceneUpdate()
 	auto deltaTime = now - lastFrameTimePoint;
 	hxWindow->scene->updateScene(deltaTime);
 	lastFrameTimePoint = now;
+
+	update();
 }
