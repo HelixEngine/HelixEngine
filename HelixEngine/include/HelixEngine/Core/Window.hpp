@@ -2,7 +2,13 @@
 #include <HelixEngine/Base/Object.hpp>
 #include <HelixEngine/Math/Vector2.hpp>
 #include <HelixEngine/Base/Ref.hpp>
+#include <HelixEngine/Node/Scene.hpp>
 #include <QWidget>
+
+namespace helix::qt
+{
+	class Widget;
+}
 
 namespace helix
 {
@@ -13,6 +19,7 @@ namespace helix
 {
 	class Window final : public Object
 	{
+		friend class qt::Widget;
 	public:
 		class Flag
 		{

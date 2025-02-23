@@ -4,52 +4,52 @@ helix::Duration::Duration() = default;
 
 float helix::Duration::hours() const
 {
-	return minutes() / 60.f;
+	return std::chrono::duration_cast<StdHours>(duration).count();
 }
 
 float helix::Duration::minutes() const
 {
-	return seconds() / 60.f;
+	return std::chrono::duration_cast<StdSeconds>(duration).count();
 }
 
 float helix::Duration::seconds() const
 {
-	return static_cast<float>(milliseconds()) / 1000.f;
+	return std::chrono::duration_cast<StdSeconds>(duration).count();
 }
 
-std::uint64_t helix::Duration::milliseconds() const
+float helix::Duration::milliseconds() const
 {
-	return ms.count();
+	return std::chrono::duration_cast<StdMilliseconds>(duration).count();
 }
 
-helix::Duration::operator std::chrono::duration<long long, std::ratio<1, 1000>>() const
+float helix::Duration::nanoseconds() const
 {
-	return ms;
+	return std::chrono::duration_cast<StdNanoseconds>(duration).count();
 }
 
-auto helix::Duration::operator+(const Duration duration) const
+helix::Duration::operator helix::Duration::DataDurationType() const
 {
-	return Duration{ms + duration.ms};
+	return duration;
 }
 
-auto helix::Duration::operator-(const Duration duration) const
+helix::Duration helix::Duration::operator+(const Duration duration) const
 {
-	return Duration{ms - duration.ms};
+	return Duration{this->duration + duration.duration};
+}
+
+helix::Duration helix::Duration::operator-(const Duration duration) const
+{
+	return Duration{this->duration - duration.duration};
 }
 
 helix::Duration& helix::Duration::operator+=(const Duration duration)
 {
-	ms += duration.ms;
+	this->duration += duration.duration;
 	return *this;
 }
 
 helix::Duration& helix::Duration::operator-=(const Duration duration)
 {
-	ms -= duration.ms;
+	this->duration -= duration.duration;
 	return *this;
-}
-
-auto helix::Duration::operator<=>(const Duration duration) const
-{
-	return ms <=> duration.ms;
 }

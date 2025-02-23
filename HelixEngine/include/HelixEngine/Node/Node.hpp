@@ -6,6 +6,7 @@ namespace helix
 {
 	class Node : public Object
 	{
+		friend class Scene;
 	public:
 		void addNode(Ref<Node> child);
 	protected:
@@ -13,6 +14,7 @@ namespace helix
 		{
 		}
 	private:
+		void update(Duration deltaTime);
 		std::vector<Ref<Node>> children;
 	};
 

@@ -1,5 +1,12 @@
 #pragma once
+#include <HelixEngine/Util/Time.hpp>
 #include <QWidget>
+#include <QTimer>
+
+namespace helix
+{
+	class Window;
+}
 
 namespace helix::qt
 {
@@ -7,8 +14,10 @@ namespace helix::qt
 	{
 		friend class Window;
 		Q_OBJECT
-		Widget();
-		void update();
+		explicit Widget(Window* hxWindow);
+		void sceneUpdate();
 		std::unique_ptr<QTimer> timer;
+		SteadyClock::TimePoint lastFrameTimePoint;
+		Window* hxWindow{};
 	};
 }

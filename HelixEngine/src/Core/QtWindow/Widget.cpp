@@ -1,15 +1,23 @@
+#include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Core/QtWindow/Widget.hpp>
-#include <QTimer>
 #include <HelixEngine/Util/Time.hpp>
+#include <HelixEngine/Node/Scene.hpp>
 
-helix::qt::Widget::Widget() :
-	timer(std::make_unique<QTimer>())
+helix::qt::Widget::Widget(Window* hxWindow) :
+	timer(std::make_unique<QTimer>()), hxWindow(hxWindow)
 {
-	connect(timer.get(), SIGNAL(QTimer::timeout), this, SLOT(update));
+	timer->callOnTimeout(this, &Widget::sceneUpdate);
 	timer->start(0ms);
+	lastFrameTimePoint = SteadyClock::now();
 }
 
-void helix::qt::Widget::update()
+void helix::qt::Widget::sceneUpdate()
 {
+	if (!hxWindow->scene)
+		return;
 
+	auto now = SteadyClock::now();
+	auto deltaTime = now - lastFrameTimePoint;
+	hxWindow->scene->updateScene(deltaTime);
+	lastFrameTimePoint = now;
 }
