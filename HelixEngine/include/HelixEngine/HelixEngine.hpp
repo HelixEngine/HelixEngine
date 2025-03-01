@@ -5,3 +5,4 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Core/Game.hpp>
 #include <HelixEngine/Node/Scene.hpp>
+#include <HelixEngine/Render/Device.hpp>

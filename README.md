@@ -6,7 +6,7 @@
 
 ### 渲染
 
-NVRHI with Vulkan, D3D12 *（暂时）*
+Diligent Core with Vulkan *（暂时）*
 
 ### 物理
 

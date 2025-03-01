@@ -1,6 +1,8 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Core/QtWindow/Widget.hpp>
 
+#include "HelixEngine/Core/Game.hpp"
+
 helix::Window::Flag::Flag() :
 	flags(static_cast<ValueType>(MinimumButton) | static_cast<ValueType>(MaximumButton))
 {
@@ -29,9 +31,10 @@ helix::Window::Window(const std::u8string_view title, const Vector2I32 size) :
 {
 }
 
-helix::Window::Window(const Property& property) :
-	qWidget(new qt::Widget(this))
+helix::Window::Window(const Property& property)
 {
+	Game::Instance::getInstance();
+	qWidget = std::unique_ptr<QWidget>(new qt::Widget(this));
 	setProperty(property);
 }
 

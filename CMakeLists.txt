@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.8)
 project(HelixEngine VERSION 0.1.0)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_EXPERIMENTAL_CXX_MODULES ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+
+# 注意：Spdlog 还未进行CMake配置
 
 if (NOT DEFINED HELIX_ENGINE_TEST)
     set(HELIX_ENGINE_TEST ON)
@@ -22,8 +24,6 @@ find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-add_subdirectory(HelixEngine/extern/nvrhi)
-
 file(GLOB_RECURSE HELIX_ENGINE_INCLUDE
         "HelixEngine/include/*.hpp"
         "HelixEngine/include/*.h")
@@ -31,7 +31,7 @@ file(GLOB_RECURSE HELIX_ENGINE_INCLUDE
 file(GLOB_RECURSE HELIX_ENGINE_SOURCES "HelixEngine/src/*.cpp")
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets nvrhi)
+target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets)
 
 function(helix_engine_windeployqt6 target_name)
     if (WIN32)
