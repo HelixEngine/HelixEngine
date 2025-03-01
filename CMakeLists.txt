@@ -14,6 +14,10 @@ if (NOT DEFINED HELIX_ENGINE_TEST)
     set(HELIX_ENGINE_TEST ON)
 endif ()
 
+# Diligent Core Config
+add_subdirectory(HelixEngine/extern/DiligentCore_v2.5.6)
+
+# Qt Config
 if (NOT DEFINED HELIX_ENGINE_QT_SDK_PATH)
     set(HELIX_ENGINE_QT_SDK_PATH "D:/Qt/6.8.1/msvc2022_64/")
 endif ()
@@ -31,7 +35,15 @@ file(GLOB_RECURSE HELIX_ENGINE_INCLUDE
 file(GLOB_RECURSE HELIX_ENGINE_SOURCES "HelixEngine/src/*.cpp")
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets)
+target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets Diligent-Common)
+
+if (WIN32)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-Win32Platform)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-GraphicsEngineD3D12-static)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-GraphicsEngineD3D11-static)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-GraphicsEngineVk-static)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-GraphicsEngineOpenGL-static)
+endif ()
 
 function(helix_engine_windeployqt6 target_name)
     if (WIN32)
