@@ -6,7 +6,7 @@
 
 ### 渲染
 
-Diligent Core with Vulkan *（暂时）*
+Helix RHI with Vulkan *（暂时）*
 
 ### 物理
 

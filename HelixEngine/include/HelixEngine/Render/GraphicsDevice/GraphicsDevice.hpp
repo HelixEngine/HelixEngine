@@ -9,5 +9,6 @@ namespace helix::render::graphics_device
 {
 	class GraphicsDevice
 	{
+
 	};
 }

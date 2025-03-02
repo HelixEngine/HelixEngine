@@ -28,7 +28,7 @@ public:
 int main(int argc, char** argv)
 {
 	Game::setCommandLineArguments(argc, argv);
-
+	render::Device::Instance::getInstance();
 	Window::Property property;
 	property.title = u8"你好，HelixEngine";
 	property.size = {800, 600};

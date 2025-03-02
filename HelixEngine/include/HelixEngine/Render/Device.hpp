@@ -8,12 +8,12 @@ namespace helix::render
 	class Device final
 	{
 	public:
-		enum class Platform
+		enum class GraphicsAPI
 		{
 			Vulkan,
 		};
 	private:
-		static inline auto platform = Platform::Vulkan;
+		static inline auto graphicsAPI = GraphicsAPI::Vulkan;
 	public: //暂时
 		struct Instance final : Singleton<Instance>
 		{

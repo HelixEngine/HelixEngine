@@ -14,8 +14,7 @@ if (NOT DEFINED HELIX_ENGINE_TEST)
     set(HELIX_ENGINE_TEST ON)
 endif ()
 
-# Diligent Core Config
-add_subdirectory(HelixEngine/extern/DiligentCore_v2.5.6)
+find_package(Vulkan REQUIRED)
 
 # Qt Config
 if (NOT DEFINED HELIX_ENGINE_QT_SDK_PATH)
@@ -35,14 +34,10 @@ file(GLOB_RECURSE HELIX_ENGINE_INCLUDE
 file(GLOB_RECURSE HELIX_ENGINE_SOURCES "HelixEngine/src/*.cpp")
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets Diligent-Common)
+target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets)
 
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-Win32Platform)
-    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-GraphicsEngineD3D12-static)
-    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-GraphicsEngineD3D11-static)
-    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-GraphicsEngineVk-static)
-    target_link_libraries(${PROJECT_NAME} PUBLIC Diligent-GraphicsEngineOpenGL-static)
+    target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
 endif ()
 
 function(helix_engine_windeployqt6 target_name)
