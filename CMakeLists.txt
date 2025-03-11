@@ -4,17 +4,21 @@ project(HelixEngine VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_EXPERIMENTAL_CXX_MODULES ON)
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
-# 注意：Spdlog 还未进行CMake配置
+set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
+set(HELIX_UTIL_NAME HelixUtil)
+
+file(GLOB HELIX_UTIL_INCLUDE HelixEngine/include/HelixEngine/Util/*.hpp)
+file(GLOB HELIX_UTIL_SOURCES HelixEngine/src/Util/*.cpp)
+
+add_library(${HELIX_UTIL_NAME} STATIC ${HELIX_UTIL_INCLUDE} ${HELIX_UTIL_SOURCES})
+target_include_directories(${HELIX_UTIL_NAME} PUBLIC ${HELIX_ENGINE_INCLUDE_PATH} HelixEngine/extern/fast_io/include)
+
+add_subdirectory(HelixEngine/Essence)
 
 if (NOT DEFINED HELIX_ENGINE_TEST)
     set(HELIX_ENGINE_TEST ON)
 endif ()
-
-find_package(Vulkan REQUIRED)
 
 # Qt Config
 if (NOT DEFINED HELIX_ENGINE_QT_SDK_PATH)
@@ -29,16 +33,17 @@ set(CMAKE_AUTORCC ON)
 
 file(GLOB_RECURSE HELIX_ENGINE_INCLUDE
         "HelixEngine/include/*.hpp"
-        "HelixEngine/include/*.h")
+        "HelixEngine/include/*.h"
+        EXCLUDE HelixEngine/include/HelixEngine/Util
+)
 
-file(GLOB_RECURSE HELIX_ENGINE_SOURCES "HelixEngine/src/*.cpp")
+file(GLOB_RECURSE HELIX_ENGINE_SOURCES
+        "HelixEngine/src/*.cpp"
+        EXCLUDE HelixEngine/src/Util
+)
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets)
-
-if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
-endif ()
+target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets Essence ${HELIX_UTIL_NAME})
 
 function(helix_engine_windeployqt6 target_name)
     if (WIN32)
@@ -54,6 +59,6 @@ endfunction()
 
 if (HELIX_ENGINE_TEST)
     add_executable(CommonTest test/test.cpp)
-    target_link_libraries(CommonTest PRIVATE ${PROJECT_NAME})
+    target_link_libraries(CommonTest PRIVATE ${PROJECT_NAME} Essence-Vulkan)
     helix_engine_windeployqt6(CommonTest)
 endif ()

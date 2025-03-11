@@ -1,7 +1,7 @@
 #pragma once
-#include <HelixEngine/Base/Object.hpp>
+#include <HelixEngine/Util/Object.hpp>
 #include <HelixEngine/Math/Vector2.hpp>
-#include <HelixEngine/Base/Ref.hpp>
+#include <HelixEngine/Util/Ref.hpp>
 #include <HelixEngine/Node/Scene.hpp>
 #include <QWidget>
 
@@ -37,7 +37,7 @@ namespace helix
 			using enum Item;
 
 			void setItem(Item item, bool isEnable = true);
-			[[nodiscard]] bool getItem(Item item) const;
+			[[nodiscard]] bool item(Item item) const;
 		private:
 			ValueType flags{};
 		};

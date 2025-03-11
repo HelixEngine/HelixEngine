@@ -1,6 +1,6 @@
 #pragma once
 #include <QApplication>
-#include <HelixEngine/Base/Singleton.hpp>
+#include <HelixEngine/Util/Singleton.hpp>
 
 namespace helix
 {

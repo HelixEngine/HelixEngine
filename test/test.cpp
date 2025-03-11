@@ -1,6 +1,7 @@
 #include <HelixEngine/HelixEngine.hpp>
 #include <iostream>
 #include <thread>
+#include <Essence/Vulkan/Device.hpp>
 
 using namespace helix;
 
@@ -15,20 +16,23 @@ public:
 		if (time >= 1s)
 		{
 			time -= 1s;
-			logger.info("Fps: %s", std::to_string(fps).c_str());
+			Logger::info(u8"Fps: ", fps);
 			fps = 0;
 		}
 	}
 
 	Duration time;
 	uint64_t fps{};
-	QMessageLogger logger;
 };
 
 int main(int argc, char** argv)
 {
 	Game::setCommandLineArguments(argc, argv);
-	render::Device::Instance::getInstance();
+	auto devices = essence::vulkan::Device::makeDevices();
+	for (const auto& device: devices)
+	{
+		Logger::info(device->getName());
+	}
 	Window::Property property;
 	property.title = u8"你好，HelixEngine";
 	property.size = {800, 600};

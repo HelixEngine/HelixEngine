@@ -16,7 +16,7 @@ void helix::Window::Flag::setItem(Item item, const bool isEnable)
 		flags &= ~static_cast<ValueType>(item);
 }
 
-bool helix::Window::Flag::getItem(Item item) const
+bool helix::Window::Flag::item(Item item) const
 {
 	return static_cast<ValueType>(item) & flags;
 }
@@ -85,8 +85,8 @@ helix::Window* helix::Window::getParent() const
 void helix::Window::setFlag(const Flag flag) const
 {
 	Qt::WindowFlags flags = qWidget->windowFlags();
-	flags.setFlag(Qt::WindowMaximizeButtonHint, flag.getItem(Flag::MaximumButton));
-	flags.setFlag(Qt::WindowMinimizeButtonHint, flag.getItem(Flag::MinimumButton));
+	flags.setFlag(Qt::WindowMaximizeButtonHint, flag.item(Flag::MaximumButton));
+	flags.setFlag(Qt::WindowMinimizeButtonHint, flag.item(Flag::MinimumButton));
 	qWidget->setWindowFlags(flags);
 }
 

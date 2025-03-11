@@ -52,7 +52,7 @@ namespace helix
 		{
 		}
 
-		auto length() const
+		auto getLength() const
 		{
 			return ktm::length(ktmVecSelf());
 		}

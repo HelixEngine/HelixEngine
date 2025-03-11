@@ -29,16 +29,16 @@ namespace helix
 		{
 		}
 
-		[[nodiscard]] float hours() const;
+		[[nodiscard]] float getHours() const;
 
 
-		[[nodiscard]] float minutes() const;
+		[[nodiscard]] float getMinutes() const;
 
-		[[nodiscard]] float seconds() const;
+		[[nodiscard]] float getSeconds() const;
 
-		[[nodiscard]] float milliseconds() const;
+		[[nodiscard]] float getMilliseconds() const;
 
-		[[nodiscard]] float nanoseconds() const;
+		[[nodiscard]] float getNanoseconds() const;
 
 		operator DataDurationType() const;
 

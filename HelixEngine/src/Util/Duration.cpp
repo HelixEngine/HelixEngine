@@ -2,27 +2,27 @@
 
 helix::Duration::Duration() = default;
 
-float helix::Duration::hours() const
+float helix::Duration::getHours() const
 {
 	return std::chrono::duration_cast<StdHours>(duration).count();
 }
 
-float helix::Duration::minutes() const
+float helix::Duration::getMinutes() const
 {
 	return std::chrono::duration_cast<StdSeconds>(duration).count();
 }
 
-float helix::Duration::seconds() const
+float helix::Duration::getSeconds() const
 {
 	return std::chrono::duration_cast<StdSeconds>(duration).count();
 }
 
-float helix::Duration::milliseconds() const
+float helix::Duration::getMilliseconds() const
 {
 	return std::chrono::duration_cast<StdMilliseconds>(duration).count();
 }
 
-float helix::Duration::nanoseconds() const
+float helix::Duration::getNanoseconds() const
 {
 	return std::chrono::duration_cast<StdNanoseconds>(duration).count();
 }
