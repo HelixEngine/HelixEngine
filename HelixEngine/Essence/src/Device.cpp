@@ -3,7 +3,7 @@
 
 essence::Device::Instance::Instance()
 {
-	switch (api)
+	switch (graphicsApi)
 	{
 		case GraphicsApi::Vulkan:
 			devices = vulkan::Device::makeDevices();
@@ -13,12 +13,28 @@ essence::Device::Instance::Instance()
 	}
 }
 
-void essence::Device::setGraphicsApi(const GraphicsApi api)
+void essence::Device::setGraphicsApi(const GraphicsApi graphicsApi)
 {
-	Device::api = api;
+	Device::graphicsApi = graphicsApi;
 }
 
-essence::GraphicsApi essence::Device::graphicsApi()
+essence::GraphicsApi essence::Device::getGraphicsApi()
 {
-	return api;
+	return graphicsApi;
+}
+
+const std::vector<helix::Ref<essence::Device>>& essence::Device::getDevices()
+{
+	return Instance::getInstance().devices;
+}
+
+void essence::Device::setComponentLoaders(std::vector<helix::Ref<component::Loader>> loaders)
+{
+	Device::loaders = std::move(loaders);
+}
+
+std::vector<helix::Ref<essence::Component>> essence::Device::getGlobalComponents()
+{
+	Instance::getInstance();
+	return globalComponents;
 }
