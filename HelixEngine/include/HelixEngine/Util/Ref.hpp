@@ -112,6 +112,11 @@ namespace helix
 		{
 			return object;
 		}
+
+		operator PointType*() const
+		{
+			return object;
+		}
 	private:
 		void increase()
 		{

@@ -46,7 +46,7 @@ void essence::vulkan::component::DebugUtil::setMessageOutput(bool isEnabled)
 			u8"Debug Utils Messenger 创建失败");
 }
 
-void essence::vulkan::component::DebugUtil::Loader::load(Device::InstanceProperty& instanceProperty)
+void essence::vulkan::component::DebugUtil::Loader::load(InstanceProperty& instanceProperty)
 {
 	std::vector optionalLayers =
 	{

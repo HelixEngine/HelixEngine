@@ -17,6 +17,6 @@ namespace essence::vulkan::component
 	class DebugUtil::Loader final : public component::Loader
 	{
 	public:
-		void load(Device::InstanceProperty& instanceProperty) override;
+		void load(InstanceProperty& instanceProperty) override;
 	};
 }

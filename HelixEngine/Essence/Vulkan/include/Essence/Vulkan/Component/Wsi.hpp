@@ -16,8 +16,8 @@ namespace essence::vulkan::component
 
 	class Wsi::Loader final : public component::Loader
 	{
-		void load(Device::InstanceProperty& instanceProperty) override;
-		helix::Ref<Component> load(VkPhysicalDevice physicalDevice) override;
+		void load(InstanceProperty& instanceProperty) override;
+		void load(DeviceProperty& deviceProperty) override;
 
 		Wsi* wsi = nullptr;
 	};

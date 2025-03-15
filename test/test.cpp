@@ -10,7 +10,6 @@ class FpsNode final : public Node
 public:
 	void onTick(Duration deltaTime) override
 	{
-		Duration d;
 		time += deltaTime;
 		fps++;
 		if (time >= 1s)
@@ -29,23 +28,18 @@ int main(int argc, char** argv)
 {
 	Game::setCommandLineArguments(argc, argv);
 
-	essence::Device::setComponentLoaders({
+	essence::Device::setComponentLoader({
 			essence::component::Wsi::getLoader(),
 			essence::component::DebugUtil::getLoader(),
 	});
 
 	Ref<essence::component::DebugUtil> debugUtil;
+	essence::Device::findGlobalComponent(debugUtil);
+	debugUtil->setMessageOutput();
+	Ref<essence::component::Wsi> wsi;
+	essence::Device::findDeviceComponent(wsi);
 
-	for (const auto& component: essence::Device::getGlobalComponents())
-	{
-		if (auto du = dynamic_cast<essence::component::DebugUtil*>(component.get()))
-		{
-			du->setMessageOutput(true);
-			debugUtil = du;
-		}
-	}
-
-	auto devices = essence::Device::getDevices();
+	auto devices = essence::Device::getDevice();
 	for (const auto& device: devices)
 	{
 		Logger::info(device->getName());
@@ -63,7 +57,5 @@ int main(int argc, char** argv)
 	window->setFixedSize(true);
 	window->setSize({500, 600});
 
-	auto result = Game::run();
-	debugUtil->setMessageOutput(false);
-	return result;
+	return Game::run();
 }

@@ -1,7 +1,6 @@
 #pragma once
 #include <Essence/Component/Component.hpp>
 #include <Essence/Vulkan/Device.hpp>
-#include <vulkan/vulkan.h>
 
 namespace essence::vulkan::component
 {
@@ -9,10 +8,12 @@ namespace essence::vulkan::component
 	{
 		friend class Device;
 	protected:
-		virtual void load(Device::InstanceProperty& instanceProperty)
+		virtual void load(InstanceProperty& instanceProperty)
 		{
 		}
 
-		virtual helix::Ref<Component> load(VkPhysicalDevice physicalDevice) { return nullptr; }
+		virtual void load(DeviceProperty& deviceProperty)
+		{
+		}
 	};
 }

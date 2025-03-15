@@ -22,18 +22,27 @@ namespace essence::vulkan
 		static void resultProcess(VkResult result, std::u8string_view errorMsg);
 		static helix::Logger::Output vkOutput;
 
-		struct InstanceProperty
-		{
-			std::vector<VkExtensionProperties> extensions;
-			std::vector<const char*> enabledExtensions;
-#if !NDEBUG
-			std::vector<VkLayerProperties> layers;
-			std::vector<const char*> enabledLayers;
-#endif
-			std::vector<helix::Ref<Component>> globalComponents;
-		};
+		VkPhysicalDevice getVkPhysicalDevice() const;
+		VkDevice getVkDevice() const;
 
 		VkPhysicalDevice physicalDevice{};
 		VkDevice logicDevice{};
+	};
+
+	struct InstanceProperty
+	{
+		std::vector<VkExtensionProperties> extensions;
+		std::vector<const char*> enabledExtensions;
+		std::vector<VkLayerProperties> layers;
+		std::vector<const char*> enabledLayers;
+		std::vector<helix::Ref<Component>> globalComponents;
+	};
+
+	struct DeviceProperty
+	{
+		Device* device = nullptr;
+		std::vector<VkExtensionProperties> extensions;
+		std::vector<const char*> enabledExtensions;
+		std::vector<helix::Ref<Component>> deviceComponents;
 	};
 }
