@@ -36,6 +36,8 @@ helix::Ref<essence::component::SwapChain> essence::vulkan::component::Wsi::makeS
 #ifdef __linux__
 #endif
 
+	auto device = reinterpret_cast<Device*>(this->device);
+
 	return swapChain;
 }
 
