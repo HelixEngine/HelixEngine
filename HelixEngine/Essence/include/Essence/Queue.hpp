@@ -11,9 +11,9 @@ namespace essence
 	public:
 		enum class Type
 		{
-			Graphics,
-			Compute,
-			Transfer,
+			Graphics = 0b1,
+			Compute = 0b10,
+			Transfer = 0b100,
 		};
 	};
 }

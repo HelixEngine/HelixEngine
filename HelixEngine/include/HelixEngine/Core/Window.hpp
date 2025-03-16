@@ -5,6 +5,8 @@
 #include <HelixEngine/Node/Scene.hpp>
 #include <QWidget>
 
+#include "HelixEngine/Util/Feature.hpp"
+
 namespace helix::qt
 {
 	class Widget;
@@ -21,25 +23,11 @@ namespace helix
 	{
 		friend class qt::Widget;
 	public:
-		class Flag
+		enum class Flag
 		{
-		public:
-			Flag();
-			using ValueType = uint8_t;
-
-			enum class Item : ValueType
-			{
-				MaximumButton = 0b01,
-				MinimumButton = 0b10,
-				MinMaxButton = MaximumButton | MinimumButton,
-			};
-
-			using enum Item;
-
-			void setItem(Item item, bool isEnable = true);
-			[[nodiscard]] bool item(Item item) const;
-		private:
-			ValueType flags{};
+			MaximumButton = 0b01,
+			MinimumButton = 0b10,
+			MinMaxButton = MaximumButton | MinimumButton,
 		};
 
 		struct Property
@@ -49,7 +37,7 @@ namespace helix
 			Window* parent = nullptr;
 			bool isFixed = false;
 			bool isDisplay = true;
-			Flag flag;
+			Feature<Flag> flag = Flag::MinMaxButton;
 		};
 
 		explicit Window(std::u8string_view title = u8"HelixEngine", int32_t width = 600,
@@ -82,8 +70,8 @@ namespace helix
 		void setParent(Window* parent) const;
 		[[nodiscard]] Window* getParent() const;
 
-		void setFlag(Flag flag) const;
-		[[nodiscard]] Flag getFlag() const;
+		void setFlag(Feature<Flag> flag) const;
+		[[nodiscard]] Feature<Flag> getFlag() const;
 
 		void setProperty(const Property& property) const;
 		[[nodiscard]] Property getProperty() const;

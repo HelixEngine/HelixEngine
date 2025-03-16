@@ -5,6 +5,7 @@
 #include <HelixEngine/Util/Ref.hpp>
 #include <HelixEngine/Util/Singleton.hpp>
 #include <Essence/Queue.hpp>
+#include <HelixEngine/Util/Feature.hpp>
 
 namespace essence
 {
@@ -68,6 +69,6 @@ namespace essence
 		 * @brief 创建Queue
 		 * @return Queue指针，如果当前Type可创建的Queue数量已达上限，则返回nullptr
 		 */
-		virtual helix::Ref<Queue> makeQueue(Queue::Type type = Queue::Type::Graphics) = 0;
+		virtual helix::Ref<Queue> makeQueue(helix::Feature<Queue::Type> type = Queue::Type::Graphics) = 0;
 	};
 }

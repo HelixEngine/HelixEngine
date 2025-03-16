@@ -1,5 +1,6 @@
 #include <string>
 #include <fast_io.h>
+#include <optional>
 #include <Essence/Vulkan/Device.hpp>
 #include <Essence/Vulkan/Component/Loader.hpp>
 #include <Essence/Vulkan/Queue.hpp>
@@ -77,6 +78,7 @@ std::vector<helix::Ref<essence::Device>> essence::vulkan::Device::makeDevice()
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+		device->queueCurrentIndices.resize(queueFamilyCount);
 
 		std::vector<VkDeviceQueueCreateInfo> queueCIs(queueFamilyCount);
 		std::vector<std::vector<float>> priorities(queueFamilyCount);
@@ -247,9 +249,37 @@ VkDevice essence::vulkan::Device::getVkDevice() const
 	return logicDevice;
 }
 
-helix::Ref<essence::Queue> essence::vulkan::Device::makeQueue(Queue::Type type)
+helix::Ref<essence::Queue> essence::vulkan::Device::makeQueue(helix::Feature<essence::Queue::Type> type)
 {
-	return nullptr; //先返回一个nullptr以后再来改
+	uint32_t queueFamilyCount = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+
+	std::optional<uint32_t> familyIndex;
+	for (uint32_t i = 0; i < queueFamilyCount; ++i)
+	{
+		const auto& properties = queueFamilies[i];
+		if (type.getItem(Queue::Type::Graphics) && !(properties.queueFlags & VK_QUEUE_GRAPHICS_BIT))
+			continue;
+		if (type.getItem(Queue::Type::Compute) && !(properties.queueFlags & VK_QUEUE_COMPUTE_BIT))
+			continue;
+		if (type.getItem(Queue::Type::Transfer) && !(properties.queueFlags & VK_QUEUE_TRANSFER_BIT))
+			continue;
+		if (queueCurrentIndices[i] >= properties.queueCount)
+			continue;
+
+		familyIndex = i;
+		break;
+	}
+
+	if (!familyIndex.has_value())
+		return nullptr;
+	helix::Ref queue = new Queue;
+
+	auto queueIndex = queueCurrentIndices[familyIndex.value()]++;
+	vkGetDeviceQueue(logicDevice, familyIndex.value(), queueIndex, &queue->queue);
+	return queue;
 }
 
 helix::Logger::Output essence::vulkan::Device::vkOutput = [](helix::MessageLevel level, std::u8string_view content)

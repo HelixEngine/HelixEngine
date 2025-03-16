@@ -6,3 +6,4 @@
 #include <HelixEngine/Core/Game.hpp>
 #include <HelixEngine/Node/Scene.hpp>
 #include <HelixEngine/Util/Logger.hpp>
+#include <HelixEngine/Util/Feature.hpp>

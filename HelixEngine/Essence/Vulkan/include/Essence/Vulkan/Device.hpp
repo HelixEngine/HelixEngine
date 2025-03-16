@@ -25,10 +25,11 @@ namespace essence::vulkan
 		~Device() override;
 		VkPhysicalDevice getVkPhysicalDevice() const;
 		VkDevice getVkDevice() const;
-		helix::Ref<Queue> makeQueue(Queue::Type type) override;
+		helix::Ref<Queue> makeQueue(helix::Feature<Queue::Type> type) override;
 	private:
 		VkPhysicalDevice physicalDevice{};
 		VkDevice logicDevice{};
+		std::vector<uint32_t> queueCurrentIndices;
 	};
 
 	struct InstanceProperty

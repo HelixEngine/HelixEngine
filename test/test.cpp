@@ -39,6 +39,8 @@ int main(int argc, char** argv)
 	Ref<essence::component::Wsi> wsi;
 	essence::Device::findDeviceComponent(wsi);
 
+	auto queue = wsi->getDevice()->makeQueue();
+
 	auto devices = essence::Device::getDevice();
 	for (const auto& device: devices)
 	{
@@ -47,8 +49,8 @@ int main(int argc, char** argv)
 	Window::Property property;
 	property.title = u8"你好，HelixEngine";
 	property.size = {800, 600};
-	// property.flag.setItem(Window::Flag::MaximumButton, false);
-	// property.flag.setItem(Window::Flag::MinimumButton, false);
+	//property.flag.setItem(Window::Flag::MaximumButton, false);
+	//property.flag.setItem(Window::Flag::MinimumButton, false);
 	Ref window = new Window(property);
 	Ref scene = new Scene;
 	scene->addNode(new FpsNode);
