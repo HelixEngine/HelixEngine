@@ -2,8 +2,9 @@
 #include <fast_io.h>
 #include <Essence/Vulkan/Device.hpp>
 #include <Essence/Vulkan/Component/Loader.hpp>
+#include <Essence/Vulkan/Queue.hpp>
 
-std::vector<helix::Ref<essence::Device>> essence::vulkan::Device::makeDevices()
+std::vector<helix::Ref<essence::Device>> essence::vulkan::Device::makeDevice()
 {
 	auto& loaders = *reinterpret_cast<std::vector<helix::Ref<component::Loader>>*>(&essence::Device::loaders);
 	auto instance = VulkanInstance::getInstance().instance;
@@ -72,12 +73,10 @@ std::vector<helix::Ref<essence::Device>> essence::vulkan::Device::makeDevices()
 		}
 		device->components = std::move(deviceProperty.deviceComponents);
 
-		//这块要交给Queue处理
 		uint32_t queueFamilyCount = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
-
 
 		std::vector<VkDeviceQueueCreateInfo> queueCIs(queueFamilyCount);
 		std::vector<std::vector<float>> priorities(queueFamilyCount);
@@ -246,6 +245,11 @@ VkPhysicalDevice essence::vulkan::Device::getVkPhysicalDevice() const
 VkDevice essence::vulkan::Device::getVkDevice() const
 {
 	return logicDevice;
+}
+
+helix::Ref<essence::Queue> essence::vulkan::Device::makeQueue(Queue::Type type)
+{
+	return nullptr; //先返回一个nullptr以后再来改
 }
 
 helix::Logger::Output essence::vulkan::Device::vkOutput = [](helix::MessageLevel level, std::u8string_view content)

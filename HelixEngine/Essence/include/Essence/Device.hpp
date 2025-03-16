@@ -1,9 +1,10 @@
 #pragma once
 #include <vector>
-#include <HelixEngine/Util/Ref.hpp>
-#include <HelixEngine/Util/Singleton.hpp>
 #include <Essence/Enum.hpp>
 #include <Essence/Component/Component.hpp>
+#include <HelixEngine/Util/Ref.hpp>
+#include <HelixEngine/Util/Singleton.hpp>
+#include <Essence/Queue.hpp>
 
 namespace essence
 {
@@ -60,5 +61,13 @@ namespace essence
 			for (const auto& device: getDevice())
 				findComponent(device->getAllComponent(), component);
 		}
+
+		//Queue
+
+		/**
+		 * @brief 创建Queue
+		 * @return Queue指针，如果当前Type可创建的Queue数量已达上限，则返回nullptr
+		 */
+		virtual helix::Ref<Queue> makeQueue(Queue::Type type = Queue::Type::Graphics) = 0;
 	};
 }

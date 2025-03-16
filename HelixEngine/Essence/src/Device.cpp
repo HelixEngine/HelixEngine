@@ -6,7 +6,7 @@ essence::Device::Instance::Instance()
 	switch (graphicsApi)
 	{
 		case GraphicsApi::Vulkan:
-			devices = vulkan::Device::makeDevices();
+			devices = vulkan::Device::makeDevice();
 			break;
 		default:
 			break;

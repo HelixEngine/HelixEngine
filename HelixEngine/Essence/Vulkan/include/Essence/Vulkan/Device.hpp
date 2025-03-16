@@ -9,7 +9,7 @@ namespace essence::vulkan
 	{
 		friend class essence::Device;
 	public:
-		static std::vector<helix::Ref<essence::Device>> makeDevices();
+		static std::vector<helix::Ref<essence::Device>> makeDevice();
 		static VkInstance getVkInstance();
 	private:
 		struct VulkanInstance : helix::Singleton<VulkanInstance>
@@ -25,6 +25,7 @@ namespace essence::vulkan
 		~Device() override;
 		VkPhysicalDevice getVkPhysicalDevice() const;
 		VkDevice getVkDevice() const;
+		helix::Ref<Queue> makeQueue(Queue::Type type) override;
 	private:
 		VkPhysicalDevice physicalDevice{};
 		VkDevice logicDevice{};
