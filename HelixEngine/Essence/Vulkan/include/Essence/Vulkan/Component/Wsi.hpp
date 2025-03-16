@@ -1,8 +1,7 @@
 #pragma once
 #include <Essence/Component/Wsi.hpp>
 #include <Essence/Vulkan/Component/Loader.hpp>
-
-#include "Essence/Vulkan/Device.hpp"
+#include <Essence/Vulkan/Device.hpp>
 
 namespace essence::vulkan::component
 {
@@ -10,6 +9,8 @@ namespace essence::vulkan::component
 	{
 	public:
 		class Loader;
+		helix::Ref<essence::component::SwapChain>
+		makeSwapChain(essence::component::SwapChain::Property property) override;
 	private:
 		std::string platformExtensionName;
 	};

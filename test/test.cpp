@@ -39,13 +39,11 @@ int main(int argc, char** argv)
 	Ref<essence::component::Wsi> wsi;
 	essence::Device::findDeviceComponent(wsi);
 
-	auto queue = wsi->getDevice()->makeQueue();
+	Ref device = wsi->getDevice();
 
-	auto devices = essence::Device::getDevice();
-	for (const auto& device: devices)
-	{
-		Logger::info(device->getName());
-	}
+	auto queue = device->makeQueue();
+
+	//Window----------------------------------
 	Window::Property property;
 	property.title = u8"你好，HelixEngine";
 	property.size = {800, 600};
@@ -58,6 +56,12 @@ int main(int argc, char** argv)
 
 	window->setFixedSize(true);
 	window->setSize({500, 600});
+	//Window----------------------------------
+
+	essence::component::SwapChain::Property swapChainProperty;
+	swapChainProperty.surface = reinterpret_cast<essence::component::Surface>(window->getQWidget()->winId());
+	swapChainProperty.framebufferCount = 2;
+	auto swapChain = wsi->makeSwapChain(swapChainProperty);
 
 	return Game::run();
 }

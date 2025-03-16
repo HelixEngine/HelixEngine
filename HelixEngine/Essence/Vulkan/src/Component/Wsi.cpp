@@ -1,5 +1,6 @@
 #include <vector>
 #include <Essence/Vulkan/Component/Wsi.hpp>
+#include <Essence/Vulkan/Component/SwapChain.hpp>
 
 void essence::vulkan::component::Wsi::Loader::load(
 		InstanceProperty& instanceProperty)
