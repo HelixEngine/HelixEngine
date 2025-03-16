@@ -37,22 +37,35 @@ std::vector<helix::Ref<essence::Device>> essence::vulkan::Device::makeDevices()
 		vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extCount,
 		                                     deviceProperty.extensions.data());
 
+		uint32_t layerCount;
+		vkEnumerateDeviceLayerProperties(physicalDevice, &layerCount, nullptr);
+		deviceProperty.layers.resize(layerCount);
+		vkEnumerateDeviceLayerProperties(physicalDevice, &layerCount, deviceProperty.layers.data());
+		device->setName(reinterpret_cast<const char8_t*>(physicalProperties.deviceName));
+		result[i] = device;
+
 #if !DEBUG
 		{
 			std::u8string allExtName;
 			for (const auto& ext: deviceProperty.extensions)
 			{
 				allExtName += '\n';
-				allExtName += '\t';
+				allExtName += u8"\t\t";
 				allExtName += reinterpret_cast<const char8_t*>(ext.extensionName);
 			}
-			helix::Logger::info(vkOutput, u8"可用的 Device Extensions： (", deviceProperty.extensions.size(), u8"个)",
-			                    allExtName);
+
+			std::u8string allLayerName;
+			for (const auto& layer: deviceProperty.layers)
+			{
+				allLayerName += '\n';
+				allLayerName += u8"\t\t";
+				allLayerName += reinterpret_cast<const char8_t*>(layer.layerName);
+			}
+			helix::Logger::info(vkOutput, u8"Device ", i, u8": ", device->getName(),
+			                    u8"\n\t可用的 Device Layers： (", deviceProperty.layers.size(), u8"个)", allLayerName,
+			                    u8"\n\t可用的 Device Extensions： (", deviceProperty.extensions.size(), u8"个)", allExtName);
 		}
 #endif
-
-		device->setName(reinterpret_cast<const char8_t*>(physicalProperties.deviceName));
-		result[i] = device;
 		for (const auto& loader: loaders)
 		{
 			loader->load(deviceProperty);
@@ -64,8 +77,47 @@ std::vector<helix::Ref<essence::Device>> essence::vulkan::Device::makeDevices()
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
 		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
-		VkDeviceCreateInfo deviceCI{};
 
+
+		std::vector<VkDeviceQueueCreateInfo> queueCIs(queueFamilyCount);
+		std::vector<std::vector<float>> priorities(queueFamilyCount);
+		for (uint32_t queueFamilyIndex = 0; queueFamilyIndex < queueFamilyCount; ++queueFamilyIndex)
+		{
+			auto& queueCI = queueCIs[queueFamilyIndex];
+			auto& queueFamily = queueFamilies[queueFamilyIndex];
+			queueCI.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCI.queueFamilyIndex = queueFamilyIndex;
+			queueCI.queueCount = queueFamily.queueCount;
+			priorities[queueFamilyIndex].resize(queueFamily.queueCount);
+			std::ranges::fill(priorities[queueFamilyIndex], 1.f);
+			queueCI.pQueuePriorities = priorities[queueFamilyIndex].data();
+		}
+
+		VkDeviceCreateInfo deviceCI{};
+		deviceCI.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		deviceCI.queueCreateInfoCount = queueFamilyCount;
+		deviceCI.pQueueCreateInfos = queueCIs.data();
+
+		deviceCI.enabledExtensionCount = static_cast<uint32_t>(deviceProperty.enabledExtensions.size());
+		deviceCI.ppEnabledExtensionNames = deviceProperty.enabledExtensions.data();
+		deviceCI.enabledLayerCount = static_cast<uint32_t>(deviceProperty.enabledLayers.size());
+		deviceCI.ppEnabledLayerNames = deviceProperty.enabledLayers.data();
+
+		VkPhysicalDeviceFeatures2 features2{};
+		if (VulkanInstance::getInstance().isSupportProperties2)
+		{
+			features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+			features2.features = deviceProperty.deviceFeatures;
+			features2.pNext = deviceProperty.deviceFeature2.features.empty()
+				                  ? nullptr
+				                  : deviceProperty.deviceFeature2.features.front();
+			deviceCI.pNext = &features2;
+		} else
+		{
+			deviceCI.pEnabledFeatures = &deviceProperty.deviceFeatures;
+		}
+
+		resultProcess(vkCreateDevice(physicalDevice, &deviceCI, nullptr, &device->logicDevice), u8"Logic Device创建失败");
 	}
 
 	essence::Device::loaders.clear();
@@ -125,11 +177,32 @@ essence::vulkan::Device::VulkanInstance::VulkanInstance()
 			allLayerName += '\t';
 			allLayerName += reinterpret_cast<const char8_t*>(layer.layerName);
 		}
-		helix::Logger::info(vkOutput, u8"可用的 Layers： (", instanceProperty.layers.size(), u8"个)",
+		helix::Logger::info(vkOutput, u8"可用的 Instance Layers： (", instanceProperty.layers.size(), u8"个)",
 		                    allLayerName);
 	}
 #endif
 
+	//VK_KHR_get_physical_device_properties2 太常用了，直接作为core内容得了
+	{
+		uint32_t vkVersion;
+		vkEnumerateInstanceVersion(&vkVersion);
+		auto it = std::ranges::find_if(instanceProperty.extensions,
+		                               [](const VkExtensionProperties& extensionProperties)
+		                               {
+			                               return extensionProperties.extensionName ==
+			                                      std::string_view("VK_KHR_get_physical_device_properties2");
+		                               });
+		if (vkVersion >= VK_MAKE_API_VERSION(0, 1, 1, 0))
+		{
+			isSupportProperties2 = true;
+		}
+
+		if (it != instanceProperty.extensions.end())
+		{
+			isSupportProperties2 = true;
+			instanceProperty.enabledExtensions.push_back("VK_KHR_get_physical_device_properties2");
+		}
+	}
 	for (const auto& loader: loaders)
 	{
 		loader->load(instanceProperty);
@@ -158,6 +231,11 @@ void essence::vulkan::Device::resultProcess(const VkResult result, const std::u8
 	{
 		helix::Logger::error(vkOutput, errorMsg);
 	}
+}
+
+essence::vulkan::Device::~Device()
+{
+	vkDestroyDevice(logicDevice, nullptr);
 }
 
 VkPhysicalDevice essence::vulkan::Device::getVkPhysicalDevice() const

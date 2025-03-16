@@ -48,6 +48,7 @@ void essence::vulkan::component::DebugUtil::setMessageOutput(bool isEnabled)
 
 void essence::vulkan::component::DebugUtil::Loader::load(InstanceProperty& instanceProperty)
 {
+	//还要再改一下，VK_EXT_DEBUG_UTILS_EXTENSION_NAME是必需的，不然就是不支持DebugUtil
 	std::vector optionalLayers =
 	{
 			"VK_LAYER_KHRONOS_validation",
@@ -84,12 +85,21 @@ void essence::vulkan::component::DebugUtil::Loader::load(InstanceProperty& insta
 	}
 
 	if (!optionalLayers.empty()) //有layer则代表debug util存在
+	{
 		instanceProperty.enabledExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		isSupportValidationLayers = true;
+	}
 	instanceProperty.enabledLayers.insert(
 			instanceProperty.enabledLayers.end(),
 			optionalLayers.begin(),
 			optionalLayers.end());
 	instanceProperty.globalComponents.push_back(new DebugUtil);
+}
+
+void essence::vulkan::component::DebugUtil::Loader::load(DeviceProperty& deviceProperty)
+{
+	if (isSupportValidationLayers)
+		deviceProperty.enabledLayers.push_back("VK_LAYER_KHRONOS_validation");
 }
 
 // ReSharper disable once CppDFAConstantFunctionResult

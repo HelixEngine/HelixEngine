@@ -16,7 +16,9 @@ namespace essence::vulkan::component
 
 	class DebugUtil::Loader final : public component::Loader
 	{
+		bool isSupportValidationLayers = false;
 	public:
 		void load(InstanceProperty& instanceProperty) override;
+		void load(DeviceProperty& deviceProperty) override;
 	};
 }
