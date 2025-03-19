@@ -3,16 +3,16 @@
 namespace helix
 {
 	template<typename ItemType>
-	class Feature
+	class BitOption
 	{
 	public:
 		using ValueType = std::underlying_type_t<ItemType>;
 	private:
 		ValueType value{};
 	public:
-		Feature() = default;
+		BitOption() = default;
 
-		explicit(false) Feature(ItemType item)
+		explicit(false) BitOption(ItemType item)
 		{
 			value = static_cast<ValueType>(item);
 		}

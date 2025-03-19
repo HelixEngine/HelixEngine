@@ -64,7 +64,7 @@ helix::Window* helix::Window::getParent() const
 	return qWidget->parent()->property("HelixEngine.Window:Parent").value<Window*>();
 }
 
-void helix::Window::setFlag(Feature<Flag> flag) const
+void helix::Window::setFlag(BitOption<Flag> flag) const
 {
 	Qt::WindowFlags flags = qWidget->windowFlags();
 	flags.setFlag(Qt::WindowMaximizeButtonHint, flag.getItem(Flag::MaximumButton));
@@ -72,9 +72,9 @@ void helix::Window::setFlag(Feature<Flag> flag) const
 	qWidget->setWindowFlags(flags);
 }
 
-helix::Feature<helix::Window::Flag> helix::Window::getFlag() const
+helix::BitOption<helix::Window::Flag> helix::Window::getFlag() const
 {
-	Feature<Flag> flag;
+	BitOption<Flag> flag;
 	flag.setItem(Flag::MaximumButton, qWidget->windowFlags().testFlag(Qt::WindowMaximizeButtonHint));
 	flag.setItem(Flag::MinimumButton, qWidget->windowFlags().testFlag(Qt::WindowMinimizeButtonHint));
 	return flag;

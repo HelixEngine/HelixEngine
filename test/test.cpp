@@ -1,7 +1,6 @@
 #include <HelixEngine/HelixEngine.hpp>
 #include <iostream>
 #include <thread>
-#include <Essence/Essence.hpp>
 
 using namespace helix;
 
@@ -28,21 +27,6 @@ int main(int argc, char** argv)
 {
 	Game::setCommandLineArguments(argc, argv);
 
-	essence::Device::setComponentLoader({
-			essence::component::Wsi::getLoader(),
-			essence::component::DebugUtil::getLoader(),
-	});
-
-	Ref<essence::component::DebugUtil> debugUtil;
-	essence::Device::findGlobalComponent(debugUtil);
-	debugUtil->setMessageOutput();
-	Ref<essence::component::Wsi> wsi;
-	essence::Device::findDeviceComponent(wsi);
-
-	Ref device = wsi->getDevice();
-
-	auto queue = device->makeQueue();
-
 	//Window----------------------------------
 	Window::Property property;
 	property.title = u8"你好，HelixEngine";
@@ -57,11 +41,6 @@ int main(int argc, char** argv)
 	window->setFixedSize(true);
 	window->setSize({500, 600});
 	//Window----------------------------------
-
-	essence::component::SwapChain::Property swapChainProperty;
-	swapChainProperty.surface = reinterpret_cast<essence::component::Surface>(window->getQWidget()->winId());
-	swapChainProperty.framebufferCount = 2;
-	auto swapChain = wsi->makeSwapChain(swapChainProperty);
 
 	return Game::run();
 }

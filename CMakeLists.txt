@@ -14,7 +14,7 @@ file(GLOB HELIX_UTIL_SOURCES HelixEngine/src/Util/*.cpp)
 add_library(${HELIX_UTIL_NAME} STATIC ${HELIX_UTIL_INCLUDE} ${HELIX_UTIL_SOURCES})
 target_include_directories(${HELIX_UTIL_NAME} PUBLIC ${HELIX_ENGINE_INCLUDE_PATH} HelixEngine/extern/fast_io/include)
 
-add_subdirectory(HelixEngine/Essence)
+#add_subdirectory(../Essence/Essence)
 
 if (NOT DEFINED HELIX_ENGINE_TEST)
     set(HELIX_ENGINE_TEST ON)
@@ -43,7 +43,9 @@ file(GLOB_RECURSE HELIX_ENGINE_SOURCES
 )
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets Essence ${HELIX_UTIL_NAME})
+target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets
+        #Essence
+        ${HELIX_UTIL_NAME})
 
 function(helix_engine_windeployqt6 target_name)
     if (WIN32)
@@ -59,6 +61,8 @@ endfunction()
 
 if (HELIX_ENGINE_TEST)
     add_executable(CommonTest test/test.cpp)
-    target_link_libraries(CommonTest PRIVATE ${PROJECT_NAME} Essence-Vulkan)
+    target_link_libraries(CommonTest PRIVATE ${PROJECT_NAME}
+            #        Essence-Vulkan
+    )
     helix_engine_windeployqt6(CommonTest)
 endif ()

@@ -5,7 +5,7 @@
 #include <HelixEngine/Node/Scene.hpp>
 #include <QWidget>
 
-#include "HelixEngine/Util/Feature.hpp"
+#include "HelixEngine/Util/BitOption.hpp"
 
 namespace helix::qt
 {
@@ -37,7 +37,7 @@ namespace helix
 			Window* parent = nullptr;
 			bool isFixed = false;
 			bool isDisplay = true;
-			Feature<Flag> flag = Flag::MinMaxButton;
+			BitOption<Flag> flag = Flag::MinMaxButton;
 		};
 
 		explicit Window(std::u8string_view title = u8"HelixEngine", int32_t width = 600,
@@ -70,8 +70,8 @@ namespace helix
 		void setParent(Window* parent) const;
 		[[nodiscard]] Window* getParent() const;
 
-		void setFlag(Feature<Flag> flag) const;
-		[[nodiscard]] Feature<Flag> getFlag() const;
+		void setFlag(BitOption<Flag> flag) const;
+		[[nodiscard]] BitOption<Flag> getFlag() const;
 
 		void setProperty(const Property& property) const;
 		[[nodiscard]] Property getProperty() const;
