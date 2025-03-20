@@ -36,6 +36,7 @@ int main(int argc, char** argv)
 	Ref window = new Window(property);
 	Ref scene = new Scene;
 	scene->addNode(new FpsNode);
+	scene->addNode(new RectNode);
 	window->enter(scene);
 
 	window->setFixedSize(true);

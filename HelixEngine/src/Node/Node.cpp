@@ -13,3 +13,12 @@ void helix::Node2D::update(const Duration deltaTime)
 		child->update(deltaTime);
 	}
 }
+
+void helix::Node2D::render()
+{
+	onRender();
+	for (const auto& child: children)
+	{
+		child->render();
+	}
+}

@@ -5,5 +5,6 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Core/Game.hpp>
 #include <HelixEngine/Node/Scene.hpp>
+#include <HelixEngine/Node/RectNode.hpp>
 #include <HelixEngine/Util/Logger.hpp>
 #include <HelixEngine/Util/BitOption.hpp>

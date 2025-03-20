@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 #include <HelixEngine/Util/Time.hpp>
 #include <QWidget>
 #include <QTimer>
@@ -16,7 +17,9 @@ namespace helix::qt
 		Q_OBJECT
 		explicit Widget(Window* hxWindow);
 		void sceneUpdate();
-		std::unique_ptr<QTimer> timer;
+		void sceneRender();
+		std::unique_ptr<QTimer> updateTimer;
+		std::unique_ptr<QTimer> renderTimer;
 		SteadyClock::TimePoint lastFrameTimePoint;
 		Window* hxWindow{};
 	};

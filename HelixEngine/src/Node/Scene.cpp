@@ -2,5 +2,10 @@
 
 void helix::Scene::updateScene(Duration deltaTime)
 {
-	update(std::move(deltaTime));
+	update(deltaTime);
+}
+
+void helix::Scene::renderScene()
+{
+	render();
 }

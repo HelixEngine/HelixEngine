@@ -18,5 +18,6 @@ namespace helix
 		}
 	private:
 		void updateScene(Duration deltaTime);
+		void renderScene();
 	};
 }
