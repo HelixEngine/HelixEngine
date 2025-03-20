@@ -9,7 +9,7 @@ namespace helix::qt
 
 namespace helix
 {
-	class Scene : public Node
+	class Scene : public Node2D
 	{
 		friend class qt::Widget;
 	protected:

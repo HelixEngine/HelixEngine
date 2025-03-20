@@ -1,11 +1,11 @@
 #include <HelixEngine/Node/Node.hpp>
 
-void helix::Node::addNode(Ref<Node> child)
+void helix::Node2D::addNode(Ref<Node2D> child)
 {
 	children.emplace_back(std::move(child));
 }
 
-void helix::Node::update(const Duration deltaTime)
+void helix::Node2D::update(const Duration deltaTime)
 {
 	onTick(deltaTime);
 	for (const auto& child: children)

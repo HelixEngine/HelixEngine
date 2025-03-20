@@ -4,7 +4,7 @@
 
 using namespace helix;
 
-class FpsNode final : public Node
+class FpsNode final : public Node2D
 {
 public:
 	void onTick(Duration deltaTime) override
