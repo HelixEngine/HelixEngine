@@ -84,10 +84,9 @@ namespace helix
 	private:
 		std::unique_ptr<QWidget> qWidget;
 		static constexpr auto qtParentPropertyName = "HelixEngine.Window:Parent";
+		static constexpr auto qtScenePropertyName = "HelixEngine.Window:Scene";
 	public:
 		//Scene
 		void enter(Ref<Scene> scene);
-	private:
-		Ref<Scene> scene;
 	};
 }

@@ -125,5 +125,5 @@ std::u8string helix::Window::getTitle() const
 
 void helix::Window::enter(Ref<Scene> scene)
 {
-	this->scene = std::move(scene);
+	qWidget->setProperty(qtScenePropertyName, QVariant::fromValue(std::move(scene)));
 }

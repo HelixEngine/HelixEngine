@@ -1,6 +1,6 @@
 #pragma once
 #include <HelixEngine/Node/Node.hpp>
-#include <HelixEngine/Core/QtWindow/Widget.hpp>
+#include <HelixEngine/Util/Logger.hpp>
 
 namespace helix::qt
 {
