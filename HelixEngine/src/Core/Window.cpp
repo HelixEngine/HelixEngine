@@ -16,8 +16,27 @@ helix::Window::Window(const std::u8string_view title, const Vector2I32 size) :
 helix::Window::Window(const Property& property)
 {
 	Game::Instance::getInstance();
-	qWidget = std::unique_ptr<QWidget>(new qt::Widget(this));
+	qWidget = std::make_unique<qt::Widget>();
+	renderer = new Renderer(qWidget->winId());
 	setProperty(property);
+	updateThread = std::jthread{[this](const std::stop_token& token)
+	{
+		auto now = SteadyClock::now();
+		auto last = now;
+		while (!token.stop_requested())
+		{
+			const auto temp = scene;
+			now = SteadyClock::now();
+			temp->updateScene(now - last);
+			temp->renderScene(); // 后续把Renderer扔进去，给它用
+			last = now;
+		}
+	}};
+}
+
+helix::Window::~Window()
+{
+	updateThread.request_stop();
 }
 
 void helix::Window::setSize(const Vector2I32 newSize) const
@@ -123,7 +142,18 @@ std::u8string helix::Window::getTitle() const
 	return std::u8string{title.begin(), title.end()};
 }
 
+helix::Ref<helix::Renderer> helix::Window::getRenderer()
+{
+	return renderer;
+}
+
 void helix::Window::enter(Ref<Scene> scene)
 {
-	qWidget->setProperty(qtScenePropertyName, QVariant::fromValue(std::move(scene)));
+	scene->updateWindowPtr(this);
+	this->scene = std::move(scene);
+}
+
+const helix::Ref<helix::Scene>& helix::Window::getScene() const
+{
+	return scene;
 }

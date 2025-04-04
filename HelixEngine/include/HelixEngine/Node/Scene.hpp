@@ -1,6 +1,5 @@
 #pragma once
 #include <HelixEngine/Node/Node.hpp>
-#include <HelixEngine/Util/Logger.hpp>
 
 namespace helix::qt
 {
@@ -11,7 +10,7 @@ namespace helix
 {
 	class Scene : public Node2D
 	{
-		friend class qt::Widget;
+		friend class Window;
 	protected:
 		virtual void onEnter()
 		{

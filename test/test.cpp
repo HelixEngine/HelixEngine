@@ -1,6 +1,7 @@
 #include <HelixEngine/HelixEngine.hpp>
 #include <iostream>
 #include <thread>
+#include <HelixEngine/Render/QRhi/RenderInstance.hpp>
 
 using namespace helix;
 
@@ -23,9 +24,13 @@ public:
 	uint64_t fps{};
 };
 
+#include <HelixEngine/Render/Vulkan/RenderInstance.hpp>
+
 int main(int argc, char** argv)
 {
 	Game::setCommandLineArguments(argc, argv);
+
+	Renderer::setRenderInstance(new q_rhi::RenderInstance);
 
 	//Window----------------------------------
 	Window::Property property;

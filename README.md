@@ -6,7 +6,7 @@
 
 ### 渲染
 
-Helix RHI with Vulkan *（暂时）*
+QRhi
 
 ### 物理
 

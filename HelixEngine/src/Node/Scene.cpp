@@ -7,5 +7,8 @@ void helix::Scene::updateScene(Duration deltaTime)
 
 void helix::Scene::renderScene()
 {
+	auto renderer = getRenderer();
+	renderer->begin(Color::Red);
 	render();
+	renderer->end();
 }

@@ -1,11 +1,12 @@
 #pragma once
-#include <HelixEngine/Util/Object.hpp>
-#include <HelixEngine/Math/Vector2.hpp>
-#include <HelixEngine/Util/Ref.hpp>
-#include <HelixEngine/Node/Scene.hpp>
 #include <QWidget>
-
-#include "HelixEngine/Util/BitOption.hpp"
+#include <thread>
+#include <HelixEngine/Math/Vector2.hpp>
+#include <HelixEngine/Node/Scene.hpp>
+#include <HelixEngine/Render/Renderer.hpp>
+#include <HelixEngine/Util/Object.hpp>
+#include <HelixEngine/Util/Ref.hpp>
+#include <HelixEngine/Util/BitOption.hpp>
 
 namespace helix::qt
 {
@@ -23,11 +24,12 @@ namespace helix
 	{
 		friend class qt::Widget;
 	public:
-		enum class Flag
+		enum class Flag : uint32_t
 		{
 			MaximumButton = 0b01,
 			MinimumButton = 0b10,
 			MinMaxButton = MaximumButton | MinimumButton,
+			Default = MinMaxButton,
 		};
 
 		struct Property
@@ -37,13 +39,14 @@ namespace helix
 			Window* parent = nullptr;
 			bool isFixed = false;
 			bool isDisplay = true;
-			BitOption<Flag> flag = Flag::MinMaxButton;
+			BitOption<Flag> flag = Flag::Default;
 		};
 
 		explicit Window(std::u8string_view title = u8"HelixEngine", int32_t width = 600,
 		                int32_t height = 600);
 		explicit Window(std::u8string_view title = u8"HelixEngine", Vector2I32 size = {600, 600});
 		explicit Window(const Property& property);
+		~Window() override;
 		/**
 		 * @brief 重新设置窗口工作区的尺寸
 		 * @note 如果当前窗口尺寸已经固定，则该方法等效于 setFixedSize
@@ -81,12 +84,18 @@ namespace helix
 
 		void setTitle(std::u8string_view newTitle) const;
 		[[nodiscard]] std::u8string getTitle() const;
+		Ref<Renderer> getRenderer();
 	private:
 		std::unique_ptr<QWidget> qWidget;
 		static constexpr auto qtParentPropertyName = "HelixEngine.Window:Parent";
-		static constexpr auto qtScenePropertyName = "HelixEngine.Window:Scene";
 	public:
 		//Scene
 		void enter(Ref<Scene> scene);
+		[[nodiscard]] const Ref<Scene>& getScene() const;
+	private:
+		Ref<Scene> scene;
+		std::jthread updateThread;
+
+		Ref<Renderer> renderer;
 	};
 }

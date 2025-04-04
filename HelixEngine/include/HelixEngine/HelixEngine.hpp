@@ -8,3 +8,4 @@
 #include <HelixEngine/Node/RectNode.hpp>
 #include <HelixEngine/Util/Logger.hpp>
 #include <HelixEngine/Util/BitOption.hpp>
+#include <HelixEngine/Render/Renderer.hpp>

@@ -7,6 +7,6 @@ namespace helix
 	{
 		Vector2F position;
 		Vector2F scale;
-		float rotation;
+		float rotation = 0.f;
 	};
 }
