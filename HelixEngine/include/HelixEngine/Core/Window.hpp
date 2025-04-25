@@ -23,6 +23,7 @@ namespace helix
 	class Window final : public Object
 	{
 		friend class qt::Widget;
+		friend class Renderer;
 	public:
 		enum class Flag : uint32_t
 		{
@@ -68,7 +69,7 @@ namespace helix
 		 * @brief 获取QWidget对象
 		 * @return Window内部的QWidget对象
 		 */
-		[[nodiscard]] QWidget* getQWidget() const;
+		[[nodiscard]] std::shared_ptr<QWidget> getQWidget() const;
 
 		void setParent(Window* parent) const;
 		[[nodiscard]] Window* getParent() const;
@@ -86,7 +87,8 @@ namespace helix
 		[[nodiscard]] std::u8string getTitle() const;
 		Ref<Renderer> getRenderer();
 	private:
-		std::unique_ptr<QWidget> qWidget;
+		Ref<Renderer> renderer;
+		std::shared_ptr<QWidget> qWidget;
 		static constexpr auto qtParentPropertyName = "HelixEngine.Window:Parent";
 	public:
 		//Scene
@@ -95,7 +97,52 @@ namespace helix
 	private:
 		Ref<Scene> scene;
 		std::jthread updateThread;
+		void closeUpdateThread();
+	};
+}
 
-		Ref<Renderer> renderer;
+#include <SDL3/SDL.h>
+
+namespace helix_sdl3
+{
+	using namespace helix;
+
+	class Window final : public Object
+	{
+	public:
+		enum class Flag : uint32_t
+		{
+			// MaximumButton = 0b01,
+			// MinimumButton = 0b10,
+			// MinMaxButton = MaximumButton | MinimumButton,
+			Default = 0,
+		};
+
+		struct Property
+		{
+			std::u8string title = u8"HelixEngine";
+			Vector2I32 size = {600, 600};
+			Window* parent = nullptr;
+			bool isResizable = true;
+			bool isDisplay = true;
+			BitOption<Flag> flag = Flag::Default;
+		};
+
+		explicit Window(std::u8string_view title = u8"HelixEngine", int32_t width = 600,
+		                int32_t height = 600);
+		explicit Window(std::u8string_view title = u8"HelixEngine", Vector2I32 size = {600, 600});
+		explicit Window(const Property& property);
+
+		void show() const;
+		void hide() const;
+		void setDisplay(bool isDisplay = true) const;
+		[[nodiscard]] bool isDisplay() const;
+
+		void setSize(Vector2I32 newSize) const;
+		[[nodiscard]] Vector2I32 getSize() const;
+	private:
+		SDL_Window* sdlWindow = nullptr;
+
+		static void sdlError(std::u8string_view content);
 	};
 }

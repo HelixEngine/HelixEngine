@@ -36,6 +36,7 @@ namespace helix::vulkan
 
 	class RenderInstance final : public helix::RenderInstance
 	{
+		//后续把static member全移到render thread func里，不然多Renderer会多个线程抢资源，要加锁
 		static void resultProcess(VkResult result, std::u8string_view errMsg);
 		static VkInstance createVkInstance();
 		static inline DelayInit<VkInstance> vkInstance{createVkInstance};
@@ -49,6 +50,7 @@ namespace helix::vulkan
 		static VkInstance getVkInstance();
 		static const std::vector<Device>& getDevices();
 		static Logger::Output vkOutput;
-		void threadFunc(RenderThreadInstance threadInstance) override;
+		std::function<void(RenderThreadInstance)> getThreadFunc() override;
+		static void threadFunc(RenderThreadInstance threadInstance);
 	};
 }

@@ -15,5 +15,9 @@ namespace helix::qt
 	class Widget final : public QWidget
 	{
 		Q_OBJECT
+	public:
+		explicit Widget(Window* window);
+		Window* window = nullptr;
+		void closeEvent(QCloseEvent* event) override;
 	};
 }

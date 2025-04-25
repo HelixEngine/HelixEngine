@@ -5,6 +5,15 @@
 
 namespace helix::q_rhi
 {
+	struct RenderLoopInstance
+	{
+		RenderThreadInstance* threadInstance;
+		std::unique_ptr<QRhi> rhi;
+		std::unique_ptr<QRhiSwapChain> swapChain;
+		std::shared_ptr<QWidget> qWidget;
+		std::unique_ptr<QVulkanInstance> vulkanInstance;
+	};
+
 	class RenderInstance final : public helix::RenderInstance
 	{
 	public:
@@ -17,18 +26,13 @@ namespace helix::q_rhi
 			OpenGLES2,
 		};
 
-		void setGraphicsApi(GraphicsApi api);
-		[[nodiscard]] GraphicsApi getGraphicsApi();
-		void threadFunc(RenderThreadInstance threadInstance) override;
-		[[nodiscard]] QRhi* getQRhi();
-		[[nodiscard]] QRhiSwapChain* getQRhiSwapChain() const;
+		std::function<void(RenderThreadInstance)> getThreadFunc() override;
 	private:
-		std::unique_ptr<QRhi> createRhi();
-		GraphicsApi graphicsApi = GraphicsApi::D3D12;
-		DelayInit<std::unique_ptr<QRhi>> rhi{[this] { return createRhi(); }};
+		static std::unique_ptr<QRhi> createRhi(RenderLoopInstance& renderLoopInstance);
+		static std::unique_ptr<QVulkanInstance> createQVulkanInstance();
 
-		void renderLoop(RenderThreadInstance threadInstance) const;
-		void offscreenRenderLoop(RenderThreadInstance threadInstance);
-		std::unique_ptr<QRhiSwapChain> swapChain;
+		static void threadFunc(RenderThreadInstance threadInstance);
+		static void renderLoop(const RenderLoopInstance& renderLoopInstance);
+		static void offscreenRenderLoop(const RenderLoopInstance& renderLoopInstance);
 	};
 }

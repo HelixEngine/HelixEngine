@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(SDL_STATIC ON)
+add_subdirectory(HelixEngine/extern/SDL3.2.10)
+
 set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
 set(HELIX_UTIL_NAME HelixUtil)
 
@@ -45,6 +48,7 @@ add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUD
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
 target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets Qt6::GuiPrivate
         #Essence
+        SDL3::SDL3-static
         ${HELIX_UTIL_NAME})
 
 set(HELIX_VULKAN_BACKEND ON)
@@ -78,4 +82,7 @@ if (HELIX_ENGINE_TEST)
             #        Essence-Vulkan
     )
     helix_engine_windeployqt6(CommonTest)
+
+    add_executable(sdl_test test/sdl_test.cpp)
+    target_link_libraries(sdl_test PRIVATE ${PROJECT_NAME})
 endif ()

@@ -1,101 +1,36 @@
+#include <vulkan/vulkan.h>
 #include <QWindow>
 #include <HelixEngine/Render/QRhi/RenderInstance.hpp>
 #include <HelixEngine/Core/Game.hpp>
 #include <HelixEngine/Util/Logger.hpp>
 #include <HelixEngine/Render/Command/BeginCommand.hpp>
 
-void helix::q_rhi::RenderInstance::setGraphicsApi(GraphicsApi api)
+std::function<void(helix::RenderThreadInstance)> helix::q_rhi::RenderInstance::getThreadFunc()
 {
-	if (rhi.isInit())
-	{
-		Logger::warning(u8"QRhi已经初始化，无法更改图形API");
-		return;
-	}
-	graphicsApi = api;
+	return threadFunc;
 }
 
-helix::q_rhi::RenderInstance::GraphicsApi helix::q_rhi::RenderInstance::getGraphicsApi()
-{
-	return graphicsApi;
-}
-
-void helix::q_rhi::RenderInstance::threadFunc(RenderThreadInstance threadInstance)
-{
-	auto& rhi = RenderInstance::rhi.get();
-
-	if (threadInstance.windowId)
-	{
-		swapChain.reset(rhi->newSwapChain());
-		auto qWin = QWindow::fromWinId(threadInstance.windowId);
-		switch (graphicsApi)
-		{
-#if QT_CONFIG(vulkan)
-			case GraphicsApi::Vulkan:
-				qWin->setSurfaceType(QSurface::VulkanSurface);
-				break;
-#if QT_CONFIG(metal)
-			case GraphicsApi::Metal:
-				qWin->setSurfaceType(QSurface::MetalSurface);
-			break;
-#endif
-#endif
-#ifdef Q_OS_WIN
-			case GraphicsApi::D3D11:
-			case GraphicsApi::D3D12:
-				qWin->setSurfaceType(QSurface::Direct3DSurface);
-				break;
-#endif
-#if QT_CONFIG(opengles2)
-			case GraphicsApi::OpenGLES2:
-				qWin->setSurfaceType(QSurface::OpenGLSurface);
-			break;
-#endif
-			default: ;
-		}
-		swapChain->setWindow(qWin);
-		swapChain->createOrResize();
-	}
-
-	auto renderer = threadInstance.renderer;
-	auto renderQueue = renderer->getRenderQueue();
-
-	// auto bufferCount = (swapChain->flags() & QRhiSwapChain::MinimalBufferCount).toInt();
-	// std::vector<Ref<RenderCommandBuffer>> backBuffers(bufferCount);
-	// for (auto& buffer: backBuffers)
-	// {
-	// 	buffer = new RenderCommandBuffer;
-	// }
-
-	renderQueue->setBackBuffer(new RenderCommandBuffer);
-
-	if (threadInstance.windowId)
-	{
-		renderLoop(threadInstance);
-	} else
-	{
-		offscreenRenderLoop(threadInstance);
-	}
-}
-
-QRhi* helix::q_rhi::RenderInstance::getQRhi()
-{
-	return rhi.get().get();
-}
-
-QRhiSwapChain* helix::q_rhi::RenderInstance::getQRhiSwapChain() const
-{
-	return swapChain.get();
-}
-
-std::unique_ptr<QRhi> helix::q_rhi::RenderInstance::createRhi()
+std::unique_ptr<QRhi> helix::q_rhi::RenderInstance::createRhi(RenderLoopInstance& renderLoopInstance)
 {
 	std::unique_ptr<QRhi> rhi;
-	switch (graphicsApi)
+	auto qWindow = renderLoopInstance.qWidget ? renderLoopInstance.qWidget->windowHandle() : nullptr;
+	switch (auto graphicsApi = GraphicsApi::Vulkan)
 	{
 #if QT_CONFIG(vulkan)
 		case GraphicsApi::Vulkan:
 		{
-			QRhiVulkanInitParams vkInitParams;
+			QRhiVulkanInitParams vkInitParams{};
+			renderLoopInstance.vulkanInstance = createQVulkanInstance();
+			auto vkInst = renderLoopInstance.vulkanInstance.get();
+			vkInitParams.inst = vkInst;
+
+			if (qWindow)
+			{
+				qWindow->setSurfaceType(QSurface::VulkanSurface);
+				qWindow->setVulkanInstance(vkInst);
+				vkInitParams.window = qWindow;
+			}
+
 			rhi.reset(QRhi::create(QRhi::Vulkan, &vkInitParams));
 			break;
 		}
@@ -111,20 +46,32 @@ std::unique_ptr<QRhi> helix::q_rhi::RenderInstance::createRhi()
 #ifdef Q_OS_WIN
 		case GraphicsApi::D3D12:
 		{
-			QRhiD3D12InitParams d3D12InitParams;
-			rhi.reset(QRhi::create(QRhi::D3D12, &d3D12InitParams));
+			if (qWindow)
+				qWindow->setSurfaceType(QSurface::Direct3DSurface);
+			QRhiD3D12InitParams d3d12InitParams;
+#ifdef HELIX_DEBUG
+			d3d12InitParams.enableDebugLayer = true;
+#endif
+			rhi.reset(QRhi::create(QRhi::D3D12, &d3d12InitParams));
 			break;
 		}
 		case GraphicsApi::D3D11:
 		{
+			if (qWindow)
+				qWindow->setSurfaceType(QSurface::Direct3DSurface);
 			QRhiD3D11InitParams d3d11InitParams;
+#ifdef HELIX_DEBUG
+			d3d11InitParams.enableDebugLayer = true;
+#endif
 			rhi.reset(QRhi::create(QRhi::D3D11, &d3d11InitParams));
 			break;
 		}
 #endif
 #if QT_CONFIG(opengles2)
+		case GraphicsApi::OpenGLES2:
 		{
-			case GraphicsApi::OpenGLES2:
+			if (qWindow)
+				qWindow->setSurfaceType(QSurface::OpenGLSurface);
 			QRhiGles2InitParams gles2InitParams;
 			rhi.reset(QRhi::create(QRhi::OpenGLES2, &gles2InitParams));
 			break;
@@ -137,10 +84,97 @@ std::unique_ptr<QRhi> helix::q_rhi::RenderInstance::createRhi()
 	return rhi;
 }
 
-void helix::q_rhi::RenderInstance::renderLoop(RenderThreadInstance threadInstance) const
+std::unique_ptr<QVulkanInstance> helix::q_rhi::RenderInstance::createQVulkanInstance()
 {
-	auto& rhi = RenderInstance::rhi.get();
+	auto vkInstance = std::make_unique<QVulkanInstance>();
+	vkInstance->setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
+#ifdef HELIX_DEBUG
+	vkInstance->setLayers({"VK_LAYER_KHRONOS_validation"});
+#endif
+	if (!vkInstance->create())
+	{
+		Logger::error(u8"创建QVulkanInstance失败");
+	}
+	return vkInstance;
+}
+
+void helix::q_rhi::RenderInstance::threadFunc(RenderThreadInstance threadInstance)
+{
+	RenderLoopInstance renderLoopInstance;
+	renderLoopInstance.threadInstance = &threadInstance;
+	renderLoopInstance.qWidget = threadInstance.qWidget;
+	auto& qWidget = renderLoopInstance.qWidget;
+	auto graphicsApi = GraphicsApi::Vulkan;
+	if (qWidget)
+	{
+		auto qWindow = qWidget->windowHandle();
+
+		switch (graphicsApi)
+		{
+#if QT_CONFIG(vulkan)
+			case GraphicsApi::Vulkan:
+				qWindow->setSurfaceType(QSurface::VulkanSurface);
+				break;
+#if QT_CONFIG(metal)
+			case GraphicsApi::Metal:
+				qWin->setSurfaceType(QSurface::MetalSurface);
+			break;
+#endif
+#endif
+#ifdef Q_OS_WIN
+			case GraphicsApi::D3D11:
+			case GraphicsApi::D3D12:
+				qWindow->setSurfaceType(QSurface::Direct3DSurface);
+				break;
+#endif
+#if QT_CONFIG(opengles2)
+			case GraphicsApi::OpenGLES2:
+				qWin->setSurfaceType(QSurface::OpenGLSurface);
+			break;
+#endif
+			default: ;
+		}
+	}
+	renderLoopInstance.rhi = createRhi(renderLoopInstance);
+	auto& rhi = renderLoopInstance.rhi;
+
+	auto& swapChain = renderLoopInstance.swapChain;
+	std::unique_ptr<QRhiRenderPassDescriptor> renderPassDescriptor;
+	if (qWidget)
+	{
+		swapChain.reset(rhi->newSwapChain());
+		swapChain->setWindow(qWidget->windowHandle());
+		renderPassDescriptor.reset(swapChain->newCompatibleRenderPassDescriptor());
+		swapChain->setRenderPassDescriptor(renderPassDescriptor.get());
+		swapChain->createOrResize();
+	}
+
 	auto renderer = threadInstance.renderer;
+	auto renderQueue = renderer->getRenderQueue();
+
+	// auto bufferCount = (swapChain->flags() & QRhiSwapChain::MinimalBufferCount).toInt();
+	// std::vector<Ref<RenderCommandBuffer>> backBuffers(bufferCount);
+	// for (auto& buffer: backBuffers)
+	// {
+	// 	buffer = new RenderCommandBuffer;
+	// }
+
+	renderQueue->setBackBuffer(new RenderCommandBuffer);
+
+	if (qWidget)
+	{
+		renderLoop(renderLoopInstance);
+	} else
+	{
+		offscreenRenderLoop(renderLoopInstance);
+	}
+}
+
+void helix::q_rhi::RenderInstance::renderLoop(const RenderLoopInstance& renderLoopInstance)
+{
+	auto& rhi = renderLoopInstance.rhi;
+	auto renderer = renderLoopInstance.threadInstance->renderer;
+	auto& swapChain = renderLoopInstance.swapChain;
 	auto renderQueue = renderer->getRenderQueue();
 	while (true)
 	{
@@ -175,10 +209,10 @@ void helix::q_rhi::RenderInstance::renderLoop(RenderThreadInstance threadInstanc
 	}
 }
 
-void helix::q_rhi::RenderInstance::offscreenRenderLoop(RenderThreadInstance threadInstance)
+void helix::q_rhi::RenderInstance::offscreenRenderLoop(const RenderLoopInstance& renderLoopInstance)
 {
-	auto& rhi = RenderInstance::rhi.get();
-	auto renderer = threadInstance.renderer;
+	auto& rhi = renderLoopInstance.rhi;
+	auto renderer = renderLoopInstance.threadInstance->renderer;
 	auto renderQueue = renderer->getRenderQueue();
 	while (true)
 	{

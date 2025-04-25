@@ -327,15 +327,15 @@ const std::vector<helix::vulkan::Device>& helix::vulkan::RenderInstance::getDevi
 	return devices.get();
 }
 
+std::function<void(helix::RenderThreadInstance)> helix::vulkan::RenderInstance::getThreadFunc()
+{
+	return threadFunc;
+}
+
 void helix::vulkan::RenderInstance::threadFunc(RenderThreadInstance threadInstance)
 {
 	auto instance = vkInstance.get();
 	auto device = pickBestDevice(Renderer::getRenderFeature());
-
-	if (threadInstance.windowId)
-	{
-
-	}
 
 	auto renderer = threadInstance.renderer;
 	auto renderQueue = renderer->getRenderQueue();

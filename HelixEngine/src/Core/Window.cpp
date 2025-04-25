@@ -2,6 +2,7 @@
 #include <HelixEngine/Core/QtWindow/Widget.hpp>
 
 #include "HelixEngine/Core/Game.hpp"
+#include "HelixEngine/Util/Logger.hpp"
 
 helix::Window::Window(const std::u8string_view title, const int32_t width, const int32_t height) :
 	Window(title, Vector2I32{width, height})
@@ -16,8 +17,7 @@ helix::Window::Window(const std::u8string_view title, const Vector2I32 size) :
 helix::Window::Window(const Property& property)
 {
 	Game::Instance::getInstance();
-	qWidget = std::make_unique<qt::Widget>();
-	renderer = new Renderer(qWidget->winId());
+	qWidget = std::make_shared<qt::Widget>(this);
 	setProperty(property);
 	updateThread = std::jthread{[this](const std::stop_token& token)
 	{
@@ -32,11 +32,13 @@ helix::Window::Window(const Property& property)
 			last = now;
 		}
 	}};
+	qWidget->show();
+	renderer = new Renderer(this);
 }
 
 helix::Window::~Window()
 {
-	updateThread.request_stop();
+	closeUpdateThread();
 }
 
 void helix::Window::setSize(const Vector2I32 newSize) const
@@ -67,14 +69,14 @@ helix::Vector2I32 helix::Window::getSize() const
 	return Vector2I32{qWidget->size().width(), qWidget->size().height()};
 }
 
-QWidget* helix::Window::getQWidget() const
+std::shared_ptr<QWidget> helix::Window::getQWidget() const
 {
-	return qWidget.get();
+	return qWidget;
 }
 
 void helix::Window::setParent(Window* parent) const
 {
-	qWidget->setParent(parent ? parent->getQWidget() : nullptr);
+	qWidget->setParent(parent ? parent->getQWidget().get() : nullptr);
 	qWidget->setProperty(qtParentPropertyName, QVariant::fromValue(parent));
 }
 
@@ -156,4 +158,88 @@ void helix::Window::enter(Ref<Scene> scene)
 const helix::Ref<helix::Scene>& helix::Window::getScene() const
 {
 	return scene;
+}
+
+void helix::Window::closeUpdateThread()
+{
+	updateThread.request_stop();
+	if (updateThread.joinable())
+		updateThread.join();
+}
+
+namespace helix_sdl3
+{
+
+	Window::Window(std::u8string_view title, int32_t width, int32_t height) :
+		Window(title, Vector2I32{width, height})
+	{
+
+	}
+
+	Window::Window(std::u8string_view title, Vector2I32 size) :
+		Window(Property{.title = title.data(), .size = size})
+	{
+
+	}
+
+	Window::Window(const Property& property)
+	{
+		sdlWindow = SDL_CreateWindow(
+				reinterpret_cast<const char*>(property.title.data()),
+				property.size.x, property.size.y,
+				(property.isResizable ? SDL_WINDOW_RESIZABLE : 0) |
+				SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+
+		if (sdlWindow == nullptr)
+		{
+			sdlError(u8"创建SDL窗口失败");
+			return;
+		}
+
+		if (property.isDisplay)
+			show();
+	}
+
+	void Window::show() const
+	{
+		if (!SDL_ShowWindow(sdlWindow))
+			sdlError(u8"显示SDL窗口失败");
+	}
+
+	void Window::hide() const
+	{
+		if (!SDL_HideWindow(sdlWindow))
+			sdlError(u8"隐藏SDL窗口失败");
+	}
+
+	void Window::setDisplay(bool isDisplay) const
+	{
+		if (isDisplay)
+			show();
+		else
+			hide();
+	}
+
+	bool Window::isDisplay() const
+	{
+		return SDL_GetWindowFlags(sdlWindow) & SDL_WINDOW_HIDDEN;
+	}
+
+	void Window::setSize(Vector2I32 newSize) const
+	{
+		if (!SDL_SetWindowSize(sdlWindow, newSize.x, newSize.y))
+			sdlError(u8"设置SDL窗口大小失败");
+	}
+
+	Vector2I32 Window::getSize() const
+	{
+		Vector2I32 size;
+		SDL_GetWindowSize(sdlWindow, &size.x, &size.y);
+		return size;
+	}
+
+	void Window::sdlError(std::u8string_view content)
+	{
+		Logger::error(content, u8": [", std::u8string(reinterpret_cast<const char8_t*>(SDL_GetError())), u8"]");
+	}
 }

@@ -9,12 +9,13 @@
 
 namespace helix
 {
+	class Window;
 	class Renderer;
 
 	struct RenderThreadInstance
 	{
 		Renderer* renderer = nullptr;
-		WId windowId{};
+		std::shared_ptr<QWidget> qWidget = nullptr;
 	};
 
 	class RenderInstance : public Object
@@ -22,8 +23,8 @@ namespace helix
 		friend class Renderer;
 	protected:
 		[[nodiscard]] static bool queryFeature(RenderFeature feature);
-		static const helix::Ref<helix::RenderCommandBuffer>& swapBackBuffer(const Ref<RenderQueue>& renderQueue);
-		virtual void threadFunc(RenderThreadInstance) = 0;
+		static const Ref<RenderCommandBuffer>& swapBackBuffer(const Ref<RenderQueue>& renderQueue);
+		virtual std::function<void(RenderThreadInstance)> getThreadFunc() = 0;
 	};
 
 	class Renderer final : public Object
@@ -36,7 +37,7 @@ namespace helix
 		static BitOption<RenderFeature> getRenderFeature();
 		static void setRenderInstance(Ref<RenderInstance> instance);
 		Renderer();
-		explicit Renderer(WId windowId);
+		explicit Renderer(Window* window);
 		~Renderer() override;
 
 		[[nodiscard]] const Ref<RenderQueue>& getRenderQueue() const;
@@ -45,8 +46,10 @@ namespace helix
 
 		void begin(Color clearColor) const;
 		void end() const;
+		void closeRenderThread();
 	private:
 		std::jthread renderThread;
 		Ref<RenderQueue> renderQueue = new RenderQueue;
+		Window* window;
 	};
 }

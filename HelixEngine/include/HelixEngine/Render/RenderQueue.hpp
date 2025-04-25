@@ -11,6 +11,7 @@ namespace helix
 	class RenderCommandBuffer final : public Object
 	{
 		friend class RenderQueue;
+		friend class Renderer;
 		std::deque<std::unique_ptr<RenderCommand>> commands;
 
 		template<typename CommandType, typename... Args>
