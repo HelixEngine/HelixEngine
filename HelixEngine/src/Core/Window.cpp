@@ -188,7 +188,7 @@ namespace helix_sdl3
 				reinterpret_cast<const char*>(property.title.data()),
 				property.size.x, property.size.y,
 				(property.isResizable ? SDL_WINDOW_RESIZABLE : 0) |
-				SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+				SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL);
 
 		if (sdlWindow == nullptr)
 		{
@@ -198,6 +198,11 @@ namespace helix_sdl3
 
 		if (property.isDisplay)
 			show();
+	}
+
+	Window::~Window()
+	{
+		SDL_DestroyWindow(sdlWindow);
 	}
 
 	void Window::show() const
@@ -238,8 +243,26 @@ namespace helix_sdl3
 		return size;
 	}
 
+	SDL_Window* Window::getSDLWindow() const
+	{
+		return sdlWindow;
+	}
+
 	void Window::sdlError(std::u8string_view content)
 	{
 		Logger::error(content, u8": [", std::u8string(reinterpret_cast<const char8_t*>(SDL_GetError())), u8"]");
+	}
+
+	Window::SDLInstance::SDLInstance()
+	{
+		if (!SDL_Init(SDL_INIT_VIDEO))
+		{
+			sdlError(u8"SDL初始化失败");
+		}
+	}
+
+	Window::SDLInstance::~SDLInstance()
+	{
+		SDL_Quit();
 	}
 }

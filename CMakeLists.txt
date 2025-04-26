@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(GLAD_DEBUG ON)
+endif ()
+add_subdirectory(HelixEngine/extern/glad)
+
 set(SDL_STATIC ON)
 add_subdirectory(HelixEngine/extern/SDL3.2.10)
 
@@ -49,6 +54,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngi
 target_link_libraries(${PROJECT_NAME} PUBLIC Qt6::Core Qt6::Widgets Qt6::GuiPrivate
         #Essence
         SDL3::SDL3-static
+        glad
         ${HELIX_UTIL_NAME})
 
 set(HELIX_VULKAN_BACKEND ON)
