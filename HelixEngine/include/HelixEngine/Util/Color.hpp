@@ -177,11 +177,6 @@ namespace helix
 			this->a = a;
 		}
 
-		explicit operator QColor() const
-		{
-			return QColor::fromRgbF(r, g, b, a);
-		}
-
 		float r{};
 		float g{};
 		float b{};

@@ -85,6 +85,11 @@ void helix::Renderer::closeRenderThread()
 
 namespace helix_render2
 {
+	Renderer::~Renderer()
+	{
+		queue->quit();
+	}
+
 	const Ref<RenderQueue>& Renderer::getRenderQueue() const
 	{
 		return queue;
@@ -98,5 +103,6 @@ namespace helix_render2
 	void Renderer::end() const
 	{
 		queue->addCommand<RenderCommand>(RenderCommand::Type::End);
+		queue->commit();
 	}
 }

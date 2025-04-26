@@ -12,5 +12,11 @@ namespace helix
 		};
 
 		Type type{};
+
+		template<typename ActualType>
+		ActualType* cast()
+		{
+			return reinterpret_cast<ActualType*>(this);
+		}
 	};
 }

@@ -65,6 +65,7 @@ namespace helix_render2
 	class Renderer : public Object
 	{
 	public:
+		~Renderer() override;
 		[[nodiscard]] const Ref<RenderQueue>& getRenderQueue() const;
 
 		//Render Command
@@ -72,8 +73,8 @@ namespace helix_render2
 		void begin(Color clearColor) const;
 		void end() const;
 	private:
-		std::jthread renderThread;
 		Ref<RenderQueue> queue = new RenderQueue;
-		Window* window = nullptr;
+	protected:
+		std::jthread renderThread;
 	};
 }

@@ -194,7 +194,8 @@ void helix::q_rhi::RenderInstance::renderLoop(const RenderLoopInstance& renderLo
 				{
 					rhi->beginFrame(swapChain.get());
 					auto clearCmd = reinterpret_cast<BeginCommand*>(cmd.get());
-					qCmdBuf->beginPass(qRt, static_cast<QColor>(clearCmd->clearColor), {});
+					qCmdBuf->beginPass(qRt, QColor::fromRgb(clearCmd->clearColor.r, clearCmd->clearColor.g,
+					                                        clearCmd->clearColor.b, clearCmd->clearColor.a), {});
 					break;
 				}
 				case RenderCommand::Type::End:

@@ -104,6 +104,11 @@ namespace helix
 
 #include <SDL3/SDL.h>
 
+namespace helix_render2::opengl
+{
+	class Renderer;
+}
+
 namespace helix_sdl3
 {
 	using namespace helix;
@@ -143,10 +148,11 @@ namespace helix_sdl3
 		void setSize(Vector2I32 newSize) const;
 		[[nodiscard]] Vector2I32 getSize() const;
 
-		SDL_Window* getSDLWindow() const;
+		[[nodiscard]] SDL_Window* getSDLWindow() const;
 	private:
 		SDL_Window* sdlWindow = nullptr;
 
+		friend class helix_render2::opengl::Renderer;
 		static void sdlError(std::u8string_view content);
 
 		struct SDLInstance : Singleton<SDLInstance>
