@@ -82,3 +82,21 @@ void helix::Renderer::closeRenderThread()
 	if (renderThread.joinable())
 		renderThread.join();
 }
+
+namespace helix_render2
+{
+	const Ref<RenderQueue>& Renderer::getRenderQueue() const
+	{
+		return queue;
+	}
+
+	void Renderer::begin(Color clearColor) const
+	{
+		queue->addCommand<BeginCommand>(RenderCommand{RenderCommand::Type::Begin}, clearColor);
+	}
+
+	void Renderer::end() const
+	{
+		queue->addCommand<RenderCommand>(RenderCommand::Type::End);
+	}
+}

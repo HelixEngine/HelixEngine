@@ -53,3 +53,27 @@ namespace helix
 		Window* window;
 	};
 }
+
+namespace helix_render2
+{
+	using namespace helix;
+	using namespace helix_cmd;
+
+	using RenderList = CommandList<RenderCommand>;
+	using RenderQueue = CommandQueue<RenderCommand>;
+
+	class Renderer : public Object
+	{
+	public:
+		[[nodiscard]] const Ref<RenderQueue>& getRenderQueue() const;
+
+		//Render Command
+
+		void begin(Color clearColor) const;
+		void end() const;
+	private:
+		std::jthread renderThread;
+		Ref<RenderQueue> queue = new RenderQueue;
+		Window* window = nullptr;
+	};
+}

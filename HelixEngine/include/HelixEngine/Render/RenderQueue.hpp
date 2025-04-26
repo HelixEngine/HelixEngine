@@ -62,3 +62,75 @@ namespace helix
 		[[nodiscard]] const Ref<RenderCommandBuffer>& getFrontBuffer() const;
 	};
 }
+
+namespace helix_cmd
+{
+	using namespace helix;
+
+	template<typename CommandType>
+	class CommandQueue;
+
+	template<typename CommandType>
+	class CommandList final : public Object
+	{
+		friend class CommandQueue<CommandType>;
+		std::deque<std::unique_ptr<CommandType>> commands;
+	public:
+		template<typename ActualType, typename... Args>
+		void addCommand(Args&&... args)
+		{
+			commands.push_back(std::make_unique<ActualType>(std::forward<Args>(args)...));
+		}
+
+		void clear()
+		{
+			commands.clear();
+		}
+
+		const std::deque<std::unique_ptr<CommandType>>& getCommands() const
+		{
+			return commands;
+		}
+	};
+
+	template<typename CommandType>
+	class CommandQueue final : public Object
+	{
+	public:
+		using ListType = CommandList<CommandType>;
+		using ListRef = Ref<ListType>;
+	private:
+		ListRef front = new CommandList<CommandType>;
+		ListRef staging = new CommandList<CommandType>;
+		ListRef back = new CommandList<CommandType>;
+
+		//同步原语
+		std::mutex mtx;
+		bool isCommited = false;
+	public:
+		template<typename ActualType, typename... Args>
+		void addCommand(Args&&... args)
+		{
+			front->template addCommand<ActualType>(std::forward<Args>(args)...);
+		}
+
+		void commit()
+		{
+			std::lock_guard lock(mtx);
+			front.swap(staging);
+			front->clear();
+			isCommited = true;
+		}
+
+		[[nodiscard]] ListRef receive()
+		{
+			std::lock_guard lock(mtx);
+			if (isCommited)
+			{
+				back.swap(staging);
+				isCommited = false;
+			}
+			return back;
+		}
+	};
+}
