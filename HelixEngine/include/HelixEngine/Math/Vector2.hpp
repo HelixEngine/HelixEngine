@@ -1,5 +1,4 @@
 #pragma once
-#include <qsize.h>
 #include <ktm/ktm.h>
 
 namespace helix
@@ -73,11 +72,6 @@ namespace helix
 		explicit operator KtmVec() const
 		{
 			return KtmVec(x, y);
-		}
-
-		explicit operator QSize() const
-		{
-			return QSize(x, y);
 		}
 	private:
 		auto& ktmVecSelf()

@@ -1,25 +1,24 @@
 #pragma once
 #include <HelixEngine/Render/Renderer.hpp>
+#include <HelixEngine/Core/Window.hpp>
 
-#include "HelixEngine/Core/Window.hpp"
-
-namespace helix_sdl3
+namespace helix
 {
 	class Window;
 }
 
-namespace helix_render2::opengl
+namespace helix::opengl
 {
 
-	class Renderer : public helix_render2::Renderer
+	class Renderer : public helix::Renderer
 	{
 		friend class Window;
 	public: //记得删
-		explicit Renderer(helix_sdl3::Window* window);
+		explicit Renderer(Window* window);
 
 		struct LoopData
 		{
-			helix_sdl3::Window* window{};
+			Window* window{};
 			Ref<RenderQueue> renderQueue;
 		};
 

@@ -9,9 +9,9 @@ namespace helix
 	struct BeginCommand;
 }
 
-namespace helix_render2::opengl
+namespace helix::opengl
 {
-	Renderer::Renderer(helix_sdl3::Window* window)
+	Renderer::Renderer(helix::Window* window)
 	{
 		LoopData loopData{};
 		loopData.window = window;

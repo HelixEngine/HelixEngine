@@ -3,9 +3,9 @@
 
 namespace helix
 {
-	class RectNode : public Node2D
-	{
-	protected:
-		void onRender() override;
-	};
+	// class RectNode : public Node2D
+	// {
+	// protected:
+	// 	void onRender() override;
+	// };
 }
