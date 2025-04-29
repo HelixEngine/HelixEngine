@@ -4,12 +4,12 @@
 #include <HelixEngine/Math/Transform.hpp>
 #include <HelixEngine/Render/Renderer.hpp>
 #include <boost/intrusive/list.hpp>
+#include <ranges>
 
 namespace helix
 {
 	class Node2D : public Object
 	{
-		friend class Collection2D;
 	protected:
 		virtual void update(Duration deltaTime) = 0;
 		virtual void render(Renderer* renderer) = 0;
@@ -18,16 +18,14 @@ namespace helix
 
 		struct IntrusiveHook : boost::intrusive::list_base_hook<>
 		{
-			explicit IntrusiveHook(Node2D* node) :
-				node(node)
-			{
-			}
-
-			Node2D* node{};
-		};
+			Ref<Node2D> node;
+		} intrusiveHook;
 
 		using IntrusiveList = boost::intrusive::list<IntrusiveHook>;
-
-		IntrusiveHook intrusiveHook{this};
+		IntrusiveList children;
+	public:
+		//等待测试
+		void addNode(const Ref<Node2D>& child);
+		void removeNode(const Ref<Node2D>& child);
 	};
 }

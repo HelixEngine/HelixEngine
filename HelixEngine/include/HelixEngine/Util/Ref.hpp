@@ -3,7 +3,6 @@
 
 namespace helix
 {
-
 	template<typename PointType>
 	class Ref
 	{
@@ -22,18 +21,20 @@ namespace helix
 		}
 
 		template<typename RhsPointType> requires BasedObject<RhsPointType, PointType>
-		Ref(const Ref<RhsPointType>& rhs) :
+		explicit(false) Ref(const Ref<RhsPointType>& rhs) :
 			object(rhs.get())
 		{
 			increase();
 		}
 
-		// ReSharper disable once CppNonExplicitConvertingConstructor
-
-		Ref(PointType* object) requires BasedObject<PointType>: // NOLINT(*-explicit-constructor)
+		explicit(false) Ref(PointType* object) :
 			object(object)
 		{
 			increase();
+		}
+
+		explicit(false) Ref(nullptr_t)
+		{
 		}
 
 		~Ref()
@@ -108,12 +109,12 @@ namespace helix
 			return this->object != object;
 		}
 
-		operator bool() const
+		explicit(false) operator bool() const
 		{
 			return object;
 		}
 
-		operator PointType*() const
+		explicit(false) operator PointType*() const
 		{
 			return object;
 		}
