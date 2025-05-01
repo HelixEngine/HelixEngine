@@ -9,23 +9,17 @@ void helix::Node2D::render(Renderer* renderer)
 {
 }
 
-void helix::Node2D::addChild(const Ref<Node2D>& child)
+void helix::Node2D::addChild(Ref<Node2D>& child)
 {
-	child->intrusiveHook.node = child;
-	children.push_back(child->intrusiveHook);
+	children.pushBack(child);
 }
 
-void helix::Node2D::removeChild(const Ref<Node2D>& child)
+void helix::Node2D::removeChild(Ref<Node2D>& child)
 {
-	child->intrusiveHook.node = nullptr;
-	children.remove_if([&child](const IntrusiveHook& hook) { return child->intrusiveHook.node == hook.node; });
+	children.remove(child);
 }
 
-helix::Node2D::ChildrenView helix::Node2D::getAllChildren() const
+helix::IntrusiveList<helix::Ref<helix::Node2D>> helix::Node2D::getAllChildren() const
 {
-	return children | std::views::transform(
-			       std::function([](const IntrusiveHook& hook)
-			       {
-				       return hook.node;
-			       }));
+	return children;
 }
