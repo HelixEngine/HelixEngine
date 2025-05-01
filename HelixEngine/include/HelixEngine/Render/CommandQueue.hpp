@@ -69,9 +69,8 @@ namespace helix
 		 * @brief 接收一个 CommandList
 		 * @return	1.如果当前有新命令，则返回一个新的CommandList\n
 		 *			2.如果当前没有新命令，则返回先前的CommandList\n
-		 *			3.如果程序要求退出，则返回std::nullopt
 		 */
-		[[nodiscard]] std::optional<ListRef> receive()
+		[[nodiscard]] ListRef receive()
 		{
 			std::lock_guard lock(mtx);
 			if (isCommited)
@@ -80,14 +79,7 @@ namespace helix
 				isCommited = false;
 			}
 
-			return back->getCommands().empty() ? std::nullopt : std::optional<ListRef>{back};
-		}
-
-		void quit()
-		{
-			std::lock_guard lock(mtx);
-			staging->clear();
-			isCommited = true;
+			return back;
 		}
 	};
 }

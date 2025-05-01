@@ -14,10 +14,12 @@ namespace helix::opengl
 	{
 		friend class Window;
 	public: //记得删
-		explicit Renderer(Window* window);
+
+		void startRun() override;
 
 		struct LoopData
 		{
+			std::stop_token token;
 			Window* window{};
 			Ref<RenderQueue> renderQueue;
 		};

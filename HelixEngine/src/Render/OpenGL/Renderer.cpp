@@ -4,19 +4,17 @@
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
 
-namespace helix
-{
-	struct BeginCommand;
-}
+#include "HelixEngine/Util/Logger.hpp"
 
 namespace helix::opengl
 {
-	Renderer::Renderer(helix::Window* window)
+	void Renderer::startRun()
 	{
-		LoopData loopData{};
-		loopData.window = window;
-		loopData.renderQueue = getRenderQueue();
-		renderThread = std::jthread{renderLoopFunc, loopData};
+		startRenderThread([=](const std::stop_token& token)
+		{
+			LoopData loopData{token, getWindow(), getRenderQueue()};
+			renderLoopFunc(loopData);
+		});
 	}
 
 	void Renderer::renderLoopFunc(const LoopData& loopData)
@@ -25,18 +23,13 @@ namespace helix::opengl
 		auto* window = loopData.window;
 		auto* sdlWindow = window->getSDLWindow();
 
-		//SDL_GL_MakeCurrent(sdlWindow, reinterpret_cast<RenderContext*>(window->context.get())->sdlGlContext);
 		SDL_GLContext context = SDL_GL_CreateContext(sdlWindow);
 		SDL_GL_MakeCurrent(sdlWindow, context);
 		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
 
-		RenderQueue::ListRef list;
-		while (true)
+		while (!loopData.token.stop_requested())
 		{
-			if (std::optional opt = queue->receive(); opt.has_value())
-				list = std::move(opt.value());
-			else
-				break;
+			RenderQueue::ListRef list = queue->receive();
 
 			for (auto& cmd: list->getCommands())
 			{

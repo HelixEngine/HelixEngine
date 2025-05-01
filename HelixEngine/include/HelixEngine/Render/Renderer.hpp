@@ -1,6 +1,6 @@
 #pragma once
+#include <functional>
 #include <thread>
-#include <HelixEngine/Enum.hpp>
 #include <HelixEngine/Render/CommandQueue.hpp>
 #include <HelixEngine/Util/BitOption.hpp>
 #include <HelixEngine/Util/Color.hpp>
@@ -13,9 +13,11 @@ namespace helix
 
 	class Renderer : public Object
 	{
+		friend class Window;
+		friend class Game;
 	public:
-		~Renderer() override;
 		[[nodiscard]] const Ref<RenderQueue>& getRenderQueue() const;
+		[[nodiscard]] Window* getWindow() const;
 
 		//Render Command
 
@@ -23,7 +25,14 @@ namespace helix
 		void end() const;
 	private:
 		Ref<RenderQueue> queue = new RenderQueue;
-	protected:
 		std::jthread renderThread;
+		Window* window = nullptr;
+	protected:
+		using RenderThreadFunc = std::function<void(const std::stop_token&)>;
+		void startRenderThread(RenderThreadFunc func);
+	private:
+		//Game run
+
+		virtual void startRun() = 0;
 	};
 }

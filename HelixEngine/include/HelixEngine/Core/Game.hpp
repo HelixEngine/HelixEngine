@@ -18,4 +18,10 @@ namespace helix
 	// 	};
 	// };
 
+	class Game final
+	{
+	public:
+		static int run();
+	};
+
 }

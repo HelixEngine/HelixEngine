@@ -4,9 +4,9 @@
 #include <HelixEngine/Util/BitOption.hpp>
 #include <HelixEngine/Util/Object.hpp>
 #include <HelixEngine/Util/Singleton.hpp>
-#include <SDL3/SDL.h>
-
 #include <HelixEngine/Node/Scene.hpp>
+#include <HelixEngine/Enum.hpp>
+#include <SDL3/SDL.h>
 
 namespace helix::opengl
 {
@@ -15,8 +15,10 @@ namespace helix::opengl
 
 namespace helix
 {
+
 	class Window final : public Object
 	{
+		friend class Game;
 		friend class opengl::Renderer;
 	public:
 		enum class Flag : uint32_t
@@ -55,6 +57,7 @@ namespace helix
 
 		[[nodiscard]] const Color& getBackgroundColor() const;
 		void setBackgroundColor(Color color);
+		static const std::vector<Window*>& getAllWindows();
 	private:
 		SDL_Window* sdlWindow = nullptr;
 		Color backgroundColor;
@@ -67,13 +70,18 @@ namespace helix
 			~SDLInstance();
 		};
 
+		static inline std::vector<Window*> allWindows;
+		static void startRun();
+
 		//渲染器
 		Ref<Renderer> renderer;
 	public:
 		[[nodiscard]] const Ref<Renderer>& getRenderer() const;
 	private:
 		Ref<SceneBase> scene;
+		std::jthread updateThread;
+		void updateThreadFunc(const std::stop_token& token) const;
 	public:
-		void enter(Ref<SceneBase> scene);
+		void enter(Ref<SceneBase> newScene);
 	};
 }

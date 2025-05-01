@@ -1,19 +1,18 @@
+#include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Render/Renderer.hpp>
 #include <HelixEngine/Render/Command/BeginCommand.hpp>
-#include <HelixEngine/Core/Window.hpp>
-
-#include "HelixEngine/Util/Logger.hpp"
+#include <HelixEngine/Util/Logger.hpp>
 
 namespace helix
 {
-	Renderer::~Renderer()
-	{
-		queue->quit();
-	}
-
 	const Ref<RenderQueue>& Renderer::getRenderQueue() const
 	{
 		return queue;
+	}
+
+	Window* Renderer::getWindow() const
+	{
+		return window;
 	}
 
 	void Renderer::begin(Color clearColor) const
@@ -25,5 +24,10 @@ namespace helix
 	{
 		queue->addCommand<RenderCommand>(RenderCommand::Type::End);
 		queue->commit();
+	}
+
+	void Renderer::startRenderThread(RenderThreadFunc func)
+	{
+		renderThread = std::jthread{std::move(func)};
 	}
 }

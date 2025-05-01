@@ -32,6 +32,8 @@ namespace helix
 			return;
 		}
 
+		allWindows.push_back(this);
+
 		if (property.isDisplay)
 			show();
 
@@ -39,17 +41,20 @@ namespace helix
 		switch (property.graphicsApi)
 		{
 			case GraphicsApi::OpenGL:
-				renderer = new opengl::Renderer{this};
+				renderer = new opengl::Renderer;
 				break;
 			default:
 				Logger::warning(u8"Window: 不支持的GraphicsApi，默认使用OpenGL");
-				renderer = new opengl::Renderer{this};
+				renderer = new opengl::Renderer;
 				break;
 		}
+
+		renderer->window = this;
 	}
 
 	Window::~Window()
 	{
+		allWindows.erase(std::ranges::find(allWindows, this));
 		SDL_DestroyWindow(sdlWindow);
 	}
 
@@ -106,6 +111,11 @@ namespace helix
 		backgroundColor = std::move(color);
 	}
 
+	const std::vector<Window*>& Window::getAllWindows()
+	{
+		return allWindows;
+	}
+
 	void Window::sdlError(std::u8string_view content)
 	{
 		Logger::error(content, u8": [", std::u8string(reinterpret_cast<const char8_t*>(SDL_GetError())), u8"]");
@@ -124,13 +134,47 @@ namespace helix
 		SDL_Quit();
 	}
 
+	void Window::startRun()
+	{
+		for (auto window: allWindows)
+		{
+			window->updateThread = std::jthread{[=](const std::stop_token& token)
+			{
+				window->updateThreadFunc(token);
+			}};
+			window->renderer->startRun();
+		}
+	}
+
 	const Ref<Renderer>& Window::getRenderer() const
 	{
 		return renderer;
 	}
 
-	void Window::enter(Ref<SceneBase> scene)
+	void Window::updateThreadFunc(const std::stop_token& token) const
 	{
-		this->scene = std::move(scene);
+		SteadyClock::TimePoint lastUpdateTime = SteadyClock::now();
+		while (!token.stop_requested())
+		{
+			auto curr = scene;
+			if (!curr)
+				continue;
+
+			auto now = SteadyClock::now();
+			curr->update(now - lastUpdateTime);
+			lastUpdateTime = now;
+
+			getRenderer()->begin(getBackgroundColor());
+			curr->render(getRenderer());
+			getRenderer()->end();
+		}
+	}
+
+	void Window::enter(Ref<SceneBase> newScene)
+	{
+		if (scene)
+			scene->window = nullptr;
+		newScene->window = this;
+		scene = std::move(newScene);
 	}
 }

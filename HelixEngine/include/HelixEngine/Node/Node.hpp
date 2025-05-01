@@ -7,6 +7,12 @@
 
 namespace helix
 {
+	// class NodeBase : public Object
+	// {
+	// 	virtual void update(Duration deltaTime) = 0;
+	// 	virtual void render(Renderer* renderer) = 0;
+	// };
+
 	class Node2D : public Object, protected IntrusiveNode<Ref<Node2D>>
 	{
 		friend class IntrusiveList<Ref<Node2D>>;
