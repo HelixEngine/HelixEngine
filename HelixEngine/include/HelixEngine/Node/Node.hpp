@@ -17,9 +17,14 @@ namespace helix
 		Transform2D transform;
 
 		IntrusiveList<Ref<Node2D>> children;
+		Node2D* parent = nullptr;
 	public:
 		void addChild(Ref<Node2D>& child);
-		void removeChild(Ref<Node2D>& child);
-		[[nodiscard]] IntrusiveList<Ref<Node2D>> getAllChildren() const;
+		void removeChildImmediate(Ref<Node2D>& child);
+		Ref<Node2D> findChild(std::u8string_view name);
+		[[nodiscard]] const IntrusiveList<Ref<Node2D>>& getAllChildren() const;
+
+		[[nodiscard]] Node2D* getParent() const;
+		[[nodiscard]] const Transform2D& getTransform() const;
 	};
 }

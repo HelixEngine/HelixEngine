@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdint>
 
 namespace helix
 {
@@ -10,10 +9,9 @@ namespace helix
 		Error,
 	};
 
-	enum class RenderFeature : uint32_t
+	enum class GraphicsApi
 	{
-		DebugUtil = 0b1,
-		SwapChain = 0b10,
-		Default = DebugUtil | SwapChain,
+		OpenGL,
+		Default = OpenGL,
 	};
 }

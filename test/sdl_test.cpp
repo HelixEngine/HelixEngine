@@ -6,7 +6,7 @@ using namespace helix;
 int main()
 {
 	Ref window = new Window{u8"Hello, HelixEngine", {800, 600}};
-	Ref renderer = new opengl::Renderer{window.get()};
+	Ref renderer = window->getRenderer();
 
 	Ref node = new Node2D;
 	Ref child1 = new Node2D;
@@ -16,12 +16,12 @@ int main()
 	node->addChild(child1);
 	node->addChild(child2);
 
-	node->removeChild(child1);
-
 	for (const auto& child: node->getAllChildren())
 	{
 		Logger::info(u8"child name:", child->getName());
 	}
+
+	auto n1 = node->findChild(u8"child2");
 
 	//写一下SDL的main loop
 	SDL_Event event;

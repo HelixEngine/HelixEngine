@@ -1,6 +1,8 @@
 #include <HelixEngine/Node/Node.hpp>
 #include <HelixEngine/Core/Window.hpp>
 
+#include "HelixEngine/Util/Logger.hpp"
+
 void helix::Node2D::update(Duration deltaTime)
 {
 }
@@ -11,15 +13,48 @@ void helix::Node2D::render(Renderer* renderer)
 
 void helix::Node2D::addChild(Ref<Node2D>& child)
 {
+	if (child->parent)
+	{
+		Logger::warning(u8"Node2D::addChild: "
+		                "子节点(", child->getName(), u8")"
+		                "已有父节点(", child->getParent()->getName(), u8")");
+		return;
+	}
 	children.pushBack(child);
+	child->parent = this;
 }
 
-void helix::Node2D::removeChild(Ref<Node2D>& child)
+void helix::Node2D::removeChildImmediate(Ref<Node2D>& child)
 {
+	child->parent = nullptr;
 	children.remove(child);
 }
 
-helix::IntrusiveList<helix::Ref<helix::Node2D>> helix::Node2D::getAllChildren() const
+helix::Ref<helix::Node2D> helix::Node2D::findChild(std::u8string_view name)
+{
+	auto it = std::ranges::find_if(children, [name](const auto& child)
+	{
+		return child->getName() == name;
+	});
+	if (it != children.end())
+	{
+		return *it;
+	}
+
+	return nullptr;
+}
+
+const helix::IntrusiveList<helix::Ref<helix::Node2D>>& helix::Node2D::getAllChildren() const
 {
 	return children;
+}
+
+helix::Node2D* helix::Node2D::getParent() const
+{
+	return parent;
+}
+
+const helix::Transform2D& helix::Node2D::getTransform() const
+{
+	return transform;
 }

@@ -1,6 +1,7 @@
-#include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Core/Game.hpp>
+#include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Util/Logger.hpp>
+#include <HelixEngine/Render/OpenGL/Renderer.hpp>
 
 namespace helix
 {
@@ -22,7 +23,8 @@ namespace helix
 				reinterpret_cast<const char*>(property.title.data()),
 				property.size.x, property.size.y,
 				(property.isResizable ? SDL_WINDOW_RESIZABLE : 0) |
-				SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_OPENGL);
+				SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY |
+				(property.graphicsApi == GraphicsApi::OpenGL ? SDL_WINDOW_OPENGL : 0));
 
 		if (sdlWindow == nullptr)
 		{
@@ -32,6 +34,18 @@ namespace helix
 
 		if (property.isDisplay)
 			show();
+
+		//设置渲染器
+		switch (property.graphicsApi)
+		{
+			case GraphicsApi::OpenGL:
+				renderer = new opengl::Renderer{this};
+				break;
+			default:
+				Logger::warning(u8"Window: 不支持的GraphicsApi，默认使用OpenGL");
+				renderer = new opengl::Renderer{this};
+				break;
+		}
 	}
 
 	Window::~Window()
@@ -82,6 +96,16 @@ namespace helix
 		return sdlWindow;
 	}
 
+	const Color& Window::getBackgroundColor() const
+	{
+		return backgroundColor;
+	}
+
+	void Window::setBackgroundColor(Color color)
+	{
+		backgroundColor = std::move(color);
+	}
+
 	void Window::sdlError(std::u8string_view content)
 	{
 		Logger::error(content, u8": [", std::u8string(reinterpret_cast<const char8_t*>(SDL_GetError())), u8"]");
@@ -98,5 +122,15 @@ namespace helix
 	Window::SDLInstance::~SDLInstance()
 	{
 		SDL_Quit();
+	}
+
+	const Ref<Renderer>& Window::getRenderer() const
+	{
+		return renderer;
+	}
+
+	void Window::enter(Ref<SceneBase> scene)
+	{
+		this->scene = std::move(scene);
 	}
 }
