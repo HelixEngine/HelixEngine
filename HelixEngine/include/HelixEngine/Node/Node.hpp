@@ -7,18 +7,26 @@
 
 namespace helix
 {
-	// class NodeBase : public Object
-	// {
-	// 	virtual void update(Duration deltaTime) = 0;
-	// 	virtual void render(Renderer* renderer) = 0;
-	// };
+	class NodeBase : public Object
+	{
+		friend class Window;
+		friend class Scene2D;
+	protected:
+		virtual void update(Duration deltaTime) = 0;
+		virtual void render(Renderer* renderer) = 0;
+	private:
+		//For Scene
+		virtual void setWindow(Window* window)
+		{
+		}
+	};
 
-	class Node2D : public Object, protected IntrusiveNode<Ref<Node2D>>
+	class Node2D : public NodeBase, protected IntrusiveNode<Ref<Node2D>>
 	{
 		friend class IntrusiveList<Ref<Node2D>>;
 	protected:
-		virtual void update(Duration deltaTime);
-		virtual void render(Renderer* renderer);
+		void update(Duration deltaTime) override;
+		void render(Renderer* renderer) override;
 	private:
 		Transform2D transform;
 

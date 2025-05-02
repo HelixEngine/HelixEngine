@@ -78,10 +78,12 @@ namespace helix
 	public:
 		[[nodiscard]] const Ref<Renderer>& getRenderer() const;
 	private:
-		Ref<SceneBase> scene;
+		Ref<NodeBase> scene;
 		std::jthread updateThread;
 		void updateThreadFunc(const std::stop_token& token) const;
 	public:
-		void enter(Ref<SceneBase> newScene);
+		void enter(const Ref<Scene2D>& newScene);
+	private:
+		void enterAsNodeBase(const Ref<NodeBase>& newScene);
 	};
 }

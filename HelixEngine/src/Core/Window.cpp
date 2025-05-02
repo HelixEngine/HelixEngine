@@ -170,11 +170,16 @@ namespace helix
 		}
 	}
 
-	void Window::enter(Ref<SceneBase> newScene)
+	void Window::enter(const Ref<Scene2D>& newScene)
+	{
+		enterAsNodeBase(newScene);
+	}
+
+	void Window::enterAsNodeBase(const Ref<NodeBase>& newScene)
 	{
 		if (scene)
-			scene->window = nullptr;
-		newScene->window = this;
-		scene = std::move(newScene);
+			scene->setWindow(nullptr);
+		newScene->setWindow(this);
+		scene = newScene;
 	}
 }
