@@ -5,13 +5,31 @@ namespace helix
 {
 	struct RenderCommand
 	{
-		enum class Type : uint32_t
+		enum class Type : int32_t
 		{
+			Unknown = -1,
 			Begin,
 			End,
 		};
 
-		Type type{};
+		Type type = Type::Unknown;
+
+		template<typename ActualType>
+		ActualType* cast()
+		{
+			return reinterpret_cast<ActualType*>(this);
+		}
+	};
+
+	struct ResourceCommand
+	{
+		enum class Type : int32_t
+		{
+			Unknown = -1,
+			CreateVertexBuffer,
+		};
+
+		Type type = Type::Unknown;
 
 		template<typename ActualType>
 		ActualType* cast()

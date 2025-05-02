@@ -9,11 +9,17 @@ namespace helix
 
 namespace helix::opengl
 {
-
-	class Renderer : public helix::Renderer
+	class Renderer final : public helix::Renderer
 	{
 		friend class Window;
-	public: //记得删
+
+		//cmd dispatch//
+
+		[[nodiscard]] Ref<VertexBuffer> createVertexBuffer(
+				VertexBuffer::Usage usage,
+				Ref<MemoryBlock> vertexData) const override;
+
+		//render thread//
 
 		void startRun() override;
 
@@ -22,11 +28,12 @@ namespace helix::opengl
 
 		//cmd process//
 
-		RenderCommand* cmd;
-		SDL_GLContext context;
+		RenderCommand* cmd{};
+		SDL_GLContext context{};
 		void initRender();
 		void cmdProc(const RenderQueue::ListRef& list);
 		void beginProc() const;
 		void endProc() const;
+		void createVertexBufferProc() const;
 	};
 }

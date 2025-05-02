@@ -1,12 +1,28 @@
-#include <HelixEngine/Render/Command/BeginCommand.hpp>
-#include <HelixEngine/Render/OpenGL/Renderer.hpp>
 #include <HelixEngine/Core/Window.hpp>
-#include <glad/glad.h>
-#include <SDL3/SDL.h>
+#include <HelixEngine/Render/Command/BeginCommand.hpp>
+#include <HelixEngine/Render/Command/CreateVertexBufferCommand.hpp>
+#include <HelixEngine/Render/OpenGL/Renderer.hpp>
+#include <HelixEngine/Render/OpenGL/Resource.hpp>
 #include <HelixEngine/Util/Logger.hpp>
+#include <SDL3/SDL.h>
+#include <glad/glad.h>
 
 namespace helix::opengl
 {
+	Ref<helix::VertexBuffer> Renderer::createVertexBuffer(VertexBuffer::Usage usage,
+	                                                      Ref<MemoryBlock> vertexData) const
+	{
+		Ref vb = new VertexBuffer;
+		vb->setUsage(usage);
+
+		CreateVertexBufferCommand cmd;
+		cmd.type = RenderCommand::Type::CreateVertexBuffer;
+		cmd.vertexBuffer = vb;
+		cmd.vertexData = std::move(vertexData);
+		getRenderQueue()->addCommand<CreateVertexBufferCommand>(cmd);
+		return vb;
+	}
+
 	void Renderer::startRun()
 	{
 		startRenderThread([=](const std::stop_token& token)
@@ -18,10 +34,9 @@ namespace helix::opengl
 
 	void Renderer::renderLoopFunc()
 	{
-		auto& queue = getRenderQueue();
-
 		initRender();
 
+		auto& queue = getRenderQueue();
 		while (!token.stop_requested())
 			cmdProc(queue->receive());
 	}
@@ -48,7 +63,11 @@ namespace helix::opengl
 				case RenderCommand::Type::End:
 					endProc();
 					break;
+				case RenderCommand::Type::CreateVertexBuffer:
+					createVertexBufferProc();
+					break;
 				default:
+					Logger::warning(u8"OpenGL Renderer: 未知的RenderCommand");
 					break;
 			}
 		}
@@ -67,5 +86,19 @@ namespace helix::opengl
 	void Renderer::endProc() const
 	{
 		SDL_GL_SwapWindow(getWindow()->getSDLWindow());
+	}
+
+	void Renderer::createVertexBufferProc() const
+	{
+		auto cvbCmd = cmd->cast<CreateVertexBufferCommand>();
+		auto vb = reinterpret_cast<VertexBuffer*>(cvbCmd->vertexBuffer);
+		glGenBuffers(1, &vb->vertexBufferGL);
+		if (!cvbCmd->vertexData)
+			return;
+		glBindBuffer(GL_ARRAY_BUFFER, vb->getGLVertexBuffer());
+		glBufferData(GL_ARRAY_BUFFER,
+		             static_cast<GLsizeiptr>(cvbCmd->vertexData->getSize()),
+		             cvbCmd->vertexData->getPointer(),
+		             vb->getGLUsage());
 	}
 }
