@@ -17,13 +17,16 @@ namespace helix::opengl
 
 		void startRun() override;
 
-		struct LoopData
-		{
-			std::stop_token token;
-			Window* window{};
-			Ref<RenderQueue> renderQueue;
-		};
+		void renderLoopFunc();
+		std::stop_token token;
 
-		static void renderLoopFunc(const LoopData& loopData);
+		//cmd process//
+
+		RenderCommand* cmd;
+		SDL_GLContext context;
+		void initRender();
+		void cmdProc(const RenderQueue::ListRef& list);
+		void beginProc() const;
+		void endProc() const;
 	};
 }

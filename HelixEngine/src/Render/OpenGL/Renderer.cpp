@@ -3,8 +3,7 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
-
-#include "HelixEngine/Util/Logger.hpp"
+#include <HelixEngine/Util/Logger.hpp>
 
 namespace helix::opengl
 {
@@ -12,46 +11,61 @@ namespace helix::opengl
 	{
 		startRenderThread([=](const std::stop_token& token)
 		{
-			LoopData loopData{token, getWindow(), getRenderQueue()};
-			renderLoopFunc(loopData);
+			this->token = token;
+			renderLoopFunc();
 		});
 	}
 
-	void Renderer::renderLoopFunc(const LoopData& loopData)
+	void Renderer::renderLoopFunc()
 	{
-		auto& queue = loopData.renderQueue;
-		auto* window = loopData.window;
-		auto* sdlWindow = window->getSDLWindow();
+		auto& queue = getRenderQueue();
 
-		SDL_GLContext context = SDL_GL_CreateContext(sdlWindow);
+		initRender();
+
+		while (!token.stop_requested())
+			cmdProc(queue->receive());
+	}
+
+	void Renderer::initRender()
+	{
+		auto* sdlWindow = getWindow()->getSDLWindow();
+
+		context = SDL_GL_CreateContext(sdlWindow);
 		SDL_GL_MakeCurrent(sdlWindow, context);
 		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
+	}
 
-		while (!loopData.token.stop_requested())
+	void Renderer::cmdProc(const RenderQueue::ListRef& list)
+	{
+		for (auto& cmd: list->getCommands())
 		{
-			RenderQueue::ListRef list = queue->receive();
-
-			for (auto& cmd: list->getCommands())
+			this->cmd = cmd.get();
+			switch (cmd->type)
 			{
-				switch (cmd->type)
-				{
-					case RenderCommand::Type::Begin:
-					{
-						auto beginCmd = cmd->cast<BeginCommand>();
-						glClearColor(beginCmd->clearColor.r,
-						             beginCmd->clearColor.g,
-						             beginCmd->clearColor.b,
-						             beginCmd->clearColor.a);
-						glClear(GL_COLOR_BUFFER_BIT);
-						break;
-					}
-					case RenderCommand::Type::End:
-						SDL_GL_SwapWindow(sdlWindow);
-						break;
-					default:
-						break;
-				}
+				case RenderCommand::Type::Begin:
+					beginProc();
+					break;
+				case RenderCommand::Type::End:
+					endProc();
+					break;
+				default:
+					break;
 			}
 		}
+	}
+
+	void Renderer::beginProc() const
+	{
+		auto beginCmd = cmd->cast<BeginCommand>();
+		glClearColor(beginCmd->clearColor.r,
+		             beginCmd->clearColor.g,
+		             beginCmd->clearColor.b,
+		             beginCmd->clearColor.a);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
+	void Renderer::endProc() const
+	{
+		SDL_GL_SwapWindow(getWindow()->getSDLWindow());
 	}
 }
