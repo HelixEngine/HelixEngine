@@ -48,14 +48,4 @@ namespace helix
 		resourcePipeline->addCommand<CreateVertexBufferCommand>(cmd);
 		return vb;
 	}
-
-	void Renderer::startRenderThread(CommandProcessThreadFunc func)
-	{
-		renderThread = std::jthread{std::move(func)};
-	}
-
-	void Renderer::startResourceThread(CommandProcessThreadFunc func)
-	{
-		resourceThread = std::jthread{std::move(func)};
-	}
 }

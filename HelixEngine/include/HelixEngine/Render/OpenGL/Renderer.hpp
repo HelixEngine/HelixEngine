@@ -13,6 +13,11 @@ namespace helix::opengl
 	{
 		friend class Window;
 
+		std::jthread renderThread;
+		static inline std::jthread resourceThread;
+		static inline bool isResourceThreadRunning = false;
+		static inline bool isGladInitialized = false;
+
 		//resource method//
 
 		[[nodiscard]] Ref<VertexBuffer> createNativeVertexBuffer(
@@ -34,7 +39,9 @@ namespace helix::opengl
 		ResourceCommand* resourceCmd{};
 		SDL_GLContext renderContext{};
 		SDL_GLContext resourceContext{};
-		void initGlad(SDL_GLContext* outContext) const;
+		[[nodiscard]] SDL_GLContext createSDLContext() const;
+		void makeCurrentContext(SDL_GLContext context) const;
+		[[nodiscard]] SDL_GLContext createCurrentSDLContext() const;
 
 		void renderProc(const RenderQueue::ListRef& list);
 		void beginProc() const;

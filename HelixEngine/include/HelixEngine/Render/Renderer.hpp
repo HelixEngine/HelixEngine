@@ -37,13 +37,9 @@ namespace helix
 	private:
 		Ref<RenderQueue> renderQueue = new RenderQueue;
 		Ref<ResourcePipeline> resourcePipeline = new ResourcePipeline;
-		std::jthread renderThread;
-		std::jthread resourceThread;
 		Window* window = nullptr;
 	protected:
 		using CommandProcessThreadFunc = std::function<void(const std::stop_token&)>;
-		void startRenderThread(CommandProcessThreadFunc func);
-		void startResourceThread(CommandProcessThreadFunc func);
 		[[nodiscard]] virtual Ref<VertexBuffer> createNativeVertexBuffer(
 				VertexBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const = 0;

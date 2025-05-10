@@ -19,43 +19,64 @@ namespace helix::opengl
 
 	void Renderer::startRun()
 	{
-		startRenderThread([=](const std::stop_token& token)
+		renderContext = createCurrentSDLContext();
+		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
+		makeCurrentContext(nullptr);
+		renderThread = std::jthread([=](const std::stop_token& token)
 		{
 			this->renderToken = token;
 			renderLoopFunc();
 		});
-		startResourceThread([=](const std::stop_token& token)
+		if (isResourceThreadRunning)
+			return;
+		resourceThread = std::jthread([=](const std::stop_token& token)
 		{
 			this->resourceToken = token;
 			resourceLoopFunc();
 		});
+		isResourceThreadRunning = true;
 	}
 
 	void Renderer::renderLoopFunc()
 	{
-		initGlad(&renderContext);
+		makeCurrentContext(renderContext);
+		isGladInitialized = true;
 
 		auto& queue = getRenderQueue();
 		while (!renderToken.stop_requested())
 			renderProc(queue->receive());
+		puts("render thread quit");
 	}
 
 	void Renderer::resourceLoopFunc()
 	{
-		initGlad(&resourceContext);
+		resourceContext = createCurrentSDLContext();
 
 		auto& queue = getResourcePipeline();
 		while (!resourceToken.stop_requested())
 			resourceProc(queue->receive());
+		puts("resource thread quit");
 	}
 
-	void Renderer::initGlad(SDL_GLContext* outContext) const
+	SDL_GLContext Renderer::createSDLContext() const
 	{
-		auto* sdlWindow = getWindow()->getSDLWindow();
+		auto ctx = SDL_GL_CreateContext(getWindow()->getSDLWindow());
+		if (ctx == nullptr)
+			Window::sdlError(u8"OpenGL Renderer: 创建OpenGL上下文失败");
+		return ctx;
+	}
 
-		*outContext = SDL_GL_CreateContext(sdlWindow);
-		SDL_GL_MakeCurrent(sdlWindow, *outContext);
-		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
+	void Renderer::makeCurrentContext(SDL_GLContext context) const
+	{
+		if (!SDL_GL_MakeCurrent(getWindow()->getSDLWindow(), context))
+			Window::sdlError(u8"OpenGL Renderer: 设置OpenGL上下文失败");
+	}
+
+	SDL_GLContext Renderer::createCurrentSDLContext() const
+	{
+		auto context = createSDLContext();
+		makeCurrentContext(context);
+		return context;
 	}
 
 	void Renderer::renderProc(const RenderQueue::ListRef& list)
@@ -95,6 +116,11 @@ namespace helix::opengl
 
 	void Renderer::resourceProc(const ResourcePipeline::ListRef& list)
 	{
+		if (list->getCommands().empty())
+		{
+			puts("resource quit sign");
+			fflush(stdout);
+		}
 		for (auto& cmd: list->getCommands())
 		{
 			this->resourceCmd = cmd.get();
