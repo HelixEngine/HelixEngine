@@ -13,9 +13,9 @@ namespace helix::opengl
 	{
 		friend class Window;
 
-		//cmd dispatch//
+		//resource method//
 
-		[[nodiscard]] Ref<VertexBuffer> createVertexBuffer(
+		[[nodiscard]] Ref<VertexBuffer> createNativeVertexBuffer(
 				VertexBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const override;
 
@@ -24,16 +24,23 @@ namespace helix::opengl
 		void startRun() override;
 
 		void renderLoopFunc();
-		std::stop_token token;
+		std::stop_token renderToken;
+		void resourceLoopFunc();
+		std::stop_token resourceToken;
 
 		//cmd process//
 
-		RenderCommand* cmd{};
-		SDL_GLContext context{};
-		void initRender();
-		void cmdProc(const RenderQueue::ListRef& list);
+		RenderCommand* renderCmd{};
+		ResourceCommand* resourceCmd{};
+		SDL_GLContext renderContext{};
+		SDL_GLContext resourceContext{};
+		void initGlad(SDL_GLContext* outContext) const;
+
+		void renderProc(const RenderQueue::ListRef& list);
 		void beginProc() const;
 		void endProc() const;
+
+		void resourceProc(const ResourcePipeline::ListRef& list);
 		void createVertexBufferProc() const;
 	};
 }

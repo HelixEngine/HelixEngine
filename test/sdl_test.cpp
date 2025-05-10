@@ -1,3 +1,4 @@
+#include <iostream>
 #include <HelixEngine/HelixEngine.hpp>
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
 

@@ -9,17 +9,11 @@
 
 namespace helix::opengl
 {
-	Ref<helix::VertexBuffer> Renderer::createVertexBuffer(VertexBuffer::Usage usage,
-	                                                      Ref<MemoryBlock> vertexData) const
+	Ref<helix::VertexBuffer> Renderer::createNativeVertexBuffer(VertexBuffer::Usage usage,
+	                                                            Ref<MemoryBlock> vertexData) const
 	{
 		Ref vb = new VertexBuffer;
 		vb->setUsage(usage);
-
-		CreateVertexBufferCommand cmd;
-		cmd.type = RenderCommand::Type::CreateVertexBuffer;
-		cmd.vertexBuffer = vb;
-		cmd.vertexData = std::move(vertexData);
-		getRenderQueue()->addCommand<CreateVertexBufferCommand>(cmd);
 		return vb;
 	}
 
@@ -27,34 +21,48 @@ namespace helix::opengl
 	{
 		startRenderThread([=](const std::stop_token& token)
 		{
-			this->token = token;
+			this->renderToken = token;
 			renderLoopFunc();
+		});
+		startResourceThread([=](const std::stop_token& token)
+		{
+			this->resourceToken = token;
+			resourceLoopFunc();
 		});
 	}
 
 	void Renderer::renderLoopFunc()
 	{
-		initRender();
+		initGlad(&renderContext);
 
 		auto& queue = getRenderQueue();
-		while (!token.stop_requested())
-			cmdProc(queue->receive());
+		while (!renderToken.stop_requested())
+			renderProc(queue->receive());
 	}
 
-	void Renderer::initRender()
+	void Renderer::resourceLoopFunc()
+	{
+		initGlad(&resourceContext);
+
+		auto& queue = getResourcePipeline();
+		while (!resourceToken.stop_requested())
+			resourceProc(queue->receive());
+	}
+
+	void Renderer::initGlad(SDL_GLContext* outContext) const
 	{
 		auto* sdlWindow = getWindow()->getSDLWindow();
 
-		context = SDL_GL_CreateContext(sdlWindow);
-		SDL_GL_MakeCurrent(sdlWindow, context);
+		*outContext = SDL_GL_CreateContext(sdlWindow);
+		SDL_GL_MakeCurrent(sdlWindow, *outContext);
 		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
 	}
 
-	void Renderer::cmdProc(const RenderQueue::ListRef& list)
+	void Renderer::renderProc(const RenderQueue::ListRef& list)
 	{
 		for (auto& cmd: list->getCommands())
 		{
-			this->cmd = cmd.get();
+			this->renderCmd = cmd.get();
 			switch (cmd->type)
 			{
 				case RenderCommand::Type::Begin:
@@ -62,9 +70,6 @@ namespace helix::opengl
 					break;
 				case RenderCommand::Type::End:
 					endProc();
-					break;
-				case RenderCommand::Type::CreateVertexBuffer:
-					createVertexBufferProc();
 					break;
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的RenderCommand");
@@ -75,7 +80,7 @@ namespace helix::opengl
 
 	void Renderer::beginProc() const
 	{
-		auto beginCmd = cmd->cast<BeginCommand>();
+		auto beginCmd = renderCmd->cast<BeginCommand>();
 		glClearColor(beginCmd->clearColor.r,
 		             beginCmd->clearColor.g,
 		             beginCmd->clearColor.b,
@@ -88,9 +93,27 @@ namespace helix::opengl
 		SDL_GL_SwapWindow(getWindow()->getSDLWindow());
 	}
 
+	void Renderer::resourceProc(const ResourcePipeline::ListRef& list)
+	{
+		for (auto& cmd: list->getCommands())
+		{
+			this->resourceCmd = cmd.get();
+			switch (cmd->type)
+			{
+				case ResourceCommand::Type::CreateVertexBuffer:
+					createVertexBufferProc();
+					break;
+				case ResourceCommand::Type::Unknown:
+				default:
+					Logger::warning(u8"OpenGL Renderer: 未知的ResourceCommand");
+					break;
+			}
+		}
+	}
+
 	void Renderer::createVertexBufferProc() const
 	{
-		auto cvbCmd = cmd->cast<CreateVertexBufferCommand>();
+		auto cvbCmd = resourceCmd->cast<CreateVertexBufferCommand>();
 		auto vb = reinterpret_cast<VertexBuffer*>(cvbCmd->vertexBuffer);
 		glGenBuffers(1, &vb->vertexBufferGL);
 		if (!cvbCmd->vertexData)

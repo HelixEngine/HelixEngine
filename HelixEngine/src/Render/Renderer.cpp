@@ -2,16 +2,23 @@
 #include <HelixEngine/Render/Renderer.hpp>
 #include <HelixEngine/Render/Command/BeginCommand.hpp>
 
+#include "HelixEngine/Render/Command/CreateVertexBufferCommand.hpp"
+
 namespace helix
 {
+	Renderer::~Renderer()
+	{
+		resourcePipeline->quit();
+	}
+
 	const Ref<RenderQueue>& Renderer::getRenderQueue() const
 	{
 		return renderQueue;
 	}
 
-	const Ref<ResourceQueue>& Renderer::getResourceQueue() const
+	const Ref<ResourcePipeline>& Renderer::getResourcePipeline() const
 	{
-		return resourceQueue;
+		return resourcePipeline;
 	}
 
 	Window* Renderer::getWindow() const
@@ -21,13 +28,25 @@ namespace helix
 
 	void Renderer::begin(Color clearColor) const
 	{
-		renderQueue->addCommand<BeginCommand>(RenderCommand{RenderCommand::Type::Begin}, clearColor);
+		BeginCommand cmd;
+		cmd.clearColor = clearColor;
+		renderQueue->addCommand<BeginCommand>(cmd);
 	}
 
 	void Renderer::end() const
 	{
 		renderQueue->addCommand<RenderCommand>(RenderCommand::Type::End);
 		renderQueue->commit();
+	}
+
+	Ref<VertexBuffer> Renderer::createVertexBuffer(VertexBuffer::Usage usage, Ref<MemoryBlock> vertexData) const
+	{
+		auto vb = createNativeVertexBuffer(usage, vertexData);
+		CreateVertexBufferCommand cmd;
+		cmd.vertexBuffer = vb;
+		cmd.vertexData = std::move(vertexData);
+		resourcePipeline->addCommand<CreateVertexBufferCommand>(cmd);
+		return vb;
 	}
 
 	void Renderer::startRenderThread(CommandProcessThreadFunc func)
