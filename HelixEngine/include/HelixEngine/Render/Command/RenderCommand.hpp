@@ -27,6 +27,9 @@ namespace helix
 		{
 			Unknown = -1,
 			CreateVertexBuffer,
+
+			//OpenGL Exclusive
+			CreateGLShader,
 		};
 
 		Type type = Type::Unknown;

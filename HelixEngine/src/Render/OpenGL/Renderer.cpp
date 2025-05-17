@@ -7,6 +7,8 @@
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
 
+#include <HelixEngine/Render/OpenGL/ExclusiveCommand.hpp>
+
 namespace helix::opengl
 {
 	Ref<helix::VertexBuffer> Renderer::createNativeVertexBuffer(VertexBuffer::Usage usage,
@@ -15,6 +17,13 @@ namespace helix::opengl
 		Ref vb = new VertexBuffer;
 		vb->setUsage(usage);
 		return vb;
+	}
+
+	Ref<opengl::Shader> Renderer::createNativeShader(Shader::Usage usage)
+	{
+		Ref shader = new Shader;
+		shader->setUsage(usage);
+		return shader;
 	}
 
 	void Renderer::startRun()
@@ -111,6 +120,9 @@ namespace helix::opengl
 				case ResourceCommand::Type::CreateVertexBuffer:
 					createVertexBufferProc();
 					break;
+				case ResourceCommand::Type::CreateGLShader:
+					createGLShaderProc();
+					break;
 				case ResourceCommand::Type::Unknown:
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的ResourceCommand");
@@ -131,5 +143,50 @@ namespace helix::opengl
 		             static_cast<GLsizeiptr>(cvbCmd->vertexData->getSize()),
 		             cvbCmd->vertexData->getPointer(),
 		             vb->getGLUsage());
+	}
+
+	void Renderer::createGLShaderProc() const
+	{
+		auto cmd = resourceCmd->cast<CreateGLShaderCommand>();
+		auto shader = cmd->shader;
+		shader->shaderGL = glCreateShader(shader->getGLUsage());
+
+		const auto length = static_cast<GLint>(cmd->shaderCode.size());
+		auto code = cmd->shaderCode.data();
+		glShaderSource(shader->shaderGL, 1, reinterpret_cast<const GLchar* const*>(&code), &length);
+		glCompileShader(shader->shaderGL);
+
+		int success;
+		glGetShaderiv(shader->shaderGL, GL_COMPILE_STATUS, &success);
+		if (!success)
+		{
+			GLsizei infoSize;
+			glGetShaderInfoLog(shader->shaderGL, 0, &infoSize, nullptr);
+			std::u8string infoLog(infoSize, '\0');
+			glGetShaderInfoLog(shader->shaderGL, infoSize, nullptr, reinterpret_cast<GLchar*>(infoLog.data()));
+			std::u8string_view shaderType;
+			switch (shader->getUsage())
+			{
+				case Shader::Usage::Vertex:
+					shaderType = u8"顶点";
+					break;
+				case Shader::Usage::Pixel:
+					shaderType = u8"像素";
+					break;
+				default:
+					Logger::warning(u8"OpenGL Shader: 无法识别的着色器类型");
+			}
+			Logger::error(u8"OpenGL Shader: 编译", shaderType, u8"着色器失败，错误信息: ", infoLog);
+		}
+	}
+
+	Ref<opengl::Shader> Renderer::createGLShader(Shader::Usage usage, std::u8string shaderCode) const
+	{
+		auto shader = createNativeShader(usage);
+		CreateGLShaderCommand cmd;
+		cmd.shader = shader;
+		cmd.shaderCode = std::move(shaderCode);
+		getResourcePipeline()->addCommand<CreateGLShaderCommand>(cmd);
+		return shader;
 	}
 }

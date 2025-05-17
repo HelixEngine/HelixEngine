@@ -30,4 +30,39 @@ namespace helix::opengl
 			}
 		}
 	};
+
+	class Shader final : public helix::Shader
+	{
+		friend class Renderer;
+		GLuint shaderGL{};
+	public:
+		[[nodiscard]] GLuint getGLShader() const
+		{
+			return shaderGL;
+		}
+
+		[[nodiscard]] GLenum getGLUsage() const
+		{
+			switch (getUsage())
+			{
+				case Usage::Vertex:
+					return GL_VERTEX_SHADER;
+				case Usage::Pixel:
+					return GL_FRAGMENT_SHADER;
+				default:
+					Logger::error(u8"无法识别的OpenGL Shader Usage");
+					return 0;
+			}
+		}
+	};
+
+	class RenderPipeline final : public helix::RenderPipeline
+	{
+		GLuint programGL{};
+	public:
+		[[nodiscard]] GLuint getGLProgram() const
+		{
+			return programGL;
+		}
+	};
 }

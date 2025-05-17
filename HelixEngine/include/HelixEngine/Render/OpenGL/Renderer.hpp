@@ -1,6 +1,7 @@
 #pragma once
-#include <HelixEngine/Render/Renderer.hpp>
 #include <HelixEngine/Core/Window.hpp>
+#include <HelixEngine/Render/Renderer.hpp>
+#include <HelixEngine/Render/OpenGL/Resource.hpp>
 
 namespace helix
 {
@@ -18,9 +19,12 @@ namespace helix::opengl
 
 		//resource method//
 
-		[[nodiscard]] Ref<VertexBuffer> createNativeVertexBuffer(
+		[[nodiscard]] Ref<helix::VertexBuffer> createNativeVertexBuffer(
 				VertexBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const override;
+
+		[[nodiscard]] static Ref<opengl::Shader> createNativeShader(
+				Shader::Usage usage);
 
 		//render thread//
 
@@ -45,5 +49,8 @@ namespace helix::opengl
 
 		void resourceProc(const ResourcePipeline::ListRef& list);
 		void createVertexBufferProc() const;
+		void createGLShaderProc() const;
+	public:
+		[[nodiscard]] Ref<opengl::Shader> createGLShader(Shader::Usage usage, std::u8string shaderCode) const;
 	};
 }
