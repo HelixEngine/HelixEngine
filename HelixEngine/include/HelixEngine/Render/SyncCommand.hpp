@@ -109,39 +109,26 @@ namespace helix
 
 		//同步原语
 		std::mutex mtx;
-		std::condition_variable cv;
 		bool hasNewCommand = false;
 	public:
-		~CommandPipeline() override
-		{
-			quit();
-		}
-
 		template<typename ActualType, typename... Args>
 		void addCommand(Args&&... args)
 		{
 			std::lock_guard lock(mtx);
 			front->template addCommand<ActualType>(std::forward<Args>(args)...);
 			hasNewCommand = true;
-			cv.notify_all();
 		}
 
 		ListRef receive()
 		{
-			std::unique_lock lock(mtx);
-			cv.wait(lock, [this] { return hasNewCommand; });
-			back.swap(front);
-			front->clear();
-			hasNewCommand = false;
-			return back;
-		}
-
-		void quit()
-		{
-			std::lock_guard lock(mtx);
-			hasNewCommand = true;
 			back->clear();
-			cv.notify_all();
+			std::lock_guard lock(mtx);
+			if (hasNewCommand)
+			{
+				back.swap(front);
+				hasNewCommand = false;
+			}
+			return back;
 		}
 	};
 

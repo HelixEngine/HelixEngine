@@ -8,7 +8,6 @@ namespace helix
 {
 	Renderer::~Renderer()
 	{
-		resourcePipeline->quit();
 	}
 
 	const Ref<RenderQueue>& Renderer::getRenderQueue() const
@@ -47,5 +46,10 @@ namespace helix
 		cmd.vertexData = std::move(vertexData);
 		resourcePipeline->addCommand<CreateVertexBufferCommand>(cmd);
 		return vb;
+	}
+
+	void Renderer::startRenderThread(CommandProcessThreadFunc func)
+	{
+		renderThread = std::jthread{std::move(func)};
 	}
 }

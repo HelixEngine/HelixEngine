@@ -7,6 +7,8 @@ using namespace helix;
 int main()
 {
 	Ref window = new Window{u8"Hello, HelixEngine", {800, 600}};
+	Ref window2 = new Window{u8"Hello, HelixEngine2", {800, 600}};
+	window2->setName(u8"opengl2");
 	Ref scene = new Scene2D;
 	window->enter(scene);
 

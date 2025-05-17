@@ -57,18 +57,17 @@ namespace helix
 
 		[[nodiscard]] const Color& getBackgroundColor() const;
 		void setBackgroundColor(Color color);
+		void destroy();
 		static const std::vector<Window*>& getAllWindows();
 	private:
+		static constexpr std::string_view sdlWindowPointerProperty = "HelixEngine:Window";
 		SDL_Window* sdlWindow = nullptr;
 		Color backgroundColor;
 
 		static void sdlError(std::u8string_view content);
 
-		struct SDLInstance : Singleton<SDLInstance>
-		{
-			SDLInstance();
-			~SDLInstance();
-		};
+		static void SDLInit();
+		static void SDLQuit();
 
 		static inline std::vector<Window*> allWindows;
 		static void startRun();

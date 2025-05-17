@@ -26,6 +26,9 @@ namespace helix
 				SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY |
 				(property.graphicsApi == GraphicsApi::OpenGL ? SDL_WINDOW_OPENGL : 0));
 
+		SDL_SetPointerProperty(SDL_GetWindowProperties(sdlWindow), sdlWindowPointerProperty.data(), this);
+
+
 		if (sdlWindow == nullptr)
 		{
 			sdlError(u8"创建SDL窗口失败");
@@ -54,8 +57,7 @@ namespace helix
 
 	Window::~Window()
 	{
-		allWindows.erase(std::ranges::find(allWindows, this));
-		SDL_DestroyWindow(sdlWindow);
+		destroy();
 	}
 
 	void Window::show() const
@@ -108,7 +110,19 @@ namespace helix
 
 	void Window::setBackgroundColor(Color color)
 	{
-		backgroundColor = std::move(color);
+		backgroundColor = color;
+	}
+
+	void Window::destroy()
+	{
+		if (sdlWindow)
+		{
+			renderer->renderThread.request_stop();
+			renderer->renderThread.join();
+			allWindows.erase(std::ranges::find(allWindows, this));
+			SDL_DestroyWindow(sdlWindow);
+			sdlWindow = nullptr;
+		}
 	}
 
 	const std::vector<Window*>& Window::getAllWindows()
@@ -121,7 +135,7 @@ namespace helix
 		Logger::error(content, u8": [", std::u8string(reinterpret_cast<const char8_t*>(SDL_GetError())), u8"]");
 	}
 
-	Window::SDLInstance::SDLInstance()
+	void Window::SDLInit()
 	{
 		if (!SDL_Init(SDL_INIT_VIDEO))
 		{
@@ -129,7 +143,7 @@ namespace helix
 		}
 	}
 
-	Window::SDLInstance::~SDLInstance()
+	void Window::SDLQuit()
 	{
 		SDL_Quit();
 	}

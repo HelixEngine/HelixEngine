@@ -19,47 +19,34 @@ namespace helix::opengl
 
 	void Renderer::startRun()
 	{
-		renderContext = createCurrentSDLContext();
-		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
-		makeCurrentContext(nullptr);
-		renderThread = std::jthread([=](const std::stop_token& token)
+		startRenderThread([=](const std::stop_token& token)
 		{
 			this->renderToken = token;
 			renderLoopFunc();
 		});
-		if (isResourceThreadRunning)
-			return;
-		resourceThread = std::jthread([=](const std::stop_token& token)
-		{
-			this->resourceToken = token;
-			resourceLoopFunc();
-		});
-		isResourceThreadRunning = true;
 	}
 
 	void Renderer::renderLoopFunc()
 	{
-		makeCurrentContext(renderContext);
-		isGladInitialized = true;
+		renderContext = createCurrentSDLContext();
+		glInitMtx.lock();
+		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
+		glInitMtx.unlock();
 
 		auto& queue = getRenderQueue();
+		auto& pipeline = getResourcePipeline();
 		while (!renderToken.stop_requested())
+		{
 			renderProc(queue->receive());
-		puts("render thread quit");
-	}
-
-	void Renderer::resourceLoopFunc()
-	{
-		resourceContext = createCurrentSDLContext();
-
-		auto& queue = getResourcePipeline();
-		while (!resourceToken.stop_requested())
-			resourceProc(queue->receive());
-		puts("resource thread quit");
+			resourceProc(pipeline->receive());
+		}
+		SDL_GL_DestroyContext(renderContext);
 	}
 
 	SDL_GLContext Renderer::createSDLContext() const
 	{
+		if (!SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1))
+			Window::sdlError(u8"OpenGL Renderer: 设置OpenGL共享上下文失败");
 		auto ctx = SDL_GL_CreateContext(getWindow()->getSDLWindow());
 		if (ctx == nullptr)
 			Window::sdlError(u8"OpenGL Renderer: 创建OpenGL上下文失败");
@@ -116,11 +103,6 @@ namespace helix::opengl
 
 	void Renderer::resourceProc(const ResourcePipeline::ListRef& list)
 	{
-		if (list->getCommands().empty())
-		{
-			puts("resource quit sign");
-			fflush(stdout);
-		}
 		for (auto& cmd: list->getCommands())
 		{
 			this->resourceCmd = cmd.get();

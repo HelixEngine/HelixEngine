@@ -38,11 +38,13 @@ namespace helix
 		Ref<RenderQueue> renderQueue = new RenderQueue;
 		Ref<ResourcePipeline> resourcePipeline = new ResourcePipeline;
 		Window* window = nullptr;
+		std::jthread renderThread;
 	protected:
 		using CommandProcessThreadFunc = std::function<void(const std::stop_token&)>;
 		[[nodiscard]] virtual Ref<VertexBuffer> createNativeVertexBuffer(
 				VertexBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const = 0;
+		void startRenderThread(CommandProcessThreadFunc func);
 	private:
 		//Game run
 

@@ -13,10 +13,8 @@ namespace helix::opengl
 	{
 		friend class Window;
 
-		std::jthread renderThread;
-		static inline std::jthread resourceThread;
-		static inline bool isResourceThreadRunning = false;
-		static inline bool isGladInitialized = false;
+		//GL初始化时，如果2个窗口同时初始化，会出现内存访问冲突导致崩溃
+		static inline std::mutex glInitMtx;
 
 		//resource method//
 
@@ -30,8 +28,6 @@ namespace helix::opengl
 
 		void renderLoopFunc();
 		std::stop_token renderToken;
-		void resourceLoopFunc();
-		std::stop_token resourceToken;
 
 		//cmd process//
 
