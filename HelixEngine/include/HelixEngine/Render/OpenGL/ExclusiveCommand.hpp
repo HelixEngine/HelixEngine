@@ -9,4 +9,11 @@ namespace helix::opengl
 		Shader* shader{};
 		std::u8string shaderCode{};
 	};
+
+	struct CreateGLRenderPipelineCommand final : ResourceCommand
+	{
+		CreateGLRenderPipelineCommand() { type = Type::CreateGLRenderPipeline; }
+		RenderPipeline* renderPipeline{};
+		RenderPipeline::Config config{};
+	};
 }

@@ -172,7 +172,11 @@ namespace helix
 		{
 			auto curr = scene;
 			if (!curr)
+			{
+				getRenderer()->begin(getBackgroundColor());
+				getRenderer()->end();
 				continue;
+			}
 
 			auto now = SteadyClock::now();
 			curr->update(now - lastUpdateTime);

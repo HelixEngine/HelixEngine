@@ -26,6 +26,12 @@ namespace helix::opengl
 		return shader;
 	}
 
+	Ref<opengl::RenderPipeline> Renderer::createNativeRenderPipeline()
+	{
+		Ref pipeline = new RenderPipeline;
+		return pipeline;
+	}
+
 	void Renderer::startRun()
 	{
 		startRenderThread([=](const std::stop_token& token)
@@ -123,6 +129,9 @@ namespace helix::opengl
 				case ResourceCommand::Type::CreateGLShader:
 					createGLShaderProc();
 					break;
+				case ResourceCommand::Type::CreateGLRenderPipeline:
+					createGLRenderPipelineProc();
+					break;
 				case ResourceCommand::Type::Unknown:
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的ResourceCommand");
@@ -180,6 +189,11 @@ namespace helix::opengl
 		}
 	}
 
+	void Renderer::createGLRenderPipelineProc() const
+	{
+		auto cmd = resourceCmd->cast<CreateGLRenderPipelineCommand>();
+	}
+
 	Ref<opengl::Shader> Renderer::createGLShader(Shader::Usage usage, std::u8string shaderCode) const
 	{
 		auto shader = createNativeShader(usage);
@@ -188,5 +202,14 @@ namespace helix::opengl
 		cmd.shaderCode = std::move(shaderCode);
 		getResourcePipeline()->addCommand<CreateGLShaderCommand>(cmd);
 		return shader;
+	}
+
+	Ref<opengl::RenderPipeline> Renderer::createGLRenderPipeline(RenderPipeline::Config config) const
+	{
+		auto renderPipeline = createNativeRenderPipeline();
+		CreateGLRenderPipelineCommand cmd;
+		cmd.config = std::move(config);
+		getResourcePipeline()->addCommand<CreateGLRenderPipelineCommand>(cmd);
+		return renderPipeline;
 	}
 }

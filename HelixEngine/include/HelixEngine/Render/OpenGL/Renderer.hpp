@@ -26,6 +26,8 @@ namespace helix::opengl
 		[[nodiscard]] static Ref<opengl::Shader> createNativeShader(
 				Shader::Usage usage);
 
+		[[nodiscard]] static Ref<opengl::RenderPipeline> createNativeRenderPipeline();
+
 		//render thread//
 
 		void startRun() override;
@@ -50,7 +52,12 @@ namespace helix::opengl
 		void resourceProc(const ResourcePipeline::ListRef& list);
 		void createVertexBufferProc() const;
 		void createGLShaderProc() const;
+		void createGLRenderPipelineProc() const;
+
+		//gl tool func
+		void attachShader(RenderPipeline);
 	public:
 		[[nodiscard]] Ref<opengl::Shader> createGLShader(Shader::Usage usage, std::u8string shaderCode) const;
+		[[nodiscard]] Ref<opengl::RenderPipeline> createGLRenderPipeline(RenderPipeline::Config config) const;
 	};
 }

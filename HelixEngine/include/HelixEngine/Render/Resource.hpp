@@ -55,6 +55,11 @@ namespace helix
 
 	class RenderPipeline : public Pipeline
 	{
-
+	public:
+		struct Config final
+		{
+			Ref<Shader> vertex{};
+			Ref<Shader> pixel{};
+		};
 	};
 }

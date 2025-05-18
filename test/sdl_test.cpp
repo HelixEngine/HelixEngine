@@ -23,15 +23,29 @@ int main()
 			new MemoryBlock{vertexData.data(), vertexData.size() * sizeof(float)});
 
 	auto glRenderer = reinterpret_cast<opengl::Renderer*>(window->getRenderer().get());
-	auto shaderCode =
-			u8R"(#version 330 core
+	auto vertexCode =
+			u8R"(
+#version 330 core
 layout (location = 0) in vec3 aPos;
 void main()
 {
-gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
 })";
-	auto shader = glRenderer->createGLShader(Shader::Usage::Vertex, shaderCode);
+	auto vertexShader = glRenderer->createGLShader(Shader::Usage::Vertex, vertexCode);
+
+	auto pixelCode =
+			u8R"(
+#version 330 core
+out vec4 FragColor;
+
+void main()
+{
+    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+} )";
+
+	auto pixelShader = glRenderer->createGLShader(Shader::Usage::Pixel, pixelCode);
 
 	//写一下SDL的main loop
 	return Game::run();
 }
+
