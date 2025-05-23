@@ -4,6 +4,8 @@
 
 using namespace helix;
 
+opengl::Shader* helix_test_opengl_shader;
+
 int main()
 {
 	Ref window = new Window{u8"Hello, HelixEngine", {800, 600}};
@@ -44,6 +46,14 @@ void main()
 } )";
 
 	auto pixelShader = glRenderer->createGLShader(Shader::Usage::Pixel, pixelCode);
+
+	RenderPipeline::Config config;
+	config.vertex = vertexShader;
+	config.pixel = pixelShader;
+
+	auto pipeline = glRenderer->createGLRenderPipeline(config);
+
+	helix_test_opengl_shader = vertexShader.get();
 
 	//写一下SDL的main loop
 	return Game::run();

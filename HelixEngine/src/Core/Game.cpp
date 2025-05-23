@@ -2,6 +2,8 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <SDL3/SDL.h>
 
+#include "HelixEngine/Render/OpenGL/Resource.hpp"
+
 //
 // void helix::Game::setCommandLineArguments(const int argc, char** argv)
 // {
@@ -17,6 +19,8 @@
 // {
 //
 // }
+
+extern helix::opengl::Shader* helix_test_opengl_shader;
 
 int helix::Game::run()
 {
@@ -47,6 +51,8 @@ int helix::Game::run()
 				default: ;
 			}
 		}
+
+		helix_test_opengl_shader;
 	}
 	Window::SDLQuit();
 	return 0;

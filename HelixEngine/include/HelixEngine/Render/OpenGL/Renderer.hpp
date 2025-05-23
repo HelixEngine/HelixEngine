@@ -55,7 +55,7 @@ namespace helix::opengl
 		void createGLRenderPipelineProc() const;
 
 		//gl tool func
-		void attachShader(RenderPipeline);
+		static void attachGLShader(const RenderPipeline* pipeline, const helix::Shader* shader);
 	public:
 		[[nodiscard]] Ref<opengl::Shader> createGLShader(Shader::Usage usage, std::u8string shaderCode) const;
 		[[nodiscard]] Ref<opengl::RenderPipeline> createGLRenderPipeline(RenderPipeline::Config config) const;

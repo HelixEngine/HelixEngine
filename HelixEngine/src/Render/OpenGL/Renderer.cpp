@@ -169,8 +169,8 @@ namespace helix::opengl
 		glGetShaderiv(shader->shaderGL, GL_COMPILE_STATUS, &success);
 		if (!success)
 		{
-			GLsizei infoSize;
-			glGetShaderInfoLog(shader->shaderGL, 0, &infoSize, nullptr);
+			int infoSize{};
+			glGetShaderiv(shader->shaderGL, GL_INFO_LOG_LENGTH, &infoSize);
 			std::u8string infoLog(infoSize, '\0');
 			glGetShaderInfoLog(shader->shaderGL, infoSize, nullptr, reinterpret_cast<GLchar*>(infoLog.data()));
 			std::u8string_view shaderType;
@@ -185,13 +185,34 @@ namespace helix::opengl
 				default:
 					Logger::warning(u8"OpenGL Shader: 无法识别的着色器类型");
 			}
-			Logger::error(u8"OpenGL Shader: 编译", shaderType, u8"着色器失败，错误信息: ", infoLog);
+			Logger::error(u8"OpenGL Shader: 编译", shaderType, u8"着色器失败，错误信息: \n", infoLog);
 		}
 	}
 
 	void Renderer::createGLRenderPipelineProc() const
 	{
 		auto cmd = resourceCmd->cast<CreateGLRenderPipelineCommand>();
+		auto pipeline = cmd->renderPipeline;
+		pipeline->programGL = glCreateProgram();
+		attachGLShader(pipeline, cmd->config.vertex);
+		attachGLShader(pipeline, cmd->config.pixel);
+		glLinkProgram(pipeline->programGL);
+
+		int success;
+		glGetProgramiv(pipeline->programGL, GL_LINK_STATUS, &success);
+		if (!success)
+		{
+			int infoSize{};
+			glGetProgramiv(pipeline->programGL, GL_INFO_LOG_LENGTH, &infoSize);
+			std::u8string infoLog(infoSize, '\0');
+			glGetProgramInfoLog(pipeline->programGL, infoSize, nullptr, reinterpret_cast<GLchar*>(infoLog.data()));
+			Logger::error(u8"OpenGL Shader: 链接GL Program失败，错误信息: \n", infoLog);
+		}
+	}
+
+	void Renderer::attachGLShader(const RenderPipeline* pipeline, const helix::Shader* shader)
+	{
+		glAttachShader(pipeline->getGLProgram(), reinterpret_cast<const Shader*>(shader)->getGLShader());
 	}
 
 	Ref<opengl::Shader> Renderer::createGLShader(Shader::Usage usage, std::u8string shaderCode) const
@@ -209,6 +230,7 @@ namespace helix::opengl
 		auto renderPipeline = createNativeRenderPipeline();
 		CreateGLRenderPipelineCommand cmd;
 		cmd.config = std::move(config);
+		cmd.renderPipeline = renderPipeline;
 		getResourcePipeline()->addCommand<CreateGLRenderPipelineCommand>(cmd);
 		return renderPipeline;
 	}

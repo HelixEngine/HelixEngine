@@ -54,10 +54,19 @@ namespace helix::opengl
 					return 0;
 			}
 		}
+
+		~Shader() override
+		{
+			if (shaderGL)
+			{
+				glDeleteShader(shaderGL);
+			}
+		}
 	};
 
 	class RenderPipeline final : public helix::RenderPipeline
 	{
+		friend class Renderer;
 		GLuint programGL{};
 	public:
 		[[nodiscard]] GLuint getGLProgram() const
