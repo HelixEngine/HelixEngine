@@ -5,6 +5,8 @@ namespace helix
 {
 	struct RenderCommand
 	{
+		virtual ~RenderCommand() = default;
+
 		enum class Type : int32_t
 		{
 			Unknown = -1,
@@ -23,6 +25,8 @@ namespace helix
 
 	struct ResourceCommand
 	{
+		virtual ~ResourceCommand() = default;
+
 		enum class Type : int32_t
 		{
 			Unknown = -1,

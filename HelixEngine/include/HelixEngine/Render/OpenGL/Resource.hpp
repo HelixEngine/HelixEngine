@@ -57,6 +57,7 @@ namespace helix::opengl
 
 		~Shader() override
 		{
+			Logger::info(u8"destroy");
 			if (shaderGL)
 			{
 				glDeleteShader(shaderGL);

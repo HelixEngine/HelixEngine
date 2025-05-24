@@ -53,6 +53,7 @@ int helix::Game::run()
 		}
 
 		helix_test_opengl_shader;
+		auto windows = Window::getAllWindows();
 	}
 	Window::SDLQuit();
 	return 0;

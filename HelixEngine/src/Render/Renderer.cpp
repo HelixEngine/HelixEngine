@@ -29,12 +29,14 @@ namespace helix
 	{
 		BeginCommand cmd;
 		cmd.clearColor = clearColor;
-		renderQueue->addCommand<BeginCommand>(cmd);
+		renderQueue->addCommand<BeginCommand>(std::move(cmd));
 	}
 
 	void Renderer::end() const
 	{
-		renderQueue->addCommand<RenderCommand>(RenderCommand::Type::End);
+		RenderCommand cmd;
+		cmd.type = RenderCommand::Type::End;
+		renderQueue->addCommand<RenderCommand>(std::move(cmd));
 		renderQueue->commit();
 	}
 
@@ -44,7 +46,7 @@ namespace helix
 		CreateVertexBufferCommand cmd;
 		cmd.vertexBuffer = vb;
 		cmd.vertexData = std::move(vertexData);
-		resourcePipeline->addCommand<CreateVertexBufferCommand>(cmd);
+		resourcePipeline->addCommand<CreateVertexBufferCommand>(std::move(cmd));
 		return vb;
 	}
 
