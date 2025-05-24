@@ -35,6 +35,7 @@ namespace helix
 			//OpenGL Exclusive
 			CreateGLShader,
 			CreateGLRenderPipeline,
+			DestroyGLShader,
 		};
 
 		Type type = Type::Unknown;

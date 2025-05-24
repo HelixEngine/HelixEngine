@@ -7,7 +7,6 @@ namespace helix
 
 	struct CreateVertexBufferCommand final : ResourceCommand
 	{
-		CreateVertexBufferCommand() { type = Type::CreateVertexBuffer; }
 		VertexBuffer* vertexBuffer{};
 		Ref<MemoryBlock> vertexData{};
 	};

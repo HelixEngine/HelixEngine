@@ -23,6 +23,7 @@ namespace helix::opengl
 	{
 		Ref shader = new Shader;
 		shader->setUsage(usage);
+		shader->renderer = this;
 		return shader;
 	}
 
@@ -56,6 +57,7 @@ namespace helix::opengl
 			resourceProc(pipeline->receive());
 		}
 		SDL_GL_DestroyContext(renderContext);
+		Logger::info(u8"quit render thread");
 	}
 
 	SDL_GLContext Renderer::createSDLContext() const
@@ -132,6 +134,9 @@ namespace helix::opengl
 				case ResourceCommand::Type::CreateGLRenderPipeline:
 					createGLRenderPipelineProc();
 					break;
+				case ResourceCommand::Type::DestroyGLShader:
+					destroyGLShaderProc();
+					break;
 				case ResourceCommand::Type::Unknown:
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的ResourceCommand");
@@ -191,6 +196,7 @@ namespace helix::opengl
 
 	void Renderer::createGLRenderPipelineProc() const
 	{
+		Logger::info(u8"create GLRenderPipeline");
 		auto cmd = resourceCmd->cast<CreateGLRenderPipelineCommand>();
 		auto pipeline = cmd->renderPipeline;
 		pipeline->programGL = glCreateProgram();
@@ -210,18 +216,25 @@ namespace helix::opengl
 		}
 	}
 
+	void Renderer::destroyGLShaderProc() const
+	{
+		auto cmd = resourceCmd->cast<DestroyGLShaderCommand>();
+		glDeleteShader(cmd->shaderGL);
+	}
+
 	void Renderer::attachGLShader(const RenderPipeline* pipeline, const helix::Shader* shader)
 	{
 		glAttachShader(pipeline->getGLProgram(), reinterpret_cast<const Shader*>(shader)->getGLShader());
 	}
 
-	Ref<opengl::Shader> Renderer::createGLShader(Shader::Usage usage, std::u8string shaderCode) const
+	Ref<opengl::Shader> Renderer::createGLShader(Shader::Usage usage, std::u8string shaderCode)
 	{
 		auto shader = createNativeShader(usage);
 		CreateGLShaderCommand cmd;
+		cmd.type = ResourceCommand::Type::CreateGLShader;
 		cmd.shader = shader;
 		cmd.shaderCode = std::move(shaderCode);
-		getResourcePipeline()->addCommand<CreateGLShaderCommand>(cmd);
+		getResourcePipeline()->addCommand<CreateGLShaderCommand>(std::move(cmd));
 		return shader;
 	}
 
@@ -229,9 +242,18 @@ namespace helix::opengl
 	{
 		auto renderPipeline = createNativeRenderPipeline();
 		CreateGLRenderPipelineCommand cmd;
+		cmd.type = ResourceCommand::Type::CreateGLRenderPipeline;
 		cmd.config = std::move(config);
 		cmd.renderPipeline = renderPipeline;
-		getResourcePipeline()->addCommand<CreateGLRenderPipelineCommand>(cmd);
+		getResourcePipeline()->addCommand<CreateGLRenderPipelineCommand>(std::move(cmd));
 		return renderPipeline;
+	}
+
+	void Renderer::destroyGLShader(const Shader* shader) const
+	{
+		DestroyGLShaderCommand cmd;
+		cmd.type = ResourceCommand::Type::DestroyGLShader;
+		cmd.shaderGL = shader->getGLShader();
+		getResourcePipeline()->addCommand<DestroyGLShaderCommand>(std::move(cmd));
 	}
 }

@@ -13,6 +13,7 @@ namespace helix::opengl
 	class Renderer final : public helix::Renderer
 	{
 		friend class Window;
+		friend class Shader;
 
 		//GL初始化时，如果2个窗口同时初始化，会出现内存访问冲突导致崩溃
 		static inline std::mutex glInitMtx;
@@ -23,7 +24,7 @@ namespace helix::opengl
 				VertexBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const override;
 
-		[[nodiscard]] static Ref<opengl::Shader> createNativeShader(
+		[[nodiscard]] Ref<opengl::Shader> createNativeShader(
 				Shader::Usage usage);
 
 		[[nodiscard]] static Ref<opengl::RenderPipeline> createNativeRenderPipeline();
@@ -53,11 +54,14 @@ namespace helix::opengl
 		void createVertexBufferProc() const;
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;
+		void destroyGLShaderProc() const;
 
 		//gl tool func
 		static void attachGLShader(const RenderPipeline* pipeline, const helix::Shader* shader);
 	public:
-		[[nodiscard]] Ref<opengl::Shader> createGLShader(Shader::Usage usage, std::u8string shaderCode) const;
+		[[nodiscard]] Ref<opengl::Shader> createGLShader(Shader::Usage usage, std::u8string shaderCode);
 		[[nodiscard]] Ref<opengl::RenderPipeline> createGLRenderPipeline(RenderPipeline::Config config) const;
+	private:
+		void destroyGLShader(const Shader* shader) const;
 	};
 }

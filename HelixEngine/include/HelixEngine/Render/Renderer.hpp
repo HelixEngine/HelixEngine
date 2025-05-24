@@ -29,10 +29,10 @@ namespace helix
 
 		void begin(Color clearColor) const;
 		void end() const;
-		[[nodiscard]] Ref<VertexBuffer>
 
 		//Resource Command
 
+		[[nodiscard]] Ref<VertexBuffer>
 		createVertexBuffer(VertexBuffer::Usage usage, Ref<MemoryBlock> vertexData) const;
 	private:
 		Ref<RenderQueue> renderQueue = new RenderQueue;

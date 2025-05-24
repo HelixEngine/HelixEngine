@@ -20,8 +20,6 @@
 //
 // }
 
-extern helix::opengl::Shader* helix_test_opengl_shader;
-
 int helix::Game::run()
 {
 	Window::SDLInit();
@@ -51,9 +49,6 @@ int helix::Game::run()
 				default: ;
 			}
 		}
-
-		helix_test_opengl_shader;
-		auto windows = Window::getAllWindows();
 	}
 	Window::SDLQuit();
 	return 0;

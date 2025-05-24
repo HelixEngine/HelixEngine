@@ -28,6 +28,7 @@ namespace helix
 	void Renderer::begin(Color clearColor) const
 	{
 		BeginCommand cmd;
+		cmd.type = RenderCommand::Type::Begin;
 		cmd.clearColor = clearColor;
 		renderQueue->addCommand<BeginCommand>(std::move(cmd));
 	}
@@ -44,6 +45,7 @@ namespace helix
 	{
 		auto vb = createNativeVertexBuffer(usage, vertexData);
 		CreateVertexBufferCommand cmd;
+		cmd.type = ResourceCommand::Type::CreateVertexBuffer;
 		cmd.vertexBuffer = vb;
 		cmd.vertexData = std::move(vertexData);
 		resourcePipeline->addCommand<CreateVertexBufferCommand>(std::move(cmd));
