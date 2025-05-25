@@ -62,4 +62,9 @@ namespace helix
 			Ref<Shader> pixel{};
 		};
 	};
+
+	class VertexLayout
+	{
+
+	};
 }

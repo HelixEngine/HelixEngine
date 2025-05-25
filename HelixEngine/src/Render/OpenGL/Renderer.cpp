@@ -6,8 +6,8 @@
 #include <HelixEngine/Util/Logger.hpp>
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
-
 #include <HelixEngine/Render/OpenGL/ExclusiveCommand.hpp>
+#include <HelixEngine/Render/Command/SetRenderPipeline.hpp>
 
 namespace helix::opengl
 {
@@ -53,8 +53,8 @@ namespace helix::opengl
 		auto& pipeline = getResourcePipeline();
 		while (!renderToken.stop_requested())
 		{
-			renderProc(queue->receive());
 			resourceProc(pipeline->receive());
+			renderProc(queue->receive());
 		}
 		SDL_GL_DestroyContext(renderContext);
 		Logger::info(u8"quit render thread");
@@ -96,6 +96,9 @@ namespace helix::opengl
 				case RenderCommand::Type::End:
 					endProc();
 					break;
+				case RenderCommand::Type::SetRenderPipeline:
+					setRenderPipelineProc();
+					break;
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的RenderCommand");
 					break;
@@ -116,6 +119,13 @@ namespace helix::opengl
 	void Renderer::endProc() const
 	{
 		SDL_GL_SwapWindow(getWindow()->getSDLWindow());
+	}
+
+	void Renderer::setRenderPipelineProc() const
+	{
+		auto cmd = renderCmd->cast<SetRenderPipelineCommand>();
+		auto pipeline = reinterpret_cast<RenderPipeline*>(cmd->renderPipeline.get());
+		glUseProgram(pipeline->getGLProgram());
 	}
 
 	void Renderer::resourceProc(const ResourcePipeline::ListRef& list)

@@ -4,6 +4,8 @@
 
 using namespace helix;
 
+RenderPipeline* helix_test_render_pipeline = nullptr;
+
 int main()
 {
 	Ref window = new Window{u8"Hello, HelixEngine", {800, 600}};
@@ -53,6 +55,8 @@ void main()
 
 	vertexShader.reset();
 	pixelShader.reset();
+
+	helix_test_render_pipeline = pipeline;
 
 	//写一下SDL的main loop
 	return Game::run();

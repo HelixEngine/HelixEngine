@@ -1,8 +1,8 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Render/Renderer.hpp>
 #include <HelixEngine/Render/Command/BeginCommand.hpp>
-
-#include "HelixEngine/Render/Command/CreateVertexBufferCommand.hpp"
+#include <HelixEngine/Render/Command/CreateVertexBufferCommand.hpp>
+#include <HelixEngine/Render/Command/SetRenderPipeline.hpp>
 
 namespace helix
 {
@@ -50,6 +50,14 @@ namespace helix
 		cmd.vertexData = std::move(vertexData);
 		resourcePipeline->addCommand<CreateVertexBufferCommand>(std::move(cmd));
 		return vb;
+	}
+
+	void Renderer::setRenderPipeline(Ref<RenderPipeline> renderPipeline) const
+	{
+		SetRenderPipelineCommand cmd;
+		cmd.type = RenderCommand::Type::SetRenderPipeline;
+		cmd.renderPipeline = std::move(renderPipeline);
+		renderQueue->addCommand<SetRenderPipelineCommand>(std::move(cmd));
 	}
 
 	void Renderer::startRenderThread(CommandProcessThreadFunc func)

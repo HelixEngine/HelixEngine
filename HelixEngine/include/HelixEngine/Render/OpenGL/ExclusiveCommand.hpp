@@ -1,5 +1,6 @@
 #pragma once
 #include <HelixEngine/Render/Command/RenderCommand.hpp>
+#include <glad/glad.h>
 
 namespace helix::opengl
 {

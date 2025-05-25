@@ -49,6 +49,7 @@ namespace helix::opengl
 		void renderProc(const RenderQueue::ListRef& list);
 		void beginProc() const;
 		void endProc() const;
+		void setRenderPipelineProc() const;
 
 		void resourceProc(const ResourcePipeline::ListRef& list);
 		void createVertexBufferProc() const;

@@ -12,6 +12,7 @@ namespace helix
 			Unknown = -1,
 			Begin,
 			End,
+			SetRenderPipeline,
 		};
 
 		Type type = Type::Unknown;
