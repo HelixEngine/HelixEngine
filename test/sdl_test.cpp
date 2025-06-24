@@ -47,7 +47,13 @@ int main()
 			VertexBuffer::Usage::Static,
 			new MemoryBlock{vertexData.data(), vertexData.size() * sizeof(float)});
 
+	auto vertexBuffer2 = window2->getRenderer()->createVertexBuffer(
+			VertexBuffer::Usage::Static,
+			new MemoryBlock{vertexData.data(), vertexData.size() * sizeof(float)});
+
 	auto glRenderer = reinterpret_cast<opengl::Renderer*>(window->getRenderer().get());
+	auto glRenderer2 = reinterpret_cast<opengl::Renderer*>(window2->getRenderer().get());
+
 	auto vertexCode =
 			u8R"(
 #version 330 core
@@ -57,6 +63,7 @@ void main()
 	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
 })";
 	auto vertexShader = glRenderer->createGLShader(Shader::Usage::Vertex, vertexCode);
+	auto vertexShader2 = glRenderer2->createGLShader(Shader::Usage::Vertex, vertexCode);
 
 	auto pixelCode =
 			u8R"(
@@ -69,15 +76,23 @@ void main()
 } )";
 
 	auto pixelShader = glRenderer->createGLShader(Shader::Usage::Pixel, pixelCode);
+	auto pixelShader2 = glRenderer2->createGLShader(Shader::Usage::Pixel, pixelCode);
 
 	RenderPipeline::Config config;
 	config.vertex = vertexShader;
 	config.pixel = pixelShader;
 
+	RenderPipeline::Config config2;
+	config2.vertex = vertexShader2;
+	config2.pixel = pixelShader2;
+
 	auto pipeline = glRenderer->createGLRenderPipeline(std::move(config));
+	auto pipeline2 = glRenderer2->createGLRenderPipeline(std::move(config2));
 
 	vertexShader.reset();
 	pixelShader.reset();
+	vertexShader2.reset();
+	pixelShader2.reset();
 
 	opengl::VertexArray::Config vaConfig;
 	vaConfig.vertexBuffer = vertexBuffer;
@@ -85,10 +100,20 @@ void main()
 			{0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr}
 	};
 
+	opengl::VertexArray::Config vaConfig2;
+	vaConfig2.vertexBuffer = vertexBuffer2;
+	vaConfig2.attributes = {
+			{0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr}
+	};
+
 	auto vao = glRenderer->createGLVertexArray(vaConfig);
+	auto vao2 = glRenderer2->createGLVertexArray(vaConfig2);
 
 	renderNode->pipeline = pipeline;
 	renderNode->vertexArray = vao;
+
+	renderNode2->pipeline = pipeline2;
+	renderNode2->vertexArray = vao2;
 
 	//写一下SDL的main loop
 	return Game::run();
