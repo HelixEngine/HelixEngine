@@ -19,11 +19,20 @@ namespace helix
 		virtual void setWindow(Window* window)
 		{
 		}
+
+		virtual void updateScene(Duration deltaTime)
+		{
+		}
+
+		virtual void renderScene(Renderer* renderer)
+		{
+		}
 	};
 
 	class Node2D : public NodeBase, protected IntrusiveNode<Ref<Node2D>>
 	{
 		friend class IntrusiveList<Ref<Node2D>>;
+		friend class Scene2D;
 	protected:
 		void update(Duration deltaTime) override;
 		void render(Renderer* renderer) override;
@@ -32,8 +41,11 @@ namespace helix
 
 		IntrusiveList<Ref<Node2D>> children;
 		Node2D* parent = nullptr;
+
+		void updateAll(Duration deltaTime);
+		void renderAll(Renderer* renderer);
 	public:
-		void addChild(Ref<Node2D>& child);
+		void addChild(const Ref<Node2D>& child);
 		void removeChildImmediate(Ref<Node2D>& child);
 		Ref<Node2D> findChild(std::u8string_view name);
 		[[nodiscard]] const IntrusiveList<Ref<Node2D>>& getAllChildren() const;

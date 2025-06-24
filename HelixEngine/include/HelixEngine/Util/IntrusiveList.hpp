@@ -15,6 +15,7 @@ namespace helix
 		using value_type = typename std::pointer_traits<PointerType>::pointer;
 		using pointer = value_type*;
 		using reference = value_type&;
+		using const_reference = const value_type&;
 
 		IntrusiveList() :
 			first()
@@ -52,7 +53,7 @@ namespace helix
 			return first == nullptr;
 		}
 
-		void pushBack(reference child)
+		void pushBack(const_reference child)
 		{
 			if (child->getPrev())
 				child->getPrev()->getNext() = child->getNext();
@@ -73,7 +74,7 @@ namespace helix
 			last = child;
 		}
 
-		void pushFront(reference child)
+		void pushFront(const_reference child)
 		{
 			if (child->getPrev())
 				child->getPrev()->getNext() = child->getNext();

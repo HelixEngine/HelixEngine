@@ -4,7 +4,21 @@
 
 using namespace helix;
 
-RenderPipeline* helix_test_render_pipeline = nullptr;
+
+class RenderNode final : public Node2D
+{
+public:
+	RenderPipeline* pipeline = nullptr;
+	opengl::VertexArray* vertexArray = nullptr;
+
+	void render(Renderer* renderer) override
+	{
+		auto glRenderer = reinterpret_cast<opengl::Renderer*>(renderer);
+		glRenderer->setRenderPipeline(pipeline);
+		glRenderer->setGLVertexArray(vertexArray);
+		Logger::info(u8"render!");
+	}
+};
 
 int main()
 {
@@ -13,6 +27,9 @@ int main()
 	window2->setName(u8"opengl2");
 	Ref scene = new Scene2D;
 	window->enter(scene);
+
+	Ref renderNode = new RenderNode;
+	scene->addChild(renderNode);
 
 	std::vector vertexData = {
 			0.f, 0.f,
@@ -56,7 +73,16 @@ void main()
 	vertexShader.reset();
 	pixelShader.reset();
 
-	helix_test_render_pipeline = pipeline;
+	opengl::VertexArray::Config vaConfig;
+	vaConfig.vertexBuffer = vertexBuffer;
+	vaConfig.attributes = {
+			{0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr}
+	};
+
+	auto vao = glRenderer->createGLVertexArray(vaConfig);
+
+	renderNode->pipeline = pipeline;
+	renderNode->vertexArray = vao;
 
 	//写一下SDL的main loop
 	return Game::run();

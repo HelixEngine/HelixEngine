@@ -16,6 +16,17 @@ namespace helix::opengl
 		RenderPipeline::Config config{};
 	};
 
+	struct CreateGLVertexArrayCommand final : ResourceCommand
+	{
+		VertexArray* vertexArray{};
+		VertexArray::Config config{};
+	};
+
+	struct SetGLVertexArrayCommand final : RenderCommand
+	{
+		Ref<VertexArray> vertexArray{};
+	};
+
 	struct DestroyGLShaderCommand final : ResourceCommand
 	{
 		GLuint shaderGL{};

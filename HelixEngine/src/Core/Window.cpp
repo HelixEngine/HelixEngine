@@ -3,8 +3,6 @@
 #include <HelixEngine/Util/Logger.hpp>
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
 
-extern helix::RenderPipeline* helix_test_render_pipeline;
-
 namespace helix
 {
 	Window::Window(std::u8string_view title, int32_t width, int32_t height) :
@@ -177,11 +175,10 @@ namespace helix
 			if (curr)
 			{
 				auto now = SteadyClock::now();
-				curr->update(now - lastUpdateTime);
+				curr->updateScene(now - lastUpdateTime);
 				lastUpdateTime = now;
 
-				getRenderer()->setRenderPipeline(helix_test_render_pipeline);
-				curr->render(getRenderer());
+				curr->renderScene(getRenderer());
 			}
 			getRenderer()->end();
 		}

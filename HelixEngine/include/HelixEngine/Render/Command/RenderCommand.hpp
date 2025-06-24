@@ -13,6 +13,9 @@ namespace helix
 			Begin,
 			End,
 			SetRenderPipeline,
+
+			//OpenGL Exclusive
+			SetGLVertexArray,
 		};
 
 		Type type = Type::Unknown;
@@ -37,6 +40,7 @@ namespace helix
 			CreateGLShader,
 			CreateGLRenderPipeline,
 			DestroyGLShader,
+			CreateGLVertexArray,
 		};
 
 		Type type = Type::Unknown;

@@ -1,8 +1,6 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Render/Renderer.hpp>
-#include <HelixEngine/Render/Command/BeginCommand.hpp>
-#include <HelixEngine/Render/Command/CreateVertexBufferCommand.hpp>
-#include <HelixEngine/Render/Command/SetRenderPipeline.hpp>
+#include <HelixEngine/Render/Command/GeneralCommand.hpp>
 
 namespace helix
 {
@@ -58,6 +56,11 @@ namespace helix
 		cmd.type = RenderCommand::Type::SetRenderPipeline;
 		cmd.renderPipeline = std::move(renderPipeline);
 		renderQueue->addCommand<SetRenderPipelineCommand>(std::move(cmd));
+	}
+
+	void Renderer::setPrimitiveTopology(PrimitiveTopology primitiveTopology) const
+	{
+
 	}
 
 	void Renderer::startRenderThread(CommandProcessThreadFunc func)

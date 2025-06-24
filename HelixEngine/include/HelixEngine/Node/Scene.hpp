@@ -10,6 +10,8 @@ namespace helix
 		friend class Window;
 		Window* window{};
 		void setWindow(Window* window) override;
+		void updateScene(Duration deltaTime) override;
+		void renderScene(Renderer* renderer) override;
 	public:
 		[[nodiscard]] Window* getWindow() const;
 	};

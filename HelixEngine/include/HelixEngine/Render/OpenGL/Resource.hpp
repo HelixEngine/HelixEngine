@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <HelixEngine/Render/Resource.hpp>
 #include <glad/glad.h>
 
@@ -33,5 +34,32 @@ namespace helix::opengl
 		GLuint programGL{};
 	public:
 		[[nodiscard]] GLuint getGLProgram() const;
+	};
+
+	struct VertexAttribute final
+	{
+		GLuint location = 0;
+		GLint size = 0;
+		GLenum elementType = GL_FLOAT;
+		GLboolean normalized = GL_FALSE;
+		GLsizei stride = 0;
+		void* offset = nullptr;
+	};
+
+	class VertexArray final : public Object
+	{
+	public:
+		struct Config
+		{
+			Ref<helix::VertexBuffer> vertexBuffer;
+			std::vector<VertexAttribute> attributes;
+		};
+	private:
+		friend class Renderer;
+		GLuint vertexArrayGL{};
+		Ref<helix::VertexBuffer> vertexBuffer;
+	public:
+		[[nodiscard]] GLuint getGLVertexArray() const;
+		[[nodiscard]] Ref<helix::VertexBuffer> getVertexBuffer() const;
 	};
 }

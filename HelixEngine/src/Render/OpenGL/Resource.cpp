@@ -51,3 +51,13 @@ GLuint helix::opengl::RenderPipeline::getGLProgram() const
 {
 	return programGL;
 }
+
+GLuint helix::opengl::VertexArray::getGLVertexArray() const
+{
+	return vertexArrayGL;
+}
+
+helix::Ref<helix::VertexBuffer> helix::opengl::VertexArray::getVertexBuffer() const
+{
+	return vertexBuffer;
+}

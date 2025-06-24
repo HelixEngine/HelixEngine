@@ -50,11 +50,13 @@ namespace helix::opengl
 		void beginProc() const;
 		void endProc() const;
 		void setRenderPipelineProc() const;
+		void setGLVertexArrayProc() const;
 
 		void resourceProc(const ResourcePipeline::ListRef& list);
 		void createVertexBufferProc() const;
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;
+		void createGLVertexArrayProc() const;
 		void destroyGLShaderProc() const;
 
 		//gl tool func
@@ -62,6 +64,9 @@ namespace helix::opengl
 	public:
 		[[nodiscard]] Ref<opengl::Shader> createGLShader(Shader::Usage usage, std::u8string shaderCode);
 		[[nodiscard]] Ref<opengl::RenderPipeline> createGLRenderPipeline(RenderPipeline::Config config) const;
+
+		[[nodiscard]] Ref<opengl::VertexArray> createGLVertexArray(VertexArray::Config config) const;
+		void setGLVertexArray(Ref<VertexArray> vertexArray) const;
 	private:
 		void destroyGLShader(const Shader* shader) const;
 	};

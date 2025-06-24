@@ -14,4 +14,11 @@ namespace helix
 		OpenGL,
 		Default = OpenGL,
 	};
+
+	enum class PrimitiveTopology
+	{
+		Points,
+		Lines,
+		Triangles,
+	};
 }

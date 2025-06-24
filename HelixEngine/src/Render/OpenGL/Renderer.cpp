@@ -1,13 +1,11 @@
 #include <HelixEngine/Core/Window.hpp>
-#include <HelixEngine/Render/Command/BeginCommand.hpp>
-#include <HelixEngine/Render/Command/CreateVertexBufferCommand.hpp>
+#include <HelixEngine/Render/Command/GeneralCommand.hpp>
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
 #include <HelixEngine/Render/OpenGL/Resource.hpp>
 #include <HelixEngine/Util/Logger.hpp>
 #include <SDL3/SDL.h>
 #include <glad/glad.h>
 #include <HelixEngine/Render/OpenGL/ExclusiveCommand.hpp>
-#include <HelixEngine/Render/Command/SetRenderPipeline.hpp>
 
 namespace helix::opengl
 {
@@ -99,6 +97,9 @@ namespace helix::opengl
 				case RenderCommand::Type::SetRenderPipeline:
 					setRenderPipelineProc();
 					break;
+				case RenderCommand::Type::SetGLVertexArray:
+					setGLVertexArrayProc();
+					break;
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的RenderCommand");
 					break;
@@ -124,8 +125,23 @@ namespace helix::opengl
 	void Renderer::setRenderPipelineProc() const
 	{
 		auto cmd = renderCmd->cast<SetRenderPipelineCommand>();
-		auto pipeline = reinterpret_cast<RenderPipeline*>(cmd->renderPipeline.get());
-		glUseProgram(pipeline->getGLProgram());
+		if (auto pipeline = reinterpret_cast<RenderPipeline*>(cmd->renderPipeline.get()))
+		{
+			glUseProgram(pipeline->getGLProgram());
+			return;
+		}
+		glUseProgram(0);
+	}
+
+	void Renderer::setGLVertexArrayProc() const
+	{
+		auto cmd = renderCmd->cast<SetGLVertexArrayCommand>();
+		if (auto vertexArray = cmd->vertexArray.get())
+		{
+			glBindVertexArray(vertexArray->getGLVertexArray());
+			return;
+		}
+		glBindVertexArray(0);
 	}
 
 	void Renderer::resourceProc(const ResourcePipeline::ListRef& list)
@@ -143,6 +159,9 @@ namespace helix::opengl
 					break;
 				case ResourceCommand::Type::CreateGLRenderPipeline:
 					createGLRenderPipelineProc();
+					break;
+				case ResourceCommand::Type::CreateGLVertexArray:
+					createGLVertexArrayProc();
 					break;
 				case ResourceCommand::Type::DestroyGLShader:
 					destroyGLShaderProc();
@@ -167,6 +186,7 @@ namespace helix::opengl
 		             static_cast<GLsizeiptr>(cvbCmd->vertexData->getSize()),
 		             cvbCmd->vertexData->getPointer(),
 		             vb->getGLUsage());
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 	void Renderer::createGLShaderProc() const
@@ -226,6 +246,29 @@ namespace helix::opengl
 		}
 	}
 
+	void Renderer::createGLVertexArrayProc() const
+	{
+		auto cmd = resourceCmd->cast<CreateGLVertexArrayCommand>();
+		auto vertexArray = cmd->vertexArray;
+		glGenVertexArrays(1, &vertexArray->vertexArrayGL);
+		glBindVertexArray(vertexArray->getGLVertexArray());
+
+		//Vertex Buffer
+		auto vb = reinterpret_cast<VertexBuffer*>(cmd->config.vertexBuffer.get());
+		glBindBuffer(GL_ARRAY_BUFFER, vb->getGLVertexBuffer());
+		vertexArray->vertexBuffer = cmd->config.vertexBuffer;
+
+		//Vertex Attribute
+		for (const auto& attr: cmd->config.attributes)
+		{
+			glEnableVertexAttribArray(attr.location);
+			glVertexAttribPointer(attr.location, attr.size, attr.elementType,
+			                      attr.normalized, attr.stride, attr.offset);
+		}
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
 	void Renderer::destroyGLShaderProc() const
 	{
 		auto cmd = resourceCmd->cast<DestroyGLShaderCommand>();
@@ -257,6 +300,25 @@ namespace helix::opengl
 		cmd.renderPipeline = renderPipeline;
 		getResourcePipeline()->addCommand<CreateGLRenderPipelineCommand>(std::move(cmd));
 		return renderPipeline;
+	}
+
+	Ref<opengl::VertexArray> Renderer::createGLVertexArray(VertexArray::Config config) const
+	{
+		Ref vertexArray = new VertexArray;
+		CreateGLVertexArrayCommand cmd;
+		cmd.type = ResourceCommand::Type::CreateGLVertexArray;
+		cmd.config = std::move(config);
+		cmd.vertexArray = vertexArray;
+		getResourcePipeline()->addCommand<CreateGLVertexArrayCommand>(std::move(cmd));
+		return vertexArray;
+	}
+
+	void Renderer::setGLVertexArray(Ref<VertexArray> vertexArray) const
+	{
+		SetGLVertexArrayCommand cmd;
+		cmd.type = RenderCommand::Type::SetGLVertexArray;
+		cmd.vertexArray = std::move(vertexArray);
+		getRenderQueue()->addCommand<SetGLVertexArrayCommand>(std::move(cmd));
 	}
 
 	void Renderer::destroyGLShader(const Shader* shader) const

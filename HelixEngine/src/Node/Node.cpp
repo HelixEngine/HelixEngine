@@ -1,7 +1,6 @@
-#include <HelixEngine/Node/Node.hpp>
 #include <HelixEngine/Core/Window.hpp>
-
-#include "HelixEngine/Util/Logger.hpp"
+#include <HelixEngine/Node/Node.hpp>
+#include <HelixEngine/Util/Logger.hpp>
 
 void helix::Node2D::update(Duration deltaTime)
 {
@@ -11,7 +10,27 @@ void helix::Node2D::render(Renderer* renderer)
 {
 }
 
-void helix::Node2D::addChild(Ref<Node2D>& child)
+void helix::Node2D::updateAll(Duration deltaTime)
+{
+	//以后可能要加入Layer的顺序控制
+	update(deltaTime);
+	for (auto& child: children)
+	{
+		child->updateAll(deltaTime);
+	}
+}
+
+void helix::Node2D::renderAll(Renderer* renderer)
+{
+	//以后可能要加入Layer的顺序控制
+	render(renderer);
+	for (auto& child: children)
+	{
+		child->renderAll(renderer);
+	}
+}
+
+void helix::Node2D::addChild(const Ref<Node2D>& child)
 {
 	if (child->parent)
 	{
