@@ -17,8 +17,6 @@ namespace helix
 
 	enum class PrimitiveTopology
 	{
-		Points,
-		Lines,
-		Triangles,
+		TriangleList,
 	};
 }

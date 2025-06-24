@@ -100,6 +100,12 @@ namespace helix::opengl
 				case RenderCommand::Type::SetGLVertexArray:
 					setGLVertexArrayProc();
 					break;
+				case RenderCommand::Type::SetPrimitiveTopology:
+					setPrimitiveTopologyProc();
+					break;
+				case RenderCommand::Type::Draw:
+					drawProc();
+					break;
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的RenderCommand");
 					break;
@@ -131,6 +137,18 @@ namespace helix::opengl
 			return;
 		}
 		glUseProgram(0);
+	}
+
+	void Renderer::setPrimitiveTopologyProc()
+	{
+		auto cmd = renderCmd->cast<SetPrimitiveTopologyCommand>();
+		primitiveTopology = cmd->primitiveTopology;
+	}
+
+	void Renderer::drawProc() const
+	{
+		auto cmd = renderCmd->cast<DrawCommand>();
+		glDrawArrays(getGLPrimitiveTopology(primitiveTopology), 0, static_cast<GLsizei>(cmd->vertexCount));
 	}
 
 	void Renderer::setGLVertexArrayProc() const
@@ -278,6 +296,19 @@ namespace helix::opengl
 	void Renderer::attachGLShader(const RenderPipeline* pipeline, const helix::Shader* shader)
 	{
 		glAttachShader(pipeline->getGLProgram(), reinterpret_cast<const Shader*>(shader)->getGLShader());
+	}
+
+	GLenum Renderer::getGLPrimitiveTopology(PrimitiveTopology topology)
+	{
+		switch (topology)
+		{
+			case PrimitiveTopology::TriangleList:
+				return GL_TRIANGLES;
+			default:
+				break;
+		}
+		Logger::warning(u8"无法识别的PrimitiveTopology，默认使用TriangleList");
+		return GL_TRIANGLES;
 	}
 
 	Ref<opengl::Shader> Renderer::createGLShader(Shader::Usage usage, std::u8string shaderCode)

@@ -25,4 +25,14 @@ namespace helix
 	{
 		Ref<RenderPipeline> renderPipeline{};
 	};
+
+	struct SetPrimitiveTopologyCommand final : RenderCommand
+	{
+		PrimitiveTopology primitiveTopology{};
+	};
+
+	struct DrawCommand final : RenderCommand
+	{
+		uint32_t vertexCount{};
+	};
 }

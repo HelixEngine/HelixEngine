@@ -13,6 +13,8 @@ namespace helix
 			Begin,
 			End,
 			SetRenderPipeline,
+			SetPrimitiveTopology,
+			Draw,
 
 			//OpenGL Exclusive
 			SetGLVertexArray,

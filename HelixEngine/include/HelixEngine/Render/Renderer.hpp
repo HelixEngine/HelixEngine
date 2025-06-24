@@ -36,6 +36,7 @@ namespace helix
 		createVertexBuffer(VertexBuffer::Usage usage, Ref<MemoryBlock> vertexData) const;
 		void setRenderPipeline(Ref<RenderPipeline> renderPipeline) const;
 		void setPrimitiveTopology(PrimitiveTopology primitiveTopology) const;
+		void draw(uint32_t vertexCount) const;
 	private:
 		Ref<RenderQueue> renderQueue = new RenderQueue;
 		Ref<ResourcePipeline> resourcePipeline = new ResourcePipeline;

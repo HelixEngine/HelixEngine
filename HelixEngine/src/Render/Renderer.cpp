@@ -60,7 +60,18 @@ namespace helix
 
 	void Renderer::setPrimitiveTopology(PrimitiveTopology primitiveTopology) const
 	{
+		SetPrimitiveTopologyCommand cmd;
+		cmd.type = RenderCommand::Type::SetPrimitiveTopology;
+		cmd.primitiveTopology = primitiveTopology;
+		renderQueue->addCommand<SetPrimitiveTopologyCommand>(std::move(cmd));
+	}
 
+	void Renderer::draw(uint32_t vertexCount) const
+	{
+		DrawCommand cmd;
+		cmd.type = RenderCommand::Type::Draw;
+		cmd.vertexCount = vertexCount;
+		renderQueue->addCommand<DrawCommand>(std::move(cmd));
 	}
 
 	void Renderer::startRenderThread(CommandProcessThreadFunc func)

@@ -16,7 +16,8 @@ public:
 		auto glRenderer = reinterpret_cast<opengl::Renderer*>(renderer);
 		glRenderer->setRenderPipeline(pipeline);
 		glRenderer->setGLVertexArray(vertexArray);
-		Logger::info(u8"render!");
+		glRenderer->setPrimitiveTopology(PrimitiveTopology::TriangleList);
+		glRenderer->draw(3);
 	}
 };
 
@@ -27,14 +28,19 @@ int main()
 	window2->setName(u8"opengl2");
 	Ref scene = new Scene2D;
 	window->enter(scene);
+	Ref scene2 = new Scene2D;
+	window2->enter(scene2);
 
 	Ref renderNode = new RenderNode;
 	scene->addChild(renderNode);
 
+	Ref renderNode2 = new RenderNode;
+	scene2->addChild(renderNode2);
+
 	std::vector vertexData = {
-			0.f, 0.f,
-			1.f, 0.f,
-			0.f, 1.f,
+			-0.5f, -0.5f, 0.0f,
+			0.5f, -0.5f, 0.0f,
+			0.0f, 0.5f, 0.0f
 	};
 
 	auto vertexBuffer = window->getRenderer()->createVertexBuffer(
@@ -76,7 +82,7 @@ void main()
 	opengl::VertexArray::Config vaConfig;
 	vaConfig.vertexBuffer = vertexBuffer;
 	vaConfig.attributes = {
-			{0, 3, GL_FLOAT, GL_FALSE, 2 * sizeof(float), nullptr}
+			{0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr}
 	};
 
 	auto vao = glRenderer->createGLVertexArray(vaConfig);

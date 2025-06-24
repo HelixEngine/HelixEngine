@@ -42,6 +42,9 @@ namespace helix::opengl
 		ResourceCommand* resourceCmd{};
 		SDL_GLContext renderContext{};
 		SDL_GLContext resourceContext{};
+
+		PrimitiveTopology primitiveTopology = PrimitiveTopology::TriangleList;
+
 		[[nodiscard]] SDL_GLContext createSDLContext() const;
 		void makeCurrentContext(SDL_GLContext context) const;
 		[[nodiscard]] SDL_GLContext createCurrentSDLContext() const;
@@ -50,6 +53,8 @@ namespace helix::opengl
 		void beginProc() const;
 		void endProc() const;
 		void setRenderPipelineProc() const;
+		void setPrimitiveTopologyProc();
+		void drawProc() const;
 		void setGLVertexArrayProc() const;
 
 		void resourceProc(const ResourcePipeline::ListRef& list);
@@ -61,6 +66,7 @@ namespace helix::opengl
 
 		//gl tool func
 		static void attachGLShader(const RenderPipeline* pipeline, const helix::Shader* shader);
+		static GLenum getGLPrimitiveTopology(PrimitiveTopology topology);
 	public:
 		[[nodiscard]] Ref<opengl::Shader> createGLShader(Shader::Usage usage, std::u8string shaderCode);
 		[[nodiscard]] Ref<opengl::RenderPipeline> createGLRenderPipeline(RenderPipeline::Config config) const;
