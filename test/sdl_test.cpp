@@ -4,6 +4,32 @@
 
 using namespace helix;
 
+void post_call_callback_default(const char* name, void* funcPtr, int lenArgs, ...)
+{
+	GLenum errorCode = glad_glGetError();
+	std::u8string_view errorType;
+	switch (errorCode)
+	{
+		case GL_NO_ERROR:
+			return;
+		case GL_INVALID_ENUM:
+			errorType = u8"GL_INVALID_ENUM";
+			break;
+		case GL_INVALID_INDEX:
+			errorType = u8"GL_INVALID_INDEX";
+			break;
+		case GL_INVALID_OPERATION:
+			errorType = u8"GL_INVALID_OPERATION";
+			break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION:
+			errorType = u8"GL_INVALID_FRAMEBUFFER_OPERATION";
+			break;
+		default:
+			errorType = u8"未知错误";
+			break;
+	}
+	Logger::error(errorType, u8"，调用了OpenGL函数：", std::u8string_view(reinterpret_cast<const char8_t*>(name)));
+}
 
 class RenderNode final : public Node2D
 {
@@ -23,6 +49,7 @@ public:
 
 int main()
 {
+	glad_set_post_callback(post_call_callback_default);
 	Ref window = new Window{u8"Hello, HelixEngine", {800, 600}};
 	Ref window2 = new Window{u8"Hello, HelixEngine2", {800, 600}};
 	window2->setName(u8"opengl2");
@@ -38,9 +65,9 @@ int main()
 	scene2->addChild(renderNode2);
 
 	std::vector vertexData = {
-			-0.5f, -0.5f, 0.0f,
-			0.5f, -0.5f, 0.0f,
-			0.0f, 0.5f, 0.0f
+			-0.5f, -0.5f, 0.f, 1.f, 0.f,
+			0.5f, -0.5f, 0.f, 0.f, 1.f,
+			0.0f, 0.5f, 1.f, 0.f, 0.f,
 	};
 
 	auto vertexBuffer = window->getRenderer()->createVertexBuffer(
@@ -53,21 +80,25 @@ int main()
 	auto vertexCode =
 			u8R"(
 #version 330 core
-layout (location = 0) in vec3 aPos;
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec3 aColor;
+out vec3 vertexColor;
 void main()
 {
-	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+	gl_Position = vec4(aPos.x, aPos.y, 0.f, 1.0);
+	vertexColor = aColor;
 })";
 	auto vertexShader = glRenderer->createGLShader(Shader::Usage::Vertex, vertexCode);
 
 	auto pixelCode =
 			u8R"(
 #version 330 core
+in vec3 vertexColor;
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(1.0f, 0.f, 0.f, 1.0f);
+    FragColor = vec4(vertexColor,1.f);
 } )";
 
 	auto pixelShader = glRenderer->createGLShader(Shader::Usage::Pixel, pixelCode);
@@ -84,17 +115,12 @@ void main()
 	opengl::VertexArray::Config vaConfig;
 	vaConfig.vertexBuffer = vertexBuffer;
 	vaConfig.attributes = {
-			{0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr}
-	};
-
-	opengl::VertexArray::Config vaConfig2;
-	vaConfig2.vertexBuffer = vertexBuffer;
-	vaConfig2.attributes = {
-			{0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr}
+			{0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr},
+			{1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float))},
 	};
 
 	auto vao = glRenderer->createGLVertexArray(vaConfig);
-	auto vao2 = glRenderer2->createGLVertexArray(vaConfig2);
+	auto vao2 = glRenderer2->createGLVertexArray(vaConfig);
 
 	renderNode->pipeline = pipeline;
 	renderNode->vertexArray = vao;

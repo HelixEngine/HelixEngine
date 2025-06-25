@@ -281,6 +281,8 @@ namespace helix::opengl
 		}
 	}
 
+	std::atomic_uint test_count = 0;
+
 	void Renderer::createGLVertexArrayProc() const
 	{
 		auto cmd = resourceCmd->cast<CreateGLVertexArrayCommand>();
@@ -291,14 +293,22 @@ namespace helix::opengl
 		//Vertex Buffer
 		auto vb = reinterpret_cast<VertexBuffer*>(cmd->config.vertexBuffer.get());
 		glBindBuffer(GL_ARRAY_BUFFER, vb->getGLVertexBuffer());
+		Logger::info(u8"bind! ", (std::basic_stringstream<char8_t>{} << std::this_thread::get_id()).str());
 		vertexArray->vertexBuffer = cmd->config.vertexBuffer;
 
 		//Vertex Attribute
 		for (const auto& attr: cmd->config.attributes)
 		{
+			GLint currBind = 0;
+			glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &currBind);
+			Logger::info(u8"begin attr! ", (std::basic_stringstream<char8_t>{} << std::this_thread::get_id()).str(),
+			             u8" current bind: ", currBind);
 			glEnableVertexAttribArray(attr.location);
 			glVertexAttribPointer(attr.location, attr.size, attr.elementType,
 			                      attr.normalized, attr.stride, attr.offset);
+			glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &currBind);
+			Logger::info(u8"end attr! ", (std::basic_stringstream<char8_t>{} << std::this_thread::get_id()).str(),
+			             u8" current bind: ", currBind);
 		}
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
