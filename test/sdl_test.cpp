@@ -64,15 +64,21 @@ int main()
 	Ref renderNode2 = new RenderNode;
 	scene2->addChild(renderNode2);
 
-	std::vector vertexData = {
-			-0.5f, -0.5f, 0.f, 1.f, 0.f,
-			0.5f, -0.5f, 0.f, 0.f, 1.f,
-			0.0f, 0.5f, 1.f, 0.f, 0.f,
+	struct VertexData
+	{
+		Vector2F position;
+		Color color;
+	};
+
+	VertexData vertexData[] = {
+			{{-0.5f, -0.5f}, Color::Blue},
+			{{0.5f, -0.5f}, Color::Green},
+			{{0.f, 0.5f}, Color::Red},
 	};
 
 	auto vertexBuffer = window->getRenderer()->createVertexBuffer(
 			VertexBuffer::Usage::Static,
-			new MemoryBlock{vertexData.data(), vertexData.size() * sizeof(float)});
+			new MemoryBlock{vertexData, sizeof(vertexData)});
 
 	auto glRenderer = reinterpret_cast<opengl::Renderer*>(window->getRenderer().get());
 	auto glRenderer2 = reinterpret_cast<opengl::Renderer*>(window2->getRenderer().get());
@@ -107,7 +113,7 @@ void main()
 	config.vertex = vertexShader;
 	config.pixel = pixelShader;
 
-	auto pipeline = glRenderer->createGLRenderPipeline(config);
+	auto pipeline = opengl::Renderer::createGLRenderPipeline(config);
 
 	vertexShader.reset();
 	pixelShader.reset();
@@ -115,8 +121,8 @@ void main()
 	opengl::VertexArray::Config vaConfig;
 	vaConfig.vertexBuffer = vertexBuffer;
 	vaConfig.attributes = {
-			{0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr},
-			{1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float))},
+			{0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), nullptr},
+			{1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), reinterpret_cast<void*>(offsetof(VertexData, color))},
 	};
 
 	auto vao = glRenderer->createGLVertexArray(vaConfig);
@@ -131,4 +137,3 @@ void main()
 	//写一下SDL的main loop
 	return Game::run();
 }
-

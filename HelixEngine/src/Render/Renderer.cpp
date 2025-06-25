@@ -43,10 +43,10 @@ namespace helix
 	{
 		auto vb = createNativeVertexBuffer(usage, vertexData);
 		CreateVertexBufferCommand cmd;
-		cmd.type = ResourceCommand::Type::CreateVertexBuffer;
+		cmd.type = SharedResourceCommand::Type::CreateVertexBuffer;
 		cmd.vertexBuffer = vb;
 		cmd.vertexData = std::move(vertexData);
-		resourcePipeline->addCommand<CreateVertexBufferCommand>(std::move(cmd));
+		getSharedResourcePipeline()->addCommand<CreateVertexBufferCommand>(std::move(cmd));
 		return vb;
 	}
 
@@ -74,8 +74,50 @@ namespace helix
 		renderQueue->addCommand<DrawCommand>(std::move(cmd));
 	}
 
-	void Renderer::startRenderThread(CommandProcessThreadFunc func)
+	void Renderer::startMainRenderThread(std::jthread& mainRenderThread, const bool& isRunning)
 	{
-		renderThread = std::jthread{std::move(func)};
+		mainRenderThread = std::jthread([&]()
+		{
+			while (isRunning)
+			{
+				//渲染调度
+
+				//2.sharedResourceProc(opengl)
+				{
+					Window* sharedResourceProcWindow = nullptr;
+					for (auto window: Window::getAllWindows())
+					{
+						if (window->getGraphicsApi() == GraphicsApi::OpenGL)
+						{
+							sharedResourceProcWindow = window;
+							break;
+						}
+					}
+
+					if (sharedResourceProcWindow)
+						std::jthread resourceThread([sharedResourceProcWindow]
+						{
+							sharedResourceProcWindow->getRenderer()->sharedResourceWorkload();
+						});
+				}
+
+				//3.renderProc
+				{
+					std::vector<std::jthread> renderThreads(Window::getAllWindows().size());
+					for (size_t i = 0; i < renderThreads.size(); ++i)
+					{
+						renderThreads[i] = std::jthread([i]
+						{
+							Window::getAllWindows()[i]->getRenderer()->renderWorkload();
+						});
+					}
+
+					for (auto& renderThread: renderThreads)
+					{
+						renderThread.join();
+					}
+				}
+			}
+		});
 	}
 }

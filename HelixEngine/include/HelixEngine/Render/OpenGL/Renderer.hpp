@@ -15,7 +15,7 @@ namespace helix::opengl
 		friend class Window;
 		friend class Shader;
 
-		//GL初始化时，如果2个窗口同时初始化，会出现内存访问冲突导致崩溃
+		//GL初始化时，如果多个窗口同时初始化，会出现内存访问冲突导致崩溃
 		static inline std::mutex glInitMtx;
 
 		//resource method//
@@ -32,17 +32,17 @@ namespace helix::opengl
 		//render thread//
 
 		void startRun() override;
-		CommandProcessThreadFunc getRenderThreadFunc() override;
-
-		void renderLoopFunc();
-		std::stop_token renderToken;
 
 		//cmd process//
 
 		RenderCommand* renderCmd{};
 		ResourceCommand* resourceCmd{};
-		SDL_GLContext renderContext{};
-		SDL_GLContext resourceContext{};
+		SharedResourceCommand* sharedResourceCmd{};
+
+		static inline Ref<SharedResourcePipeline> sharedResourcePipeline = new SharedResourcePipeline;
+		const Ref<SharedResourcePipeline>& getSharedResourcePipeline() const override;
+
+		SDL_GLContext sdlContext{};
 
 		PrimitiveTopology primitiveTopology = PrimitiveTopology::TriangleList;
 
@@ -59,10 +59,12 @@ namespace helix::opengl
 		void setGLVertexArrayProc() const;
 
 		void resourceProc(const ResourcePipeline::ListRef& list);
+		void createGLVertexArrayProc() const;
+
+		void sharedResourceProc(const SharedResourcePipeline::ListRef& list);
 		void createVertexBufferProc() const;
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;
-		void createGLVertexArrayProc() const;
 		void destroyGLShaderProc() const;
 
 		//gl tool func
@@ -70,11 +72,16 @@ namespace helix::opengl
 		static GLenum getGLPrimitiveTopology(PrimitiveTopology topology);
 	public:
 		[[nodiscard]] Ref<opengl::Shader> createGLShader(Shader::Usage usage, std::u8string shaderCode);
-		[[nodiscard]] Ref<opengl::RenderPipeline> createGLRenderPipeline(RenderPipeline::Config config) const;
+		[[nodiscard]] static Ref<opengl::RenderPipeline> createGLRenderPipeline(RenderPipeline::Config config);
 
 		[[nodiscard]] Ref<opengl::VertexArray> createGLVertexArray(VertexArray::Config config) const;
 		void setGLVertexArray(Ref<VertexArray> vertexArray) const;
 	private:
-		void destroyGLShader(const Shader* shader) const;
+		static void destroyGLShader(const Shader* shader);
+
+		void readyRender() override;
+
+		void sharedResourceWorkload() override;
+		void renderWorkload() override;
 	};
 }

@@ -36,13 +36,33 @@ namespace helix
 		enum class Type : int32_t
 		{
 			Unknown = -1,
+
+			//OpenGL Exclusive
+			CreateGLVertexArray,
+		};
+
+		Type type = Type::Unknown;
+
+		template<typename ActualType>
+		ActualType* cast()
+		{
+			return reinterpret_cast<ActualType*>(this);
+		}
+	};
+
+	struct SharedResourceCommand
+	{
+		virtual ~SharedResourceCommand() = default;
+
+		enum class Type : int32_t
+		{
+			Unknown = -1,
 			CreateVertexBuffer,
 
 			//OpenGL Exclusive
 			CreateGLShader,
 			CreateGLRenderPipeline,
 			DestroyGLShader,
-			CreateGLVertexArray,
 		};
 
 		Type type = Type::Unknown;

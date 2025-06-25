@@ -14,6 +14,8 @@ namespace helix
 	using RenderQueue = CommandQueue<RenderCommand>;
 	using ResourceList = CommandList<ResourceCommand>;
 	using ResourcePipeline = CommandPipeline<ResourceCommand>;
+	using SharedResourceList = CommandList<SharedResourceCommand>;
+	using SharedResourcePipeline = CommandPipeline<SharedResourceCommand>;
 
 	class Renderer : public Object
 	{
@@ -23,6 +25,7 @@ namespace helix
 		~Renderer() override;
 		[[nodiscard]] const Ref<RenderQueue>& getRenderQueue() const;
 		[[nodiscard]] const Ref<ResourcePipeline>& getResourcePipeline() const;
+		[[nodiscard]] virtual const Ref<SharedResourcePipeline>& getSharedResourcePipeline() const = 0;
 		[[nodiscard]] Window* getWindow() const;
 
 		//Render Command
@@ -41,18 +44,21 @@ namespace helix
 		Ref<RenderQueue> renderQueue = new RenderQueue;
 		Ref<ResourcePipeline> resourcePipeline = new ResourcePipeline;
 		Window* window = nullptr;
-		std::jthread renderThread;
 	protected:
 		using CommandProcessThreadFunc = std::function<void(const std::stop_token&)>;
 		[[nodiscard]] virtual Ref<VertexBuffer> createNativeVertexBuffer(
 				VertexBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const = 0;
 	private:
-		void startRenderThread(CommandProcessThreadFunc func);
-
 		//Game run
 
 		virtual void startRun() = 0;
-		[[nodiscard]] virtual CommandProcessThreadFunc getRenderThreadFunc() = 0;
+
+		virtual void readyRender() = 0;
+
+		virtual void sharedResourceWorkload() = 0;
+		virtual void renderWorkload() = 0;
+
+		static void startMainRenderThread(std::jthread& mainRenderThread, const bool& isRunning);
 	};
 }

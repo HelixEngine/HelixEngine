@@ -118,8 +118,6 @@ namespace helix
 	{
 		if (sdlWindow)
 		{
-			renderer->renderThread.request_stop();
-			renderer->renderThread.join();
 			allWindows.erase(std::ranges::find(allWindows, this));
 			SDL_DestroyWindow(sdlWindow);
 			sdlWindow = nullptr;
@@ -165,9 +163,15 @@ namespace helix
 			window->renderer->startRun();
 		}
 
-		for (auto window: allWindows)
+		std::vector<std::thread> readyThreads(Window::allWindows.size());
+		for (size_t i = 0; i < readyThreads.size(); ++i)
 		{
-			window->renderer->startRenderThread(window->renderer->getRenderThreadFunc());
+			readyThreads[i] = std::thread([i] { Window::allWindows[i]->getRenderer()->readyRender(); });
+		}
+
+		for (auto& readyThread: readyThreads)
+		{
+			readyThread.join();
 		}
 	}
 

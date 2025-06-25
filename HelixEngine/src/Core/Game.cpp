@@ -2,35 +2,22 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <SDL3/SDL.h>
 
-#include "HelixEngine/Render/OpenGL/Resource.hpp"
-
-//
-// void helix::Game::setCommandLineArguments(const int argc, char** argv)
-// {
-//
-// }
-//
-// int helix::Game::run()
-// {
-// 	return 0;
-// }
-//
-// helix::Game::Instance::Instance()
-// {
-//
-// }
-
 int helix::Game::run()
 {
 	Window::SDLInit();
-	Window::startRun();
 
-	//处理消息循环
+	Window::startRun();
 
 	SDL_Event event;
 	bool isRunning = true;
+
+	std::jthread mainRenderThread;
+	Renderer::startMainRenderThread(mainRenderThread, isRunning);
+
 	while (isRunning)
 	{
+
+		//处理消息循环
 		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)

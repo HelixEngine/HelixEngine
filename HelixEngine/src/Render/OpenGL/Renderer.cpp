@@ -33,34 +33,13 @@ namespace helix::opengl
 
 	void Renderer::startRun()
 	{
-		renderContext = createSDLContext();
+		sdlContext = createSDLContext();
 		makeCurrentContext(nullptr);
 	}
 
-	Renderer::CommandProcessThreadFunc Renderer::getRenderThreadFunc()
+	const Ref<SharedResourcePipeline>& Renderer::getSharedResourcePipeline() const
 	{
-		return [=](const std::stop_token& token)
-		{
-			this->renderToken = token;
-			renderLoopFunc();
-		};
-	}
-
-	void Renderer::renderLoopFunc()
-	{
-		makeCurrentContext(renderContext);
-		glInitMtx.lock();
-		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
-		glInitMtx.unlock();
-
-		auto& queue = getRenderQueue();
-		auto& pipeline = getResourcePipeline();
-		while (!renderToken.stop_requested())
-		{
-			resourceProc(pipeline->receive());
-			renderProc(queue->receive());
-		}
-		SDL_GL_DestroyContext(renderContext);
+		return sharedResourcePipeline;
 	}
 
 	SDL_GLContext Renderer::createSDLContext() const
@@ -72,9 +51,9 @@ namespace helix::opengl
 			if (window->getGraphicsApi() == GraphicsApi::OpenGL)
 			{
 				auto glRenderer = reinterpret_cast<Renderer*>(window->getRenderer().get());
-				if (!glRenderer->renderContext)
+				if (!glRenderer->sdlContext)
 					continue;
-				SDL_GL_MakeCurrent(window->getSDLWindow(), glRenderer->renderContext);
+				SDL_GL_MakeCurrent(window->getSDLWindow(), glRenderer->sdlContext);
 				break;
 			}
 		}
@@ -187,20 +166,8 @@ namespace helix::opengl
 			this->resourceCmd = cmd.get();
 			switch (cmd->type)
 			{
-				case ResourceCommand::Type::CreateVertexBuffer:
-					createVertexBufferProc();
-					break;
-				case ResourceCommand::Type::CreateGLShader:
-					createGLShaderProc();
-					break;
-				case ResourceCommand::Type::CreateGLRenderPipeline:
-					createGLRenderPipelineProc();
-					break;
 				case ResourceCommand::Type::CreateGLVertexArray:
 					createGLVertexArrayProc();
-					break;
-				case ResourceCommand::Type::DestroyGLShader:
-					destroyGLShaderProc();
 					break;
 				case ResourceCommand::Type::Unknown:
 				default:
@@ -210,9 +177,60 @@ namespace helix::opengl
 		}
 	}
 
+	void Renderer::createGLVertexArrayProc() const
+	{
+		auto cmd = resourceCmd->cast<CreateGLVertexArrayCommand>();
+		auto vertexArray = cmd->vertexArray;
+		glGenVertexArrays(1, &vertexArray->vertexArrayGL);
+		glBindVertexArray(vertexArray->getGLVertexArray());
+
+		//Vertex Buffer
+		auto vb = reinterpret_cast<VertexBuffer*>(cmd->config.vertexBuffer.get());
+		glBindBuffer(GL_ARRAY_BUFFER, vb->getGLVertexBuffer());
+		vertexArray->vertexBuffer = cmd->config.vertexBuffer;
+
+		//Vertex Attribute
+		for (const auto& attr: cmd->config.attributes)
+		{
+			glEnableVertexAttribArray(attr.location);
+			glVertexAttribPointer(attr.location, attr.size, attr.elementType,
+			                      attr.normalized, attr.stride, attr.offset);
+		}
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
+
+	void Renderer::sharedResourceProc(const SharedResourcePipeline::ListRef& list)
+	{
+		for (auto& cmd: list->getCommands())
+		{
+			this->sharedResourceCmd = cmd.get();
+			switch (cmd->type)
+			{
+				case SharedResourceCommand::Type::CreateVertexBuffer:
+					createVertexBufferProc();
+					break;
+				case SharedResourceCommand::Type::CreateGLShader:
+					createGLShaderProc();
+					break;
+				case SharedResourceCommand::Type::CreateGLRenderPipeline:
+					createGLRenderPipelineProc();
+					break;
+				case SharedResourceCommand::Type::DestroyGLShader:
+					destroyGLShaderProc();
+					break;
+				case SharedResourceCommand::Type::Unknown:
+				default:
+					Logger::warning(u8"OpenGL Renderer: 未知的ResourceCommand");
+					break;
+			}
+		}
+	}
+
+
 	void Renderer::createVertexBufferProc() const
 	{
-		auto cvbCmd = resourceCmd->cast<CreateVertexBufferCommand>();
+		auto cvbCmd = sharedResourceCmd->cast<CreateVertexBufferCommand>();
 		auto vb = reinterpret_cast<VertexBuffer*>(cvbCmd->vertexBuffer);
 		glGenBuffers(1, &vb->vertexBufferGL);
 		if (!cvbCmd->vertexData)
@@ -227,7 +245,7 @@ namespace helix::opengl
 
 	void Renderer::createGLShaderProc() const
 	{
-		auto cmd = resourceCmd->cast<CreateGLShaderCommand>();
+		auto cmd = sharedResourceCmd->cast<CreateGLShaderCommand>();
 		auto shader = cmd->shader;
 		shader->shaderGL = glCreateShader(shader->getGLUsage());
 
@@ -262,7 +280,7 @@ namespace helix::opengl
 
 	void Renderer::createGLRenderPipelineProc() const
 	{
-		auto cmd = resourceCmd->cast<CreateGLRenderPipelineCommand>();
+		auto cmd = sharedResourceCmd->cast<CreateGLRenderPipelineCommand>();
 		auto pipeline = cmd->renderPipeline;
 		pipeline->programGL = glCreateProgram();
 		attachGLShader(pipeline, cmd->config.vertex);
@@ -281,42 +299,9 @@ namespace helix::opengl
 		}
 	}
 
-	std::atomic_uint test_count = 0;
-
-	void Renderer::createGLVertexArrayProc() const
-	{
-		auto cmd = resourceCmd->cast<CreateGLVertexArrayCommand>();
-		auto vertexArray = cmd->vertexArray;
-		glGenVertexArrays(1, &vertexArray->vertexArrayGL);
-		glBindVertexArray(vertexArray->getGLVertexArray());
-
-		//Vertex Buffer
-		auto vb = reinterpret_cast<VertexBuffer*>(cmd->config.vertexBuffer.get());
-		glBindBuffer(GL_ARRAY_BUFFER, vb->getGLVertexBuffer());
-		Logger::info(u8"bind! ", (std::basic_stringstream<char8_t>{} << std::this_thread::get_id()).str());
-		vertexArray->vertexBuffer = cmd->config.vertexBuffer;
-
-		//Vertex Attribute
-		for (const auto& attr: cmd->config.attributes)
-		{
-			GLint currBind = 0;
-			glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &currBind);
-			Logger::info(u8"begin attr! ", (std::basic_stringstream<char8_t>{} << std::this_thread::get_id()).str(),
-			             u8" current bind: ", currBind);
-			glEnableVertexAttribArray(attr.location);
-			glVertexAttribPointer(attr.location, attr.size, attr.elementType,
-			                      attr.normalized, attr.stride, attr.offset);
-			glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &currBind);
-			Logger::info(u8"end attr! ", (std::basic_stringstream<char8_t>{} << std::this_thread::get_id()).str(),
-			             u8" current bind: ", currBind);
-		}
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-	}
-
 	void Renderer::destroyGLShaderProc() const
 	{
-		auto cmd = resourceCmd->cast<DestroyGLShaderCommand>();
+		auto cmd = sharedResourceCmd->cast<DestroyGLShaderCommand>();
 		glDeleteShader(cmd->shaderGL);
 	}
 
@@ -342,21 +327,21 @@ namespace helix::opengl
 	{
 		auto shader = createNativeShader(usage);
 		CreateGLShaderCommand cmd;
-		cmd.type = ResourceCommand::Type::CreateGLShader;
+		cmd.type = SharedResourceCommand::Type::CreateGLShader;
 		cmd.shader = shader;
 		cmd.shaderCode = std::move(shaderCode);
-		getResourcePipeline()->addCommand<CreateGLShaderCommand>(std::move(cmd));
+		sharedResourcePipeline->addCommand<CreateGLShaderCommand>(std::move(cmd));
 		return shader;
 	}
 
-	Ref<opengl::RenderPipeline> Renderer::createGLRenderPipeline(RenderPipeline::Config config) const
+	Ref<opengl::RenderPipeline> Renderer::createGLRenderPipeline(RenderPipeline::Config config)
 	{
 		auto renderPipeline = createNativeRenderPipeline();
 		CreateGLRenderPipelineCommand cmd;
-		cmd.type = ResourceCommand::Type::CreateGLRenderPipeline;
+		cmd.type = SharedResourceCommand::Type::CreateGLRenderPipeline;
 		cmd.config = std::move(config);
 		cmd.renderPipeline = renderPipeline;
-		getResourcePipeline()->addCommand<CreateGLRenderPipelineCommand>(std::move(cmd));
+		sharedResourcePipeline->addCommand<CreateGLRenderPipelineCommand>(std::move(cmd));
 		return renderPipeline;
 	}
 
@@ -379,11 +364,32 @@ namespace helix::opengl
 		getRenderQueue()->addCommand<SetGLVertexArrayCommand>(std::move(cmd));
 	}
 
-	void Renderer::destroyGLShader(const Shader* shader) const
+	void Renderer::destroyGLShader(const Shader* shader)
 	{
 		DestroyGLShaderCommand cmd;
-		cmd.type = ResourceCommand::Type::DestroyGLShader;
+		cmd.type = SharedResourceCommand::Type::DestroyGLShader;
 		cmd.shaderGL = shader->getGLShader();
-		getResourcePipeline()->addCommand<DestroyGLShaderCommand>(std::move(cmd));
+		sharedResourcePipeline->addCommand<DestroyGLShaderCommand>(std::move(cmd));
+	}
+
+	void Renderer::readyRender()
+	{
+		makeCurrentContext(sdlContext);
+		glInitMtx.lock();
+		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
+		glInitMtx.unlock();
+	}
+
+	void Renderer::sharedResourceWorkload()
+	{
+		makeCurrentContext(sdlContext);
+		sharedResourceProc(sharedResourcePipeline->receive());
+	}
+
+	void Renderer::renderWorkload()
+	{
+		makeCurrentContext(sdlContext);
+		resourceProc(getResourcePipeline()->receive());
+		renderProc(getRenderQueue()->receive());
 	}
 }

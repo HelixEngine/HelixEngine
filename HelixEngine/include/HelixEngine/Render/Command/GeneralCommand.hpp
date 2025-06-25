@@ -15,7 +15,7 @@ namespace helix
 		//后续添加RenderTarget成员以指定渲染目标，nullptr表示swapChain当前target，离屏渲染则需手动指定
 	};
 
-	struct CreateVertexBufferCommand final : ResourceCommand
+	struct CreateVertexBufferCommand final : SharedResourceCommand
 	{
 		VertexBuffer* vertexBuffer{};
 		Ref<MemoryBlock> vertexData{};
