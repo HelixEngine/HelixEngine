@@ -33,16 +33,22 @@ namespace helix::opengl
 
 	void Renderer::startRun()
 	{
-		startRenderThread([=](const std::stop_token& token)
+		renderContext = createSDLContext();
+		makeCurrentContext(nullptr);
+	}
+
+	Renderer::CommandProcessThreadFunc Renderer::getRenderThreadFunc()
+	{
+		return [=](const std::stop_token& token)
 		{
 			this->renderToken = token;
 			renderLoopFunc();
-		});
+		};
 	}
 
 	void Renderer::renderLoopFunc()
 	{
-		renderContext = createCurrentSDLContext();
+		makeCurrentContext(renderContext);
 		glInitMtx.lock();
 		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
 		glInitMtx.unlock();
@@ -55,11 +61,23 @@ namespace helix::opengl
 			renderProc(queue->receive());
 		}
 		SDL_GL_DestroyContext(renderContext);
-		Logger::info(u8"quit render thread");
 	}
 
 	SDL_GLContext Renderer::createSDLContext() const
 	{
+		for (const auto window: Window::getAllWindows())
+		{
+			if (getWindow() == window)
+				continue;
+			if (window->getGraphicsApi() == GraphicsApi::OpenGL)
+			{
+				auto glRenderer = reinterpret_cast<Renderer*>(window->getRenderer().get());
+				if (!glRenderer->renderContext)
+					continue;
+				SDL_GL_MakeCurrent(window->getSDLWindow(), glRenderer->renderContext);
+				break;
+			}
+		}
 		if (!SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1))
 			Window::sdlError(u8"OpenGL Renderer: 设置OpenGL共享上下文失败");
 		auto ctx = SDL_GL_CreateContext(getWindow()->getSDLWindow());
@@ -244,7 +262,6 @@ namespace helix::opengl
 
 	void Renderer::createGLRenderPipelineProc() const
 	{
-		Logger::info(u8"create GLRenderPipeline");
 		auto cmd = resourceCmd->cast<CreateGLRenderPipelineCommand>();
 		auto pipeline = cmd->renderPipeline;
 		pipeline->programGL = glCreateProgram();

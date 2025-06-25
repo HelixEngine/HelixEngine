@@ -59,10 +59,12 @@ namespace helix
 		void setBackgroundColor(Color color);
 		void destroy();
 		static const std::vector<Window*>& getAllWindows();
+		[[nodiscard]] GraphicsApi getGraphicsApi() const;
 	private:
 		static constexpr std::string_view sdlWindowPointerProperty = "HelixEngine:Window";
 		SDL_Window* sdlWindow = nullptr;
 		Color backgroundColor;
+		GraphicsApi graphicsApi = GraphicsApi::Default;
 
 		static void sdlError(std::u8string_view content);
 

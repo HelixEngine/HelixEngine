@@ -32,6 +32,7 @@ namespace helix::opengl
 		//render thread//
 
 		void startRun() override;
+		CommandProcessThreadFunc getRenderThreadFunc() override;
 
 		void renderLoopFunc();
 		std::stop_token renderToken;

@@ -43,7 +43,6 @@ GLenum helix::opengl::Shader::getGLUsage() const
 
 helix::opengl::Shader::~Shader()
 {
-	Logger::info(u8"destroy shader");
 	renderer->destroyGLShader(this);
 }
 

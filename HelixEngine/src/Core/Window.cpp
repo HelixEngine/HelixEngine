@@ -53,6 +53,7 @@ namespace helix
 		}
 
 		renderer->window = this;
+		graphicsApi = property.graphicsApi;
 	}
 
 	Window::~Window()
@@ -130,6 +131,11 @@ namespace helix
 		return allWindows;
 	}
 
+	GraphicsApi Window::getGraphicsApi() const
+	{
+		return graphicsApi;
+	}
+
 	void Window::sdlError(std::u8string_view content)
 	{
 		Logger::error(content, u8": [", std::u8string(reinterpret_cast<const char8_t*>(SDL_GetError())), u8"]");
@@ -157,6 +163,11 @@ namespace helix
 				window->updateThreadFunc(token);
 			}};
 			window->renderer->startRun();
+		}
+
+		for (auto window: allWindows)
+		{
+			window->renderer->startRenderThread(window->renderer->getRenderThreadFunc());
 		}
 	}
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <cstdint>
 #include <string>
 
@@ -19,6 +20,6 @@ namespace helix
 		[[nodiscard]] uint64_t getRefCount() const;
 	private:
 		std::u8string name;
-		uint64_t refCount = 0;
+		std::atomic<uint64_t> refCount = 0;
 	};
 }

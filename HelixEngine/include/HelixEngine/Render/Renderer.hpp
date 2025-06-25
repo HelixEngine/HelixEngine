@@ -47,10 +47,12 @@ namespace helix
 		[[nodiscard]] virtual Ref<VertexBuffer> createNativeVertexBuffer(
 				VertexBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const = 0;
-		void startRenderThread(CommandProcessThreadFunc func);
 	private:
+		void startRenderThread(CommandProcessThreadFunc func);
+
 		//Game run
 
 		virtual void startRun() = 0;
+		[[nodiscard]] virtual CommandProcessThreadFunc getRenderThreadFunc() = 0;
 	};
 }
