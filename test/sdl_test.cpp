@@ -4,33 +4,6 @@
 
 using namespace helix;
 
-void post_call_callback_default(const char* name, void* funcPtr, int lenArgs, ...)
-{
-	GLenum errorCode = glad_glGetError();
-	std::u8string_view errorType;
-	switch (errorCode)
-	{
-		case GL_NO_ERROR:
-			return;
-		case GL_INVALID_ENUM:
-			errorType = u8"GL_INVALID_ENUM";
-			break;
-		case GL_INVALID_INDEX:
-			errorType = u8"GL_INVALID_INDEX";
-			break;
-		case GL_INVALID_OPERATION:
-			errorType = u8"GL_INVALID_OPERATION";
-			break;
-		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			errorType = u8"GL_INVALID_FRAMEBUFFER_OPERATION";
-			break;
-		default:
-			errorType = u8"未知错误";
-			break;
-	}
-	Logger::error(errorType, u8"，调用了OpenGL函数：", std::u8string_view(reinterpret_cast<const char8_t*>(name)));
-}
-
 class RenderNode final : public Node2D
 {
 public:
@@ -49,7 +22,6 @@ public:
 
 int main()
 {
-	glad_set_post_callback(post_call_callback_default);
 	Ref window = new Window{u8"Hello, HelixEngine", {800, 600}};
 	Ref window2 = new Window{u8"Hello, HelixEngine2", {800, 600}};
 	window2->setName(u8"opengl2");

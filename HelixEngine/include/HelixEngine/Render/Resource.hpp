@@ -1,6 +1,9 @@
 #pragma once
 #include <HelixEngine/Util/Ref.hpp>
 
+#include "HelixEngine/Math/Shape.hpp"
+#include "HelixEngine/Math/Vector2.hpp"
+
 namespace helix
 {
 	class VertexBuffer : public Object
@@ -63,8 +66,12 @@ namespace helix
 		};
 	};
 
-	class VertexLayout
+	struct Viewport final
 	{
-
+		Rect<Vector2I32, Vector2I32> area;
+		int32_t minDepth = 0;
+		int32_t maxDepth = 0;
 	};
+
+	using Scissor = Rect<Vector2I32, Vector2I32>;
 }

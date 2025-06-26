@@ -83,5 +83,8 @@ namespace helix::opengl
 
 		void sharedResourceWorkload() override;
 		void renderWorkload() override;
+
+		static void gladDebugOutput(const char* name, void* funcPtr, int lenArgs, ...);
+		static inline bool isInitDebugOutput = false;
 	};
 }

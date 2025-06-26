@@ -31,6 +31,16 @@ namespace helix
 		PrimitiveTopology primitiveTopology{};
 	};
 
+	struct SetViewportCommand final : RenderCommand
+	{
+		std::vector<Viewport> viewports;
+	};
+
+	struct SetScissorCommand final : RenderCommand
+	{
+		std::vector<Scissor> scissors;
+	};
+
 	struct DrawCommand final : RenderCommand
 	{
 		uint32_t vertexCount{};

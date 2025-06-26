@@ -66,6 +66,22 @@ namespace helix
 		renderQueue->addCommand<SetPrimitiveTopologyCommand>(std::move(cmd));
 	}
 
+	void Renderer::setViewport(Viewport viewport) const
+	{
+		SetViewportCommand cmd;
+		cmd.type = RenderCommand::Type::SetViewport;
+		cmd.viewports = {viewport};
+		renderQueue->addCommand<SetViewportCommand>(std::move(cmd));
+	}
+
+	void Renderer::setScissor(Scissor scissor) const
+	{
+		SetScissorCommand cmd;
+		cmd.type = RenderCommand::Type::SetScissor;
+		cmd.scissors = {scissor};
+		renderQueue->addCommand<SetScissorCommand>(std::move(cmd));
+	}
+
 	void Renderer::draw(uint32_t vertexCount) const
 	{
 		DrawCommand cmd;

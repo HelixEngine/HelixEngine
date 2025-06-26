@@ -96,4 +96,18 @@ namespace helix
 	using Vector2I64 = Vector2T<int64_t>;
 	using Vector2UI64 = Vector2T<uint64_t>;
 
+	template<typename T>
+	struct IsVector2
+	{
+		static constexpr bool value = false;
+	};
+
+	template<typename T>
+	struct IsVector2<Vector2T<T>>
+	{
+		static constexpr bool value = true;
+	};
+
+	template<typename T>
+	concept Vector2Type = IsVector2<T>::value;
 }

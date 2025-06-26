@@ -33,6 +33,8 @@ namespace helix::opengl
 
 	void Renderer::startRun()
 	{
+		if (!isInitDebugOutput)
+			glad_set_post_callback(gladDebugOutput);
 		sdlContext = createSDLContext();
 		makeCurrentContext(nullptr);
 	}
@@ -186,7 +188,10 @@ namespace helix::opengl
 
 		//Vertex Buffer
 		auto vb = reinterpret_cast<VertexBuffer*>(cmd->config.vertexBuffer.get());
-		glBindBuffer(GL_ARRAY_BUFFER, vb->getGLVertexBuffer());
+		if (vb)
+			glBindBuffer(GL_ARRAY_BUFFER, vb->getGLVertexBuffer());
+		else
+			Logger::error(u8"在创建OpenGL Vertex Array时，传入的Vertex Buffer不可为nullptr");
 		vertexArray->vertexBuffer = cmd->config.vertexBuffer;
 
 		//Vertex Attribute
@@ -391,5 +396,33 @@ namespace helix::opengl
 		makeCurrentContext(sdlContext);
 		resourceProc(getResourcePipeline()->receive());
 		renderProc(getRenderQueue()->receive());
+	}
+
+	void Renderer::gladDebugOutput(const char* name, void* funcPtr, int lenArgs, ...)
+	{
+		GLenum errorCode = glad_glGetError();
+		std::u8string_view errorType;
+		switch (errorCode)
+		{
+			case GL_NO_ERROR:
+				return;
+			case GL_INVALID_ENUM:
+				errorType = u8"GL_INVALID_ENUM";
+				break;
+			case GL_INVALID_INDEX:
+				errorType = u8"GL_INVALID_INDEX";
+				break;
+			case GL_INVALID_OPERATION:
+				errorType = u8"GL_INVALID_OPERATION";
+				break;
+			case GL_INVALID_FRAMEBUFFER_OPERATION:
+				errorType = u8"GL_INVALID_FRAMEBUFFER_OPERATION";
+				break;
+			default:
+				errorType = u8"未知错误";
+				break;
+		}
+		Logger::error(u8"在调用OpenGL函数（", std::u8string_view(reinterpret_cast<const char8_t*>(name)), u8"）时，发生了错误：",
+		              errorType);
 	}
 }

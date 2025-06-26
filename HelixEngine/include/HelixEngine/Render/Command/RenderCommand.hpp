@@ -14,6 +14,8 @@ namespace helix
 			End,
 			SetRenderPipeline,
 			SetPrimitiveTopology,
+			SetViewport,
+			SetScissor,
 			Draw,
 
 			//OpenGL Exclusive
