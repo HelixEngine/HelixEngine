@@ -13,6 +13,14 @@ public:
 	void render(Renderer* renderer) override
 	{
 		auto glRenderer = reinterpret_cast<opengl::Renderer*>(renderer);
+
+		auto window = renderer->getWindow();
+		Viewport viewport;
+		viewport.area = {Vector2F{0.f, 0.f}, Vector2F(window->getSize())};
+		Scissor scissor = {Vector2I32{0, 0}, Vector2I32{window->getSize()}};
+		glRenderer->setViewport(viewport);
+		glRenderer->setScissor(scissor);
+
 		glRenderer->setRenderPipeline(pipeline);
 		glRenderer->setGLVertexArray(vertexArray);
 		glRenderer->setPrimitiveTopology(PrimitiveTopology::TriangleList);

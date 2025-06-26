@@ -68,9 +68,9 @@ namespace helix
 
 	struct Viewport final
 	{
-		Rect<Vector2I32, Vector2I32> area;
-		int32_t minDepth = 0;
-		int32_t maxDepth = 0;
+		Rect<Vector2F, Vector2F> area;
+		float minDepth = 0;
+		float maxDepth = 0;
 	};
 
 	using Scissor = Rect<Vector2I32, Vector2I32>;

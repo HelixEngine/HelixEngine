@@ -33,11 +33,13 @@ namespace helix
 
 	struct SetViewportCommand final : RenderCommand
 	{
+		uint32_t firstIndex = 0;
 		std::vector<Viewport> viewports;
 	};
 
 	struct SetScissorCommand final : RenderCommand
 	{
+		uint32_t firstIndex = 0;
 		std::vector<Scissor> scissors;
 	};
 

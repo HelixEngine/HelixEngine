@@ -55,6 +55,8 @@ namespace helix::opengl
 		void endProc() const;
 		void setRenderPipelineProc() const;
 		void setPrimitiveTopologyProc();
+		void setViewportProc() const;
+		void setScissorProc() const;
 		void drawProc() const;
 		void setGLVertexArrayProc() const;
 

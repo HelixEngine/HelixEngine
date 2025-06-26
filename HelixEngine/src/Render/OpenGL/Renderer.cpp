@@ -102,6 +102,12 @@ namespace helix::opengl
 				case RenderCommand::Type::SetPrimitiveTopology:
 					setPrimitiveTopologyProc();
 					break;
+				case RenderCommand::Type::SetViewport:
+					setViewportProc();
+					break;
+				case RenderCommand::Type::SetScissor:
+					setScissorProc();
+					break;
 				case RenderCommand::Type::Draw:
 					drawProc();
 					break;
@@ -142,6 +148,58 @@ namespace helix::opengl
 	{
 		auto cmd = renderCmd->cast<SetPrimitiveTopologyCommand>();
 		primitiveTopology = cmd->primitiveTopology;
+	}
+
+	void Renderer::setViewportProc() const
+	{
+		auto cmd = renderCmd->cast<SetViewportCommand>();
+		if (cmd->viewports.empty())
+		{
+			Logger::warning(u8"OpenGL Renderer: Viewport数组为空");
+			return;
+		}
+		if (cmd->viewports.size() == 1)
+		{
+			auto viewport = cmd->viewports[0];
+			glViewport(static_cast<GLint>(viewport.area.position.x), static_cast<GLint>(viewport.area.position.y),
+			           static_cast<GLsizei>(viewport.area.size.x), static_cast<GLsizei>(viewport.area.size.y));
+			return;
+		}
+
+		std::vector<GLfloat> viewportsGL(cmd->viewports.size() * 4);
+		for (size_t i = 0; i < cmd->viewports.size(); ++i)
+		{
+			const auto& viewport = cmd->viewports[i];
+			viewportsGL[i * 4] = viewport.area.position.x;
+			viewportsGL[i * 4 + 1] = viewport.area.position.y;
+			viewportsGL[i * 4 + 2] = viewport.area.size.x;
+			viewportsGL[i * 4 + 3] = viewport.area.size.y;
+		}
+
+		glViewportArrayv(cmd->firstIndex, static_cast<GLsizei>(cmd->viewports.size()),
+		                 reinterpret_cast<const GLfloat*>(cmd->viewports.data()));
+	}
+
+	void Renderer::setScissorProc() const
+	{
+		auto cmd = renderCmd->cast<SetScissorCommand>();
+		if (cmd->scissors.empty())
+		{
+			Logger::warning(u8"OpenGL Renderer: Scissor数组为空");
+			return;
+		}
+		if (cmd->scissors.size() == 1)
+		{
+			auto scissor = cmd->scissors[0];
+			glScissor(scissor.position.x,
+			          scissor.position.y,
+			          scissor.size.x,
+			          scissor.size.y);
+			return;
+		}
+
+		glScissorArrayv(cmd->firstIndex, static_cast<GLsizei>(cmd->scissors.size()),
+		                reinterpret_cast<const GLint*>(cmd->scissors.data()));
 	}
 
 	void Renderer::drawProc() const

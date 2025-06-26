@@ -73,6 +73,12 @@ namespace helix
 		{
 			return KtmVec(x, y);
 		}
+
+		template<typename OtherT>
+		explicit operator Vector2T<OtherT>() const
+		{
+			return Vector2T<OtherT>(static_cast<OtherT>(x), static_cast<OtherT>(y));
+		}
 	private:
 		auto& ktmVecSelf()
 		{
