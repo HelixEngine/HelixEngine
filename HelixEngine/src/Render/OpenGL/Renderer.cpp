@@ -9,10 +9,10 @@
 
 namespace helix::opengl
 {
-	Ref<helix::VertexBuffer> Renderer::createNativeVertexBuffer(VertexBuffer::Usage usage,
+	Ref<helix::MemoryBuffer> Renderer::createNativeMemoryBuffer(MemoryBuffer::Usage usage,
 	                                                            Ref<MemoryBlock> vertexData) const
 	{
-		Ref vb = new VertexBuffer;
+		Ref vb = new MemoryBuffer;
 		vb->setUsage(usage);
 		return vb;
 	}
@@ -111,6 +111,9 @@ namespace helix::opengl
 				case RenderCommand::Type::Draw:
 					drawProc();
 					break;
+				case RenderCommand::Type::DrawIndexed:
+					drawIndexedProc();
+					break;
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的RenderCommand");
 					break;
@@ -208,12 +211,23 @@ namespace helix::opengl
 		glDrawArrays(getGLPrimitiveTopology(primitiveTopology), 0, static_cast<GLsizei>(cmd->vertexCount));
 	}
 
-	void Renderer::setGLVertexArrayProc() const
+	void Renderer::drawIndexedProc() const
+	{
+		auto cmd = renderCmd->cast<DrawIndexedCommand>();
+		glDrawElements(getGLPrimitiveTopology(primitiveTopology), static_cast<GLsizei>(cmd->indexCount),
+		               indexAttribute.elementType, nullptr);
+	}
+
+	void Renderer::setGLVertexArrayProc()
 	{
 		auto cmd = renderCmd->cast<SetGLVertexArrayCommand>();
 		if (auto vertexArray = cmd->vertexArray.get())
 		{
 			glBindVertexArray(vertexArray->getGLVertexArray());
+			if (vertexArray->indexBuffer)
+			{
+				indexAttribute = vertexArray->indexAttribute;
+			}
 			return;
 		}
 		glBindVertexArray(0);
@@ -245,15 +259,25 @@ namespace helix::opengl
 		glBindVertexArray(vertexArray->getGLVertexArray());
 
 		//Vertex Buffer
-		auto vb = reinterpret_cast<VertexBuffer*>(cmd->config.vertexBuffer.get());
+		auto vb = reinterpret_cast<MemoryBuffer*>(cmd->config.vertexBuffer.get());
 		if (vb)
-			glBindBuffer(GL_ARRAY_BUFFER, vb->getGLVertexBuffer());
-		else
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, vb->getGLBuffer());
+			vertexArray->vertexBuffer = cmd->config.vertexBuffer;
+		} else
 			Logger::error(u8"在创建OpenGL Vertex Array时，传入的Vertex Buffer不可为nullptr");
-		vertexArray->vertexBuffer = cmd->config.vertexBuffer;
+
+		//Index Buffer
+		auto ib = reinterpret_cast<MemoryBuffer*>(cmd->config.indexBuffer.get());
+		if (ib)
+		{
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getGLBuffer());
+			vertexArray->indexBuffer = cmd->config.indexBuffer;
+			vertexArray->indexAttribute = cmd->config.indexAttribute;
+		}
 
 		//Vertex Attribute
-		for (const auto& attr: cmd->config.attributes)
+		for (const auto& attr: cmd->config.vertexAttributes)
 		{
 			glEnableVertexAttribArray(attr.location);
 			glVertexAttribPointer(attr.location, attr.size, attr.elementType,
@@ -270,8 +294,8 @@ namespace helix::opengl
 			this->sharedResourceCmd = cmd.get();
 			switch (cmd->type)
 			{
-				case SharedResourceCommand::Type::CreateVertexBuffer:
-					createVertexBufferProc();
+				case SharedResourceCommand::Type::CreateMemoryBuffer:
+					createMemoryBufferProc();
 					break;
 				case SharedResourceCommand::Type::CreateGLShader:
 					createGLShaderProc();
@@ -291,18 +315,18 @@ namespace helix::opengl
 	}
 
 
-	void Renderer::createVertexBufferProc() const
+	void Renderer::createMemoryBufferProc() const
 	{
-		auto cvbCmd = sharedResourceCmd->cast<CreateVertexBufferCommand>();
-		auto vb = reinterpret_cast<VertexBuffer*>(cvbCmd->vertexBuffer);
-		glGenBuffers(1, &vb->vertexBufferGL);
-		if (!cvbCmd->vertexData)
+		auto cmd = sharedResourceCmd->cast<CreateMemoryBufferCommand>();
+		auto buf = reinterpret_cast<MemoryBuffer*>(cmd->memoryBuffer);
+		glGenBuffers(1, &buf->vertexBufferGL);
+		if (!cmd->bufferData)
 			return;
-		glBindBuffer(GL_ARRAY_BUFFER, vb->getGLVertexBuffer());
+		glBindBuffer(GL_ARRAY_BUFFER, buf->getGLBuffer());
 		glBufferData(GL_ARRAY_BUFFER,
-		             static_cast<GLsizeiptr>(cvbCmd->vertexData->getSize()),
-		             cvbCmd->vertexData->getPointer(),
-		             vb->getGLUsage());
+		             static_cast<GLsizeiptr>(cmd->bufferData->getSize()),
+		             cmd->bufferData->getPointer(),
+		             buf->getGLUsage());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 

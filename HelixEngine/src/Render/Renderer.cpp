@@ -39,14 +39,14 @@ namespace helix
 		renderQueue->commit();
 	}
 
-	Ref<VertexBuffer> Renderer::createVertexBuffer(VertexBuffer::Usage usage, Ref<MemoryBlock> vertexData) const
+	Ref<MemoryBuffer> Renderer::createMemoryBuffer(MemoryBuffer::Usage usage, Ref<MemoryBlock> bufferData) const
 	{
-		auto vb = createNativeVertexBuffer(usage, vertexData);
-		CreateVertexBufferCommand cmd;
-		cmd.type = SharedResourceCommand::Type::CreateVertexBuffer;
-		cmd.vertexBuffer = vb;
-		cmd.vertexData = std::move(vertexData);
-		getSharedResourcePipeline()->addCommand<CreateVertexBufferCommand>(std::move(cmd));
+		auto vb = createNativeMemoryBuffer(usage, bufferData);
+		CreateMemoryBufferCommand cmd;
+		cmd.type = SharedResourceCommand::Type::CreateMemoryBuffer;
+		cmd.memoryBuffer = vb;
+		cmd.bufferData = std::move(bufferData);
+		getSharedResourcePipeline()->addCommand<CreateMemoryBufferCommand>(std::move(cmd));
 		return vb;
 	}
 
@@ -88,6 +88,14 @@ namespace helix
 		cmd.type = RenderCommand::Type::Draw;
 		cmd.vertexCount = vertexCount;
 		renderQueue->addCommand<DrawCommand>(std::move(cmd));
+	}
+
+	void Renderer::drawIndexed(uint32_t indexCount) const
+	{
+		DrawIndexedCommand cmd;
+		cmd.type = RenderCommand::Type::DrawIndexed;
+		cmd.indexCount = indexCount;
+		renderQueue->addCommand<DrawIndexedCommand>(std::move(cmd));
 	}
 
 	void Renderer::startMainRenderThread(std::jthread& mainRenderThread, const bool& isRunning)

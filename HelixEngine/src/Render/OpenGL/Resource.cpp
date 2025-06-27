@@ -1,12 +1,12 @@
 #include <HelixEngine/Render/OpenGL/Resource.hpp>
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
 
-GLuint helix::opengl::VertexBuffer::getGLVertexBuffer() const
+GLuint helix::opengl::MemoryBuffer::getGLBuffer() const
 {
 	return vertexBufferGL;
 }
 
-GLenum helix::opengl::VertexBuffer::getGLUsage() const
+GLenum helix::opengl::MemoryBuffer::getGLUsage() const
 {
 	switch (getUsage())
 	{
@@ -56,7 +56,7 @@ GLuint helix::opengl::VertexArray::getGLVertexArray() const
 	return vertexArrayGL;
 }
 
-helix::Ref<helix::VertexBuffer> helix::opengl::VertexArray::getVertexBuffer() const
+helix::Ref<helix::MemoryBuffer> helix::opengl::VertexArray::getVertexBuffer() const
 {
 	return vertexBuffer;
 }

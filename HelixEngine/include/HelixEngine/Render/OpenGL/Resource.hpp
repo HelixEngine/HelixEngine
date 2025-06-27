@@ -5,12 +5,12 @@
 
 namespace helix::opengl
 {
-	class VertexBuffer final : public helix::VertexBuffer
+	class MemoryBuffer final : public helix::MemoryBuffer
 	{
 		friend class Renderer;
 		GLuint vertexBufferGL{};
 	public:
-		[[nodiscard]] GLuint getGLVertexBuffer() const;
+		[[nodiscard]] GLuint getGLBuffer() const;
 
 		[[nodiscard]] GLenum getGLUsage() const;
 	};
@@ -46,20 +46,29 @@ namespace helix::opengl
 		void* offset = nullptr;
 	};
 
+	struct IndexAttribute final
+	{
+		GLenum elementType = GL_UNSIGNED_INT;
+	};
+
 	class VertexArray final : public Object
 	{
 	public:
 		struct Config
 		{
-			Ref<helix::VertexBuffer> vertexBuffer;
-			std::vector<VertexAttribute> attributes;
+			Ref<helix::MemoryBuffer> vertexBuffer;
+			Ref<helix::MemoryBuffer> indexBuffer;
+			std::vector<VertexAttribute> vertexAttributes;
+			IndexAttribute indexAttribute;
 		};
 	private:
 		friend class Renderer;
 		GLuint vertexArrayGL{};
-		Ref<helix::VertexBuffer> vertexBuffer;
+		Ref<helix::MemoryBuffer> vertexBuffer;
+		Ref<helix::MemoryBuffer> indexBuffer;
+		IndexAttribute indexAttribute;
 	public:
 		[[nodiscard]] GLuint getGLVertexArray() const;
-		[[nodiscard]] Ref<helix::VertexBuffer> getVertexBuffer() const;
+		[[nodiscard]] Ref<helix::MemoryBuffer> getVertexBuffer() const;
 	};
 }

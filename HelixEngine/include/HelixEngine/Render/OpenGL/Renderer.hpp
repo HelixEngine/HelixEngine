@@ -20,8 +20,8 @@ namespace helix::opengl
 
 		//resource method//
 
-		[[nodiscard]] Ref<helix::VertexBuffer> createNativeVertexBuffer(
-				VertexBuffer::Usage usage,
+		[[nodiscard]] Ref<helix::MemoryBuffer> createNativeMemoryBuffer(
+				MemoryBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const override;
 
 		[[nodiscard]] Ref<opengl::Shader> createNativeShader(
@@ -44,7 +44,9 @@ namespace helix::opengl
 
 		SDL_GLContext sdlContext{};
 
+		//Command Status
 		PrimitiveTopology primitiveTopology = PrimitiveTopology::TriangleList;
+		IndexAttribute indexAttribute;
 
 		[[nodiscard]] SDL_GLContext createSDLContext() const;
 		void makeCurrentContext(SDL_GLContext context) const;
@@ -58,13 +60,14 @@ namespace helix::opengl
 		void setViewportProc() const;
 		void setScissorProc() const;
 		void drawProc() const;
-		void setGLVertexArrayProc() const;
+		void drawIndexedProc() const;
+		void setGLVertexArrayProc();
 
 		void resourceProc(const ResourcePipeline::ListRef& list);
 		void createGLVertexArrayProc() const;
 
 		void sharedResourceProc(const SharedResourcePipeline::ListRef& list);
-		void createVertexBufferProc() const;
+		void createMemoryBufferProc() const;
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;
 		void destroyGLShaderProc() const;

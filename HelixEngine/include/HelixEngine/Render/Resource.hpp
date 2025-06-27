@@ -6,7 +6,7 @@
 
 namespace helix
 {
-	class VertexBuffer : public Object
+	class MemoryBuffer : public Object
 	{
 	public:
 		enum class Usage

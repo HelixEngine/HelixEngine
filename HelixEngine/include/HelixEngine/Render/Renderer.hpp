@@ -35,21 +35,22 @@ namespace helix
 
 		//Resource Command
 
-		[[nodiscard]] Ref<VertexBuffer>
-		createVertexBuffer(VertexBuffer::Usage usage, Ref<MemoryBlock> vertexData) const;
+		[[nodiscard]] Ref<MemoryBuffer>
+		createMemoryBuffer(MemoryBuffer::Usage usage, Ref<MemoryBlock> bufferData) const;
 		void setRenderPipeline(Ref<RenderPipeline> renderPipeline) const;
 		void setPrimitiveTopology(PrimitiveTopology primitiveTopology) const;
 		void setViewport(Viewport viewport) const;
 		void setScissor(Scissor scissor) const;
 		void draw(uint32_t vertexCount) const;
+		void drawIndexed(uint32_t indexCount) const;
 	private:
 		Ref<RenderQueue> renderQueue = new RenderQueue;
 		Ref<ResourcePipeline> resourcePipeline = new ResourcePipeline;
 		Window* window = nullptr;
 	protected:
 		using CommandProcessThreadFunc = std::function<void(const std::stop_token&)>;
-		[[nodiscard]] virtual Ref<VertexBuffer> createNativeVertexBuffer(
-				VertexBuffer::Usage usage,
+		[[nodiscard]] virtual Ref<MemoryBuffer> createNativeMemoryBuffer(
+				MemoryBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const = 0;
 	private:
 		//Game run

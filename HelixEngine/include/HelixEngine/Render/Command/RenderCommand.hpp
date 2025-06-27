@@ -17,6 +17,7 @@ namespace helix
 			SetViewport,
 			SetScissor,
 			Draw,
+			DrawIndexed,
 
 			//OpenGL Exclusive
 			SetGLVertexArray,
@@ -59,7 +60,7 @@ namespace helix
 		enum class Type : int32_t
 		{
 			Unknown = -1,
-			CreateVertexBuffer,
+			CreateMemoryBuffer,
 
 			//OpenGL Exclusive
 			CreateGLShader,

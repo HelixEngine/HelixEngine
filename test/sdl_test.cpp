@@ -24,7 +24,7 @@ public:
 		glRenderer->setRenderPipeline(pipeline);
 		glRenderer->setGLVertexArray(vertexArray);
 		glRenderer->setPrimitiveTopology(PrimitiveTopology::TriangleList);
-		glRenderer->draw(3);
+		glRenderer->drawIndexed(6);
 	}
 };
 
@@ -53,12 +53,21 @@ int main()
 	VertexData vertexData[] = {
 			{{-0.5f, -0.5f}, Color::Blue},
 			{{0.5f, -0.5f}, Color::Green},
-			{{0.f, 0.5f}, Color::Red},
+			{{0.5f, 0.5f}, Color::Red},
+			{{-0.5f, 0.5f}, Color::DeepPink},
 	};
 
-	auto vertexBuffer = window->getRenderer()->createVertexBuffer(
-			VertexBuffer::Usage::Static,
+	uint32_t indexData[] = {
+			0, 1, 2,
+			0, 3, 2
+	};
+
+	auto vertexBuffer = window->getRenderer()->createMemoryBuffer(
+			MemoryBuffer::Usage::Static,
 			new MemoryBlock{vertexData, sizeof(vertexData)});
+	auto indexBuffer = window->getRenderer()->createMemoryBuffer(
+			MemoryBuffer::Usage::Static,
+			new MemoryBlock{indexData, sizeof(indexData)});
 
 	auto glRenderer = reinterpret_cast<opengl::Renderer*>(window->getRenderer().get());
 	auto glRenderer2 = reinterpret_cast<opengl::Renderer*>(window2->getRenderer().get());
@@ -100,10 +109,12 @@ void main()
 
 	opengl::VertexArray::Config vaConfig;
 	vaConfig.vertexBuffer = vertexBuffer;
-	vaConfig.attributes = {
+	vaConfig.indexBuffer = indexBuffer;
+	vaConfig.vertexAttributes = {
 			{0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), nullptr},
 			{1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), reinterpret_cast<void*>(offsetof(VertexData, color))},
 	};
+	vaConfig.indexAttribute = {GL_UNSIGNED_INT};
 
 	auto vao = glRenderer->createGLVertexArray(vaConfig);
 	auto vao2 = glRenderer2->createGLVertexArray(vaConfig);
