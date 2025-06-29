@@ -1,11 +1,13 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Render/Renderer.hpp>
 #include <HelixEngine/Render/Command/GeneralCommand.hpp>
+#include <HelixEngine/Core/Game.hpp>
 
 namespace helix
 {
 	Renderer::~Renderer()
 	{
+		Logger::info(u8"destroy renderer");
 	}
 
 	const Ref<RenderQueue>& Renderer::getRenderQueue() const
@@ -98,11 +100,11 @@ namespace helix
 		renderQueue->addCommand<DrawIndexedCommand>(std::move(cmd));
 	}
 
-	void Renderer::startMainRenderThread(std::jthread& mainRenderThread, const bool& isRunning)
+	void Renderer::startMainRenderThread(std::jthread& mainRenderThread)
 	{
 		mainRenderThread = std::jthread([&]()
 		{
-			while (isRunning)
+			while (Game::isRunning)
 			{
 				//渲染调度
 

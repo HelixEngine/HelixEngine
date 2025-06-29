@@ -5,6 +5,9 @@
 #include <optional>
 #include <HelixEngine/Util/Ref.hpp>
 
+#include "HelixEngine/Core/Game.hpp"
+#include "HelixEngine/Util/Logger.hpp"
+
 namespace helix
 {
 
@@ -74,7 +77,10 @@ namespace helix
 		{
 			std::unique_lock lock{mtx};
 			isCommited = true;
-			cv.wait(lock, [&] { return isCommited == false; });
+			cv.wait(lock, [&]
+			{
+				return !isCommited;
+			});
 			front->clear();
 		}
 

@@ -118,9 +118,14 @@ namespace helix
 	{
 		if (sdlWindow)
 		{
-			allWindows.erase(std::ranges::find(allWindows, this));
-			SDL_DestroyWindow(sdlWindow);
+			updateThread.request_stop();
+			if (updateThread.joinable())
+				updateThread.join();
+			auto temp = sdlWindow;
 			sdlWindow = nullptr;
+			//由于之后将allWindows改为std::vector<Ref<Window>>后，这条代码可能会触发析构函数，导致再次调用destroy，需要将作为flag的sdlWindow先设为nullptr
+			allWindows.erase(std::ranges::find(allWindows, this));
+			SDL_DestroyWindow(temp);
 		}
 	}
 

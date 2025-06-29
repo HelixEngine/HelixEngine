@@ -62,6 +62,6 @@ namespace helix
 		virtual void sharedResourceWorkload() = 0;
 		virtual void renderWorkload() = 0;
 
-		static void startMainRenderThread(std::jthread& mainRenderThread, const bool& isRunning);
+		static void startMainRenderThread(std::jthread& mainRenderThread);
 	};
 }

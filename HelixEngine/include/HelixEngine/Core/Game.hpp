@@ -20,8 +20,13 @@ namespace helix
 
 	class Game final
 	{
+		friend class Renderer;
+		template<typename CommandType>
+		friend class CommandQueue;
 	public:
 		static int run();
+	private:
+		static inline bool isRunning = true;
 	};
 
 }

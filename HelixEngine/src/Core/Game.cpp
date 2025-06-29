@@ -9,14 +9,12 @@ int helix::Game::run()
 	Window::startRun();
 
 	SDL_Event event;
-	bool isRunning = true;
 
 	std::jthread mainRenderThread;
-	Renderer::startMainRenderThread(mainRenderThread, isRunning);
+	Renderer::startMainRenderThread(mainRenderThread);
 
 	while (isRunning)
 	{
-
 		//处理消息循环
 		while (SDL_PollEvent(&event))
 		{
