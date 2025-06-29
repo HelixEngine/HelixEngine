@@ -483,6 +483,35 @@ namespace helix::opengl
 		renderProc(getRenderQueue()->receive());
 	}
 
+	std::mutex sharedResourceMtx;
+
+	void Renderer::renderThreadFunc(const std::stop_token& token)
+	{
+		makeCurrentContext(sdlContext->context);
+		SDL_GL_SetSwapInterval(0);
+		Duration time;
+		size_t fps = 0;
+		auto lastTime = SteadyClock::now();
+		while (!token.stop_requested())
+		{
+			sharedResourceMtx.lock();
+			sharedResourceProc(getSharedResourcePipeline()->receive());
+			sharedResourceMtx.unlock();
+			resourceProc(getResourcePipeline()->receive());
+			renderProc(getRenderQueue()->receive());
+			auto now = SteadyClock::now();
+			time += now - lastTime;
+			lastTime = now;
+			++fps;
+			if (time >= 1s)
+			{
+				Logger::info(u8"FPS: ", fps);
+				time -= 1s;
+				fps = 0;
+			}
+		}
+	}
+
 	void Renderer::gladDebugOutput(const char* name, void* funcPtr, int lenArgs, ...)
 	{
 		GLenum errorCode = glad_glGetError();
@@ -499,6 +528,9 @@ namespace helix::opengl
 				break;
 			case GL_INVALID_OPERATION:
 				errorType = u8"GL_INVALID_OPERATION";
+				break;
+			case GL_INVALID_VALUE:
+				errorType = u8"GL_INVALID_VALUE";
 				break;
 			case GL_INVALID_FRAMEBUFFER_OPERATION:
 				errorType = u8"GL_INVALID_FRAMEBUFFER_OPERATION";

@@ -95,6 +95,8 @@ namespace helix::opengl
 		void sharedResourceWorkload() override;
 		void renderWorkload() override;
 
+		void renderThreadFunc(const std::stop_token& token) override;
+
 		static void gladDebugOutput(const char* name, void* funcPtr, int lenArgs, ...);
 		static inline bool isInitDebugOutput = false;
 	};

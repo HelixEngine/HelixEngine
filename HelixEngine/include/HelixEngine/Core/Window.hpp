@@ -58,7 +58,7 @@ namespace helix
 		[[nodiscard]] const Color& getBackgroundColor() const;
 		void setBackgroundColor(Color color);
 		void destroy();
-		static const std::vector<Window*>& getAllWindows();
+		static const std::vector<Ref<Window>>& getAllWindows();
 		[[nodiscard]] GraphicsApi getGraphicsApi() const;
 	private:
 		static constexpr std::string_view sdlWindowPointerProperty = "HelixEngine:Window";
@@ -71,7 +71,7 @@ namespace helix
 		static void SDLInit();
 		static void SDLQuit();
 
-		static inline std::vector<Window*> allWindows;
+		static inline std::vector<Ref<Window>> allWindows;
 		static void startRun();
 
 		//渲染器

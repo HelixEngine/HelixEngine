@@ -25,6 +25,8 @@ namespace helix
 		friend class CommandQueue;
 	public:
 		static int run();
+		static int testRun();
+		static bool isQuit();
 	private:
 		static inline bool isRunning = true;
 	};

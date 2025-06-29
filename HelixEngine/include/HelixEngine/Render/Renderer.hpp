@@ -52,6 +52,7 @@ namespace helix
 		[[nodiscard]] virtual Ref<MemoryBuffer> createNativeMemoryBuffer(
 				MemoryBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const = 0;
+		std::jthread renderThread;
 	private:
 		//Game run
 
@@ -63,5 +64,6 @@ namespace helix
 		virtual void renderWorkload() = 0;
 
 		static void startMainRenderThread(std::jthread& mainRenderThread);
+		virtual void renderThreadFunc(const std::stop_token& token) = 0;
 	};
 }
