@@ -85,29 +85,17 @@ namespace helix
 			return *object;
 		}
 
-		bool operator==(const Ref& ref) const
-			noexcept
-		{
-			return ref.object == object;
-		}
+		// bool operator!=(const Ref& ref) const
+		// 	noexcept
+		// {
+		// 	return ref.object != object;
+		// }
 
-		bool operator==(const PointType* ref) const
-			noexcept
-		{
-			return ref == object;
-		}
-
-		bool operator!=(const Ref& ref) const
-			noexcept
-		{
-			return ref.object != object;
-		}
-
-		bool operator!=(const PointType* object) const
-			noexcept
-		{
-			return this->object != object;
-		}
+		// bool operator!=(const PointType* object) const
+		// 	noexcept
+		// {
+		// 	return this->object != object;
+		// }
 
 		explicit(false) operator bool() const
 		{
@@ -139,4 +127,25 @@ namespace helix
 
 		PointType* object = nullptr;
 	};
+
+	template<typename PointType>
+	bool operator==(const Ref<PointType>& ref1, const Ref<PointType>& ref2)
+		noexcept
+	{
+		return ref1.get() == ref2.get();
+	}
+
+	template<typename PointType>
+	bool operator==(PointType* ref1, const Ref<PointType>& ref2)
+		noexcept
+	{
+		return ref1 == ref2.get();
+	}
+
+	template<typename PointType>
+	bool operator==(const Ref<PointType>& ref1, PointType* ref2)
+		noexcept
+	{
+		return ref1.get() == ref2;
+	}
 }

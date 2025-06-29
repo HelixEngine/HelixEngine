@@ -51,7 +51,7 @@ namespace helix::opengl
 
 	SDL_GLContext Renderer::createSDLContext() const
 	{
-		for (const auto window: Window::getAllWindows())
+		for (const auto& window: Window::getAllWindows())
 		{
 			if (getWindow() == window)
 				continue;
