@@ -6,19 +6,19 @@ namespace helix::opengl
 {
 	struct CreateGLShaderCommand final : SharedResourceCommand
 	{
-		Shader* shader{};
+		Ref<Shader> shader{};
 		std::u8string shaderCode{};
 	};
 
 	struct CreateGLRenderPipelineCommand final : SharedResourceCommand
 	{
-		RenderPipeline* renderPipeline{};
+		Ref<RenderPipeline> renderPipeline{};
 		RenderPipeline::Config config{};
 	};
 
 	struct CreateGLVertexArrayCommand final : ResourceCommand
 	{
-		VertexArray* vertexArray{};
+		Ref<VertexArray> vertexArray{};
 		VertexArray::Config config{};
 	};
 

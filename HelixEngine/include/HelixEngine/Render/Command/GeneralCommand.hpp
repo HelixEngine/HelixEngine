@@ -17,7 +17,7 @@ namespace helix
 
 	struct CreateMemoryBufferCommand final : SharedResourceCommand
 	{
-		MemoryBuffer* memoryBuffer{};
+		Ref<MemoryBuffer> memoryBuffer{};
 		Ref<MemoryBlock> bufferData{};
 	};
 

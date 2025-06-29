@@ -321,7 +321,7 @@ namespace helix::opengl
 	void Renderer::createMemoryBufferProc() const
 	{
 		auto cmd = sharedResourceCmd->cast<CreateMemoryBufferCommand>();
-		auto buf = reinterpret_cast<MemoryBuffer*>(cmd->memoryBuffer);
+		auto buf = reinterpret_cast<MemoryBuffer*>(cmd->memoryBuffer.get());
 		glGenBuffers(1, &buf->vertexBufferGL);
 		if (!cmd->bufferData)
 			return;
