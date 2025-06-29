@@ -41,8 +41,7 @@ namespace helix
 
 	/**
 	 * @brief 命令队列
-	 * @note 用于在两个线程之间传递命令，区分发送端和接收端\n
-	 * 两端之间完全异步，接收端只处理最新的命令，旧的命令（哪怕未处理）将被丢弃
+	 * @note 用于在两个线程之间传递命令，区分发送端和接收端
 	 * @tparam CommandType 命令类型
 	 */
 	template<typename CommandType>
@@ -53,11 +52,11 @@ namespace helix
 		using ListRef = Ref<ListType>;
 	private:
 		ListRef front = new CommandList<CommandType>;
-		ListRef staging = new CommandList<CommandType>;
 		ListRef back = new CommandList<CommandType>;
 
 		//同步原语
 		std::mutex mtx;
+		std::condition_variable cv;
 		bool isCommited = false;
 	public:
 		template<typename ActualType, typename... Args>
@@ -73,10 +72,10 @@ namespace helix
 		 */
 		void commit()
 		{
-			std::lock_guard lock(mtx);
-			front.swap(staging);
-			front->clear();
+			std::unique_lock lock{mtx};
 			isCommited = true;
+			cv.wait(lock, [&] { return isCommited == false; });
+			front->clear();
 		}
 
 		/**
@@ -86,13 +85,13 @@ namespace helix
 		 */
 		[[nodiscard]] ListRef receive()
 		{
-			std::lock_guard lock(mtx);
+			std::unique_lock lock{mtx};
 			if (isCommited)
 			{
-				back.swap(staging);
+				back.swap(front);
 				isCommited = false;
+				cv.notify_all();
 			}
-
 			return back;
 		}
 	};
