@@ -81,7 +81,6 @@ namespace helix
 			{
 				return !isCommited;
 			});
-			front->clear();
 		}
 
 		/**
@@ -94,6 +93,7 @@ namespace helix
 			std::unique_lock lock{mtx};
 			if (isCommited)
 			{
+				back->clear();
 				back.swap(front);
 				isCommited = false;
 				cv.notify_all();

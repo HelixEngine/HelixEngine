@@ -6,11 +6,12 @@
 
 namespace helix
 {
-	class SharedResource : public Object
+	class RenderResource : public Object
 	{
 	public:
 		/**
 		 * @brief 等待资源可用
+		 * @note 对于共享资源，在渲染端使用资源时，也需要调用该方法确保资源可用
 		 */
 		void usable()
 		{
@@ -38,7 +39,7 @@ namespace helix
 		bool isUsable = false;
 	};
 
-	class MemoryBuffer : public SharedResource
+	class MemoryBuffer : public RenderResource
 	{
 	public:
 		enum class Usage
@@ -61,12 +62,12 @@ namespace helix
 		}
 	};
 
-	class Pipeline : public SharedResource
+	class Pipeline : public RenderResource
 	{
 
 	};
 
-	class Shader : public SharedResource
+	class Shader : public RenderResource
 	{
 	public:
 		enum class Usage

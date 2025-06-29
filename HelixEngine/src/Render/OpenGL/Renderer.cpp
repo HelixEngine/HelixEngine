@@ -254,6 +254,10 @@ namespace helix::opengl
 	{
 		auto cmd = renderCmd->cast<CreateGLVertexArrayCommand>();
 		auto vertexArray = cmd->vertexArray;
+
+		if (vertexArray->getGLVertexArray())
+			return;
+
 		glGenVertexArrays(1, &vertexArray->vertexArrayGL);
 		glBindVertexArray(vertexArray->getGLVertexArray());
 
@@ -284,6 +288,8 @@ namespace helix::opengl
 		}
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		vertexArray->notify();
 	}
 
 
@@ -291,6 +297,10 @@ namespace helix::opengl
 	{
 		auto cmd = renderCmd->cast<CreateMemoryBufferCommand>();
 		auto buf = reinterpret_cast<MemoryBuffer*>(cmd->memoryBuffer.get());
+
+		if (buf->getGLBuffer())
+			return;
+
 		glGenBuffers(1, &buf->vertexBufferGL);
 		if (!cmd->bufferData)
 			return;
@@ -307,6 +317,10 @@ namespace helix::opengl
 	{
 		auto cmd = renderCmd->cast<CreateGLShaderCommand>();
 		auto shader = cmd->shader;
+
+		if (shader->getGLShader())
+			return;
+
 		shader->shaderGL = glCreateShader(shader->getGLUsage());
 
 		const auto length = static_cast<GLint>(cmd->shaderCode.size());
@@ -343,6 +357,10 @@ namespace helix::opengl
 	{
 		auto cmd = renderCmd->cast<CreateGLRenderPipelineCommand>();
 		auto pipeline = cmd->renderPipeline;
+
+		if (pipeline->getGLProgram())
+			return;
+
 		pipeline->programGL = glCreateProgram();
 		attachGLShader(pipeline, cmd->config.vertex);
 		attachGLShader(pipeline, cmd->config.pixel);
@@ -364,7 +382,10 @@ namespace helix::opengl
 	void Renderer::destroyGLShaderProc() const
 	{
 		auto cmd = renderCmd->cast<DestroyGLShaderCommand>();
+		if (cmd->shaderGL == 0)
+			return;
 		glDeleteShader(cmd->shaderGL);
+		cmd->shaderGL = 0;
 	}
 
 	void Renderer::attachGLShader(const RenderPipeline* pipeline, const helix::Shader* shader)

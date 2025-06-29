@@ -51,7 +51,7 @@ namespace helix::opengl
 		GLenum elementType = GL_UNSIGNED_INT;
 	};
 
-	class VertexArray final : public Object
+	class VertexArray final : public RenderResource
 	{
 	public:
 		struct Config
