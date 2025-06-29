@@ -9,6 +9,11 @@
 
 namespace helix::opengl
 {
+	SDLOpenGLContext::~SDLOpenGLContext()
+	{
+		SDL_GL_DestroyContext(context);
+	}
+
 	Ref<helix::MemoryBuffer> Renderer::createNativeMemoryBuffer(MemoryBuffer::Usage usage,
 	                                                            Ref<MemoryBlock> vertexData) const
 	{
@@ -35,7 +40,7 @@ namespace helix::opengl
 	{
 		if (!isInitDebugOutput)
 			glad_set_post_callback(gladDebugOutput);
-		sdlContext = createSDLContext();
+		sdlContext->context = createSDLContext();
 		makeCurrentContext(nullptr);
 	}
 
@@ -55,7 +60,7 @@ namespace helix::opengl
 				auto glRenderer = reinterpret_cast<Renderer*>(window->getRenderer().get());
 				if (!glRenderer->sdlContext)
 					continue;
-				SDL_GL_MakeCurrent(window->getSDLWindow(), glRenderer->sdlContext);
+				SDL_GL_MakeCurrent(window->getSDLWindow(), glRenderer->sdlContext->context);
 				break;
 			}
 		}
@@ -259,8 +264,7 @@ namespace helix::opengl
 		glBindVertexArray(vertexArray->getGLVertexArray());
 
 		//Vertex Buffer
-		auto vb = reinterpret_cast<MemoryBuffer*>(cmd->config.vertexBuffer.get());
-		if (vb)
+		if (auto vb = reinterpret_cast<MemoryBuffer*>(cmd->config.vertexBuffer.get()))
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, vb->getGLBuffer());
 			vertexArray->vertexBuffer = cmd->config.vertexBuffer;
@@ -268,8 +272,7 @@ namespace helix::opengl
 			Logger::error(u8"在创建OpenGL Vertex Array时，传入的Vertex Buffer不可为nullptr");
 
 		//Index Buffer
-		auto ib = reinterpret_cast<MemoryBuffer*>(cmd->config.indexBuffer.get());
-		if (ib)
+		if (auto ib = reinterpret_cast<MemoryBuffer*>(cmd->config.indexBuffer.get()))
 		{
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getGLBuffer());
 			vertexArray->indexBuffer = cmd->config.indexBuffer;
@@ -461,7 +464,7 @@ namespace helix::opengl
 
 	void Renderer::readyRender()
 	{
-		makeCurrentContext(sdlContext);
+		makeCurrentContext(sdlContext->context);
 		glInitMtx.lock();
 		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
 		glInitMtx.unlock();
@@ -469,13 +472,13 @@ namespace helix::opengl
 
 	void Renderer::sharedResourceWorkload()
 	{
-		makeCurrentContext(sdlContext);
+		makeCurrentContext(sdlContext->context);
 		sharedResourceProc(sharedResourcePipeline->receive());
 	}
 
 	void Renderer::renderWorkload()
 	{
-		makeCurrentContext(sdlContext);
+		makeCurrentContext(sdlContext->context);
 		resourceProc(getResourcePipeline()->receive());
 		renderProc(getRenderQueue()->receive());
 	}

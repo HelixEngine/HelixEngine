@@ -10,6 +10,12 @@ namespace helix
 
 namespace helix::opengl
 {
+	struct SDLOpenGLContext : Object
+	{
+		SDL_GLContext context{};
+		~SDLOpenGLContext() override;
+	};
+
 	class Renderer final : public helix::Renderer
 	{
 		friend class Window;
@@ -42,7 +48,7 @@ namespace helix::opengl
 		static inline Ref<SharedResourcePipeline> sharedResourcePipeline = new SharedResourcePipeline;
 		const Ref<SharedResourcePipeline>& getSharedResourcePipeline() const override;
 
-		SDL_GLContext sdlContext{};
+		Ref<SDLOpenGLContext> sdlContext = new SDLOpenGLContext;
 
 		//Command Status
 		PrimitiveTopology primitiveTopology = PrimitiveTopology::TriangleList;
