@@ -10,55 +10,6 @@ int helix::Game::run()
 
 	SDL_Event event;
 
-	std::jthread mainRenderThread;
-	Renderer::startMainRenderThread(mainRenderThread);
-
-	while (isRunning)
-	{
-		//处理消息循环
-		while (SDL_PollEvent(&event))
-		{
-			switch (event.type)
-			{
-				case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-				{
-					auto window = static_cast<Window*>(SDL_GetPointerProperty(
-							SDL_GetWindowProperties(SDL_GetWindowFromEvent(&event)),
-							Window::sdlWindowPointerProperty.data(), nullptr));
-					window->destroy();
-				}
-				break;
-				case SDL_EVENT_QUIT:
-					isRunning = false;
-					break;
-				default: ;
-			}
-		}
-	}
-	Window::SDLQuit();
-	return 0;
-}
-
-int helix::Game::testRun()
-{
-	Window::SDLInit();
-
-	Window::startRun();
-
-	SDL_Event event;
-
-	// std::jthread mainRenderThread;
-	// Renderer::startMainRenderThread(mainRenderThread);
-
-	for (auto& window: Window::getAllWindows())
-	{
-		Renderer* renderer = window->getRenderer();
-		renderer->renderThread = std::jthread([renderer](const std::stop_token& token)
-		{
-			renderer->renderThreadFunc(token);
-		});
-	}
-
 	while (isRunning)
 	{
 		//处理消息循环

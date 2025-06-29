@@ -1,12 +1,44 @@
 #pragma once
+#include <shared_mutex>
 #include <HelixEngine/Util/Ref.hpp>
-
-#include "HelixEngine/Math/Shape.hpp"
-#include "HelixEngine/Math/Vector2.hpp"
+#include <HelixEngine/Math/Shape.hpp>
+#include <HelixEngine/Math/Vector2.hpp>
 
 namespace helix
 {
-	class MemoryBuffer : public Object
+	class SharedResource : public Object
+	{
+	public:
+		/**
+		 * @brief 等待资源可用
+		 */
+		void usable()
+		{
+			std::shared_lock lock{mtx};
+			if (isUsable)
+				return;
+			cv.wait(lock, [this]
+			{
+				return isUsable;
+			});
+		}
+
+		/**
+		 * @brief 通知资源可用
+		 */
+		void notify()
+		{
+			std::unique_lock lock{mtx};
+			isUsable = true;
+			cv.notify_all();
+		}
+	private:
+		std::shared_mutex mtx;
+		std::condition_variable_any cv;
+		bool isUsable = false;
+	};
+
+	class MemoryBuffer : public SharedResource
 	{
 	public:
 		enum class Usage
@@ -29,12 +61,12 @@ namespace helix
 		}
 	};
 
-	class Pipeline : public Object
+	class Pipeline : public SharedResource
 	{
 
 	};
 
-	class Shader : public Object
+	class Shader : public SharedResource
 	{
 	public:
 		enum class Usage

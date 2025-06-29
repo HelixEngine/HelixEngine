@@ -44,11 +44,6 @@ namespace helix::opengl
 		makeCurrentContext(nullptr);
 	}
 
-	const Ref<SharedResourcePipeline>& Renderer::getSharedResourcePipeline() const
-	{
-		return sharedResourcePipeline;
-	}
-
 	SDL_GLContext Renderer::createSDLContext() const
 	{
 		for (const auto& window: Window::getAllWindows())
@@ -119,6 +114,22 @@ namespace helix::opengl
 				case RenderCommand::Type::DrawIndexed:
 					drawIndexedProc();
 					break;
+				case RenderCommand::Type::CreateGLVertexArray:
+					createGLVertexArrayProc();
+					break;
+				case RenderCommand::Type::CreateMemoryBuffer:
+					createMemoryBufferProc();
+					break;
+				case RenderCommand::Type::CreateGLShader:
+					createGLShaderProc();
+					break;
+				case RenderCommand::Type::CreateGLRenderPipeline:
+					createGLRenderPipelineProc();
+					break;
+				case RenderCommand::Type::DestroyGLShader:
+					destroyGLShaderProc();
+					break;
+				case RenderCommand::Type::Unknown:
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的RenderCommand");
 					break;
@@ -146,6 +157,7 @@ namespace helix::opengl
 		auto cmd = renderCmd->cast<SetRenderPipelineCommand>();
 		if (auto pipeline = reinterpret_cast<RenderPipeline*>(cmd->renderPipeline.get()))
 		{
+			pipeline->usable();
 			glUseProgram(pipeline->getGLProgram());
 			return;
 		}
@@ -238,27 +250,9 @@ namespace helix::opengl
 		glBindVertexArray(0);
 	}
 
-	void Renderer::resourceProc(const ResourcePipeline::ListRef& list)
-	{
-		for (auto& cmd: list->getCommands())
-		{
-			this->resourceCmd = cmd.get();
-			switch (cmd->type)
-			{
-				case ResourceCommand::Type::CreateGLVertexArray:
-					createGLVertexArrayProc();
-					break;
-				case ResourceCommand::Type::Unknown:
-				default:
-					Logger::warning(u8"OpenGL Renderer: 未知的ResourceCommand");
-					break;
-			}
-		}
-	}
-
 	void Renderer::createGLVertexArrayProc() const
 	{
-		auto cmd = resourceCmd->cast<CreateGLVertexArrayCommand>();
+		auto cmd = renderCmd->cast<CreateGLVertexArrayCommand>();
 		auto vertexArray = cmd->vertexArray;
 		glGenVertexArrays(1, &vertexArray->vertexArrayGL);
 		glBindVertexArray(vertexArray->getGLVertexArray());
@@ -266,6 +260,7 @@ namespace helix::opengl
 		//Vertex Buffer
 		if (auto vb = reinterpret_cast<MemoryBuffer*>(cmd->config.vertexBuffer.get()))
 		{
+			vb->usable();
 			glBindBuffer(GL_ARRAY_BUFFER, vb->getGLBuffer());
 			vertexArray->vertexBuffer = cmd->config.vertexBuffer;
 		} else
@@ -274,6 +269,7 @@ namespace helix::opengl
 		//Index Buffer
 		if (auto ib = reinterpret_cast<MemoryBuffer*>(cmd->config.indexBuffer.get()))
 		{
+			ib->usable();
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->getGLBuffer());
 			vertexArray->indexBuffer = cmd->config.indexBuffer;
 			vertexArray->indexAttribute = cmd->config.indexAttribute;
@@ -290,37 +286,10 @@ namespace helix::opengl
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
-	void Renderer::sharedResourceProc(const SharedResourcePipeline::ListRef& list)
-	{
-		for (auto& cmd: list->getCommands())
-		{
-			this->sharedResourceCmd = cmd.get();
-			switch (cmd->type)
-			{
-				case SharedResourceCommand::Type::CreateMemoryBuffer:
-					createMemoryBufferProc();
-					break;
-				case SharedResourceCommand::Type::CreateGLShader:
-					createGLShaderProc();
-					break;
-				case SharedResourceCommand::Type::CreateGLRenderPipeline:
-					createGLRenderPipelineProc();
-					break;
-				case SharedResourceCommand::Type::DestroyGLShader:
-					destroyGLShaderProc();
-					break;
-				case SharedResourceCommand::Type::Unknown:
-				default:
-					Logger::warning(u8"OpenGL Renderer: 未知的ResourceCommand");
-					break;
-			}
-		}
-	}
-
 
 	void Renderer::createMemoryBufferProc() const
 	{
-		auto cmd = sharedResourceCmd->cast<CreateMemoryBufferCommand>();
+		auto cmd = renderCmd->cast<CreateMemoryBufferCommand>();
 		auto buf = reinterpret_cast<MemoryBuffer*>(cmd->memoryBuffer.get());
 		glGenBuffers(1, &buf->vertexBufferGL);
 		if (!cmd->bufferData)
@@ -331,11 +300,12 @@ namespace helix::opengl
 		             cmd->bufferData->getPointer(),
 		             buf->getGLUsage());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		buf->notify();
 	}
 
 	void Renderer::createGLShaderProc() const
 	{
-		auto cmd = sharedResourceCmd->cast<CreateGLShaderCommand>();
+		auto cmd = renderCmd->cast<CreateGLShaderCommand>();
 		auto shader = cmd->shader;
 		shader->shaderGL = glCreateShader(shader->getGLUsage());
 
@@ -366,11 +336,12 @@ namespace helix::opengl
 			}
 			Logger::error(u8"OpenGL Shader: 编译", shaderType, u8"着色器失败，错误信息: \n", infoLog);
 		}
+		shader->notify();
 	}
 
 	void Renderer::createGLRenderPipelineProc() const
 	{
-		auto cmd = sharedResourceCmd->cast<CreateGLRenderPipelineCommand>();
+		auto cmd = renderCmd->cast<CreateGLRenderPipelineCommand>();
 		auto pipeline = cmd->renderPipeline;
 		pipeline->programGL = glCreateProgram();
 		attachGLShader(pipeline, cmd->config.vertex);
@@ -387,11 +358,12 @@ namespace helix::opengl
 			glGetProgramInfoLog(pipeline->programGL, infoSize, nullptr, reinterpret_cast<GLchar*>(infoLog.data()));
 			Logger::error(u8"OpenGL Shader: 链接GL Program失败，错误信息: \n", infoLog);
 		}
+		pipeline->notify();
 	}
 
 	void Renderer::destroyGLShaderProc() const
 	{
-		auto cmd = sharedResourceCmd->cast<DestroyGLShaderCommand>();
+		auto cmd = renderCmd->cast<DestroyGLShaderCommand>();
 		glDeleteShader(cmd->shaderGL);
 	}
 
@@ -417,21 +389,21 @@ namespace helix::opengl
 	{
 		auto shader = createNativeShader(usage);
 		CreateGLShaderCommand cmd;
-		cmd.type = SharedResourceCommand::Type::CreateGLShader;
+		cmd.type = RenderCommand::Type::CreateGLShader;
 		cmd.shader = shader;
 		cmd.shaderCode = std::move(shaderCode);
-		sharedResourcePipeline->addCommand<CreateGLShaderCommand>(std::move(cmd));
+		getRenderQueue()->addCommand<CreateGLShaderCommand>(std::move(cmd));
 		return shader;
 	}
 
-	Ref<opengl::RenderPipeline> Renderer::createGLRenderPipeline(RenderPipeline::Config config)
+	Ref<opengl::RenderPipeline> Renderer::createGLRenderPipeline(RenderPipeline::Config config) const
 	{
 		auto renderPipeline = createNativeRenderPipeline();
 		CreateGLRenderPipelineCommand cmd;
-		cmd.type = SharedResourceCommand::Type::CreateGLRenderPipeline;
+		cmd.type = RenderCommand::Type::CreateGLRenderPipeline;
 		cmd.config = std::move(config);
 		cmd.renderPipeline = renderPipeline;
-		sharedResourcePipeline->addCommand<CreateGLRenderPipelineCommand>(std::move(cmd));
+		getRenderQueue()->addCommand<CreateGLRenderPipelineCommand>(std::move(cmd));
 		return renderPipeline;
 	}
 
@@ -439,10 +411,10 @@ namespace helix::opengl
 	{
 		Ref vertexArray = new VertexArray;
 		CreateGLVertexArrayCommand cmd;
-		cmd.type = ResourceCommand::Type::CreateGLVertexArray;
+		cmd.type = RenderCommand::Type::CreateGLVertexArray;
 		cmd.config = std::move(config);
 		cmd.vertexArray = vertexArray;
-		getResourcePipeline()->addCommand<CreateGLVertexArrayCommand>(std::move(cmd));
+		getRenderQueue()->addCommand<CreateGLVertexArrayCommand>(std::move(cmd));
 		return vertexArray;
 	}
 
@@ -454,12 +426,12 @@ namespace helix::opengl
 		getRenderQueue()->addCommand<SetGLVertexArrayCommand>(std::move(cmd));
 	}
 
-	void Renderer::destroyGLShader(const Shader* shader)
+	void Renderer::destroyGLShader(const Shader* shader) const
 	{
 		DestroyGLShaderCommand cmd;
-		cmd.type = SharedResourceCommand::Type::DestroyGLShader;
+		cmd.type = RenderCommand::Type::DestroyGLShader;
 		cmd.shaderGL = shader->getGLShader();
-		sharedResourcePipeline->addCommand<DestroyGLShaderCommand>(std::move(cmd));
+		getRenderQueue()->addCommand<DestroyGLShaderCommand>(std::move(cmd));
 	}
 
 	void Renderer::readyRender()
@@ -468,19 +440,6 @@ namespace helix::opengl
 		glInitMtx.lock();
 		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
 		glInitMtx.unlock();
-	}
-
-	void Renderer::sharedResourceWorkload()
-	{
-		makeCurrentContext(sdlContext->context);
-		sharedResourceProc(sharedResourcePipeline->receive());
-	}
-
-	void Renderer::renderWorkload()
-	{
-		makeCurrentContext(sdlContext->context);
-		resourceProc(getResourcePipeline()->receive());
-		renderProc(getRenderQueue()->receive());
 	}
 
 	std::mutex sharedResourceMtx;
@@ -494,10 +453,6 @@ namespace helix::opengl
 		auto lastTime = SteadyClock::now();
 		while (!token.stop_requested())
 		{
-			sharedResourceMtx.lock();
-			sharedResourceProc(getSharedResourcePipeline()->receive());
-			sharedResourceMtx.unlock();
-			resourceProc(getResourcePipeline()->receive());
 			renderProc(getRenderQueue()->receive());
 			auto now = SteadyClock::now();
 			time += now - lastTime;
@@ -542,4 +497,5 @@ namespace helix::opengl
 		Logger::error(u8"在调用OpenGL函数（", std::u8string_view(reinterpret_cast<const char8_t*>(name)), u8"）时，发生了错误：",
 		              errorType);
 	}
+
 }

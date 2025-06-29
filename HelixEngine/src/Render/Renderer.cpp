@@ -15,11 +15,6 @@ namespace helix
 		return renderQueue;
 	}
 
-	const Ref<ResourcePipeline>& Renderer::getResourcePipeline() const
-	{
-		return resourcePipeline;
-	}
-
 	Window* Renderer::getWindow() const
 	{
 		return window;
@@ -45,10 +40,10 @@ namespace helix
 	{
 		auto vb = createNativeMemoryBuffer(usage, bufferData);
 		CreateMemoryBufferCommand cmd;
-		cmd.type = SharedResourceCommand::Type::CreateMemoryBuffer;
+		cmd.type = RenderCommand::Type::CreateMemoryBuffer;
 		cmd.memoryBuffer = vb;
 		cmd.bufferData = std::move(bufferData);
-		getSharedResourcePipeline()->addCommand<CreateMemoryBufferCommand>(std::move(cmd));
+		renderQueue->addCommand<CreateMemoryBufferCommand>(std::move(cmd));
 		return vb;
 	}
 
@@ -98,52 +93,5 @@ namespace helix
 		cmd.type = RenderCommand::Type::DrawIndexed;
 		cmd.indexCount = indexCount;
 		renderQueue->addCommand<DrawIndexedCommand>(std::move(cmd));
-	}
-
-	void Renderer::startMainRenderThread(std::jthread& mainRenderThread)
-	{
-		mainRenderThread = std::jthread([&]()
-		{
-			while (Game::isRunning)
-			{
-				//渲染调度
-
-				//2.sharedResourceProc(opengl)
-				{
-					Window* sharedResourceProcWindow = nullptr;
-					for (auto window: Window::getAllWindows())
-					{
-						if (window->getGraphicsApi() == GraphicsApi::OpenGL)
-						{
-							sharedResourceProcWindow = window;
-							break;
-						}
-					}
-
-					if (sharedResourceProcWindow)
-						std::jthread resourceThread([sharedResourceProcWindow]
-						{
-							sharedResourceProcWindow->getRenderer()->sharedResourceWorkload();
-						});
-				}
-
-				//3.renderProc
-				{
-					std::vector<std::jthread> renderThreads(Window::getAllWindows().size());
-					for (size_t i = 0; i < renderThreads.size(); ++i)
-					{
-						renderThreads[i] = std::jthread([i]
-						{
-							Window::getAllWindows()[i]->getRenderer()->renderWorkload();
-						});
-					}
-
-					for (auto& renderThread: renderThreads)
-					{
-						renderThread.join();
-					}
-				}
-			}
-		});
 	}
 }

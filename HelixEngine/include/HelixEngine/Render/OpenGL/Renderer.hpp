@@ -30,8 +30,7 @@ namespace helix::opengl
 				MemoryBuffer::Usage usage,
 				Ref<MemoryBlock> vertexData) const override;
 
-		[[nodiscard]] Ref<opengl::Shader> createNativeShader(
-				Shader::Usage usage);
+		[[nodiscard]] Ref<opengl::Shader> createNativeShader(Shader::Usage usage);
 
 		[[nodiscard]] static Ref<opengl::RenderPipeline> createNativeRenderPipeline();
 
@@ -42,11 +41,6 @@ namespace helix::opengl
 		//cmd process//
 
 		RenderCommand* renderCmd{};
-		ResourceCommand* resourceCmd{};
-		SharedResourceCommand* sharedResourceCmd{};
-
-		static inline Ref<SharedResourcePipeline> sharedResourcePipeline = new SharedResourcePipeline;
-		const Ref<SharedResourcePipeline>& getSharedResourcePipeline() const override;
 
 		Ref<SDLOpenGLContext> sdlContext = new SDLOpenGLContext;
 
@@ -69,10 +63,8 @@ namespace helix::opengl
 		void drawIndexedProc() const;
 		void setGLVertexArrayProc();
 
-		void resourceProc(const ResourcePipeline::ListRef& list);
 		void createGLVertexArrayProc() const;
 
-		void sharedResourceProc(const SharedResourcePipeline::ListRef& list);
 		void createMemoryBufferProc() const;
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;
@@ -83,17 +75,14 @@ namespace helix::opengl
 		static GLenum getGLPrimitiveTopology(PrimitiveTopology topology);
 	public:
 		[[nodiscard]] Ref<opengl::Shader> createGLShader(Shader::Usage usage, std::u8string shaderCode);
-		[[nodiscard]] static Ref<opengl::RenderPipeline> createGLRenderPipeline(RenderPipeline::Config config);
+		[[nodiscard]] Ref<opengl::RenderPipeline> createGLRenderPipeline(RenderPipeline::Config config) const;
 
 		[[nodiscard]] Ref<opengl::VertexArray> createGLVertexArray(VertexArray::Config config) const;
 		void setGLVertexArray(Ref<VertexArray> vertexArray) const;
 	private:
-		static void destroyGLShader(const Shader* shader);
+		void destroyGLShader(const Shader* shader) const;
 
 		void readyRender() override;
-
-		void sharedResourceWorkload() override;
-		void renderWorkload() override;
 
 		void renderThreadFunc(const std::stop_token& token) override;
 

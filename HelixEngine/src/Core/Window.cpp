@@ -159,7 +159,7 @@ namespace helix
 
 	void Window::startRun()
 	{
-		for (auto window: allWindows)
+		for (auto& window: allWindows)
 		{
 			window->updateThread = std::jthread{[=](const std::stop_token& token)
 			{
@@ -177,6 +177,15 @@ namespace helix
 		for (auto& readyThread: readyThreads)
 		{
 			readyThread.join();
+		}
+
+		for (auto& window: Window::getAllWindows())
+		{
+			Renderer* renderer = window->getRenderer();
+			renderer->renderThread = std::jthread([renderer](const std::stop_token& token)
+			{
+				renderer->renderThreadFunc(token);
+			});
 		}
 	}
 

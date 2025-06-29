@@ -103,7 +103,7 @@ void main()
 		config.vertex = vertexShader;
 		config.pixel = pixelShader;
 
-		auto pipeline = opengl::Renderer::createGLRenderPipeline(config);
+		auto pipeline = glRenderer->createGLRenderPipeline(config);
 
 		vertexShader.reset();
 		pixelShader.reset();
@@ -128,5 +128,5 @@ void main()
 	}
 
 	//写一下SDL的main loop
-	return Game::testRun();
+	return Game::run();
 }
