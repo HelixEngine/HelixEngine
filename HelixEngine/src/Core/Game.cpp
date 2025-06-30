@@ -40,3 +40,11 @@ bool helix::Game::isQuit()
 {
 	return !isRunning;
 }
+
+extern void setup();
+
+int main()
+{
+	setup();
+	return helix::Game::run();
+}

@@ -31,10 +31,10 @@ namespace helix
 		}
 
 		MemoryBlock(const MemoryBlock&) = delete;
-		MemoryBlock(MemoryBlock&& block) = default;
+		MemoryBlock(MemoryBlock&& block) = delete;
 
 		MemoryBlock& operator=(const MemoryBlock&) = delete;
-		MemoryBlock& operator=(MemoryBlock&&) = default;
+		MemoryBlock& operator=(MemoryBlock&&) = delete;
 
 		~MemoryBlock() override
 		{
@@ -84,7 +84,7 @@ namespace helix
 		{
 			free();
 			ptr = malloc(size);
-			size = size;
+			this->size = size;
 		}
 
 		void allocate(const std::string& path)
