@@ -19,17 +19,6 @@ namespace helix
 		{
 		}
 
-		/**
-		 * @brief 以内存块形式管理内存，默认不释放内存
-		 * @param memory 内存指针
-		 * @param size 内存大小
-		 * @param isRelease 是否自动释放内存，默认不释放
-		 */
-		MemoryBlock(void* memory, size_t size, bool isRelease = false) :
-			ptr(static_cast<std::byte*>(memory)), size(size), isAutoRelease(isRelease)
-		{
-		}
-
 		MemoryBlock(const MemoryBlock&) = delete;
 		MemoryBlock(MemoryBlock&& block) = delete;
 
@@ -219,5 +208,27 @@ namespace helix
 		size_t size = 0;
 		bool isAutoRelease = true;
 		Allocator allocator;
+	public:
+		[[nodiscard]] static Ref<MemoryBlock> clone(const void* src, size_t size)
+		{
+			Ref block = new MemoryBlock;
+			block->allocate(src, size);
+			return block;
+		}
+
+		/**
+		 * @brief 以内存块形式管理内存，默认不释放内存
+		 * @param src 内存指针
+		 * @param size 内存大小
+		 * @param isAutoRelease 是否自动释放内存，默认不释放
+		 */
+		static Ref<MemoryBlock> proxy(void* src, size_t size, bool isAutoRelease = false)
+		{
+			Ref block = new MemoryBlock;
+			block->ptr = src;
+			block->size = size;
+			block->isAutoRelease = isAutoRelease;
+			return block;
+		}
 	};
 }

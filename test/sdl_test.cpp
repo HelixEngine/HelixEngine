@@ -63,20 +63,16 @@ void setup()
 			0, 3, 2
 	};
 
-	Ref vertexDataBlock = new MemoryBlock;
-	vertexDataBlock->allocate(sizeof(vertexData));
-	vertexDataBlock->copy(vertexData, sizeof(vertexData));
-
-	Ref indexDataBlock = new MemoryBlock;
-	indexDataBlock->allocate(sizeof(indexData));
-	indexDataBlock->copy(indexData, sizeof(indexData));
-
 	auto vertexBuffer = window->getRenderer()->createMemoryBuffer(
 			MemoryBuffer::Type::Geometry,
-			MemoryBuffer::Usage::Static, vertexDataBlock);
+			MemoryBuffer::Usage::Static, MemoryBlock::clone(vertexData, sizeof(vertexData)));
 	auto indexBuffer = window->getRenderer()->createMemoryBuffer(
 			MemoryBuffer::Type::Geometry,
-			MemoryBuffer::Usage::Static, indexDataBlock);
+			MemoryBuffer::Usage::Static, MemoryBlock::clone(indexData, sizeof(indexData)));
+
+	auto uniformBuffer = window->getRenderer()->createMemoryBuffer(
+			MemoryBuffer::Type::Uniform,
+			MemoryBuffer::Usage::Dynamic, nullptr);
 
 	auto glRenderer = reinterpret_cast<opengl::Renderer*>(window->getRenderer().get());
 	auto glRenderer2 = reinterpret_cast<opengl::Renderer*>(window2->getRenderer().get());
