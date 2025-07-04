@@ -30,7 +30,7 @@ namespace helix
 		//Resource Command
 
 		[[nodiscard]] Ref<MemoryBuffer>
-		createMemoryBuffer(MemoryBuffer::Usage usage, Ref<MemoryBlock> bufferData) const;
+		createMemoryBuffer(MemoryBuffer::Type type, MemoryBuffer::Usage usage, Ref<MemoryBlock> bufferData) const;
 		void setRenderPipeline(Ref<RenderPipeline> renderPipeline) const;
 		void setPrimitiveTopology(PrimitiveTopology primitiveTopology) const;
 		void setViewport(Viewport viewport) const;
@@ -43,8 +43,8 @@ namespace helix
 	protected:
 		using CommandProcessThreadFunc = std::function<void(const std::stop_token&)>;
 		[[nodiscard]] virtual Ref<MemoryBuffer> createNativeMemoryBuffer(
-				MemoryBuffer::Usage usage,
-				Ref<MemoryBlock> vertexData) const = 0;
+				MemoryBuffer::Type type,
+				MemoryBuffer::Usage usage, Ref<MemoryBlock> vertexData) const = 0;
 		std::jthread renderThread;
 	private:
 		//Game run

@@ -72,11 +72,11 @@ void setup()
 	indexDataBlock->copy(indexData, sizeof(indexData));
 
 	auto vertexBuffer = window->getRenderer()->createMemoryBuffer(
-			MemoryBuffer::Usage::Static,
-			vertexDataBlock);
+			MemoryBuffer::Type::Geometry,
+			MemoryBuffer::Usage::Static, vertexDataBlock);
 	auto indexBuffer = window->getRenderer()->createMemoryBuffer(
-			MemoryBuffer::Usage::Static,
-			indexDataBlock);
+			MemoryBuffer::Type::Geometry,
+			MemoryBuffer::Usage::Static, indexDataBlock);
 
 	auto glRenderer = reinterpret_cast<opengl::Renderer*>(window->getRenderer().get());
 	auto glRenderer2 = reinterpret_cast<opengl::Renderer*>(window2->getRenderer().get());

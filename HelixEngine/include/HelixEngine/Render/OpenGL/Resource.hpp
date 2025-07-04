@@ -11,7 +11,6 @@ namespace helix::opengl
 		GLuint vertexBufferGL{};
 	public:
 		[[nodiscard]] GLuint getGLBuffer() const;
-
 		[[nodiscard]] GLenum getGLUsage() const;
 	};
 

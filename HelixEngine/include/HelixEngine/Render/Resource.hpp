@@ -42,6 +42,13 @@ namespace helix
 	class MemoryBuffer : public RenderResource
 	{
 	public:
+		enum class Type
+		{
+			Geometry,
+			Uniform,
+			Storage,
+		};
+
 		enum class Usage
 		{
 			Static,
@@ -49,13 +56,24 @@ namespace helix
 			Stream,
 		};
 	private:
+		Type type = Type::Geometry;
 		Usage usage = Usage::Static;
 	public:
+		[[nodiscard]] Type getType() const
+		{
+			return type;
+		}
+
 		[[nodiscard]] Usage getUsage() const
 		{
 			return usage;
 		}
 	protected:
+		void setType(Type type)
+		{
+			this->type = type;
+		}
+
 		void setUsage(Usage usage)
 		{
 			this->usage = usage;

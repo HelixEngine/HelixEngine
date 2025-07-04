@@ -14,11 +14,13 @@ namespace helix::opengl
 		SDL_GL_DestroyContext(context);
 	}
 
-	Ref<helix::MemoryBuffer> Renderer::createNativeMemoryBuffer(MemoryBuffer::Usage usage,
+	Ref<helix::MemoryBuffer> Renderer::createNativeMemoryBuffer(MemoryBuffer::Type type,
+	                                                            MemoryBuffer::Usage usage,
 	                                                            Ref<MemoryBlock> vertexData) const
 	{
 		Ref vb = new MemoryBuffer;
 		vb->setUsage(usage);
+		vb->setType(type);
 		return vb;
 	}
 

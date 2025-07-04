@@ -36,15 +36,16 @@ namespace helix
 		renderQueue->commit();
 	}
 
-	Ref<MemoryBuffer> Renderer::createMemoryBuffer(MemoryBuffer::Usage usage, Ref<MemoryBlock> bufferData) const
+	Ref<MemoryBuffer> Renderer::createMemoryBuffer(MemoryBuffer::Type type, MemoryBuffer::Usage usage,
+	                                               Ref<MemoryBlock> bufferData) const
 	{
-		auto vb = createNativeMemoryBuffer(usage, bufferData);
+		auto buf = createNativeMemoryBuffer(type, usage, bufferData);
 		CreateMemoryBufferCommand cmd;
 		cmd.type = RenderCommand::Type::CreateMemoryBuffer;
-		cmd.memoryBuffer = vb;
+		cmd.memoryBuffer = buf;
 		cmd.bufferData = std::move(bufferData);
 		renderQueue->addCommand<CreateMemoryBufferCommand>(std::move(cmd));
-		return vb;
+		return buf;
 	}
 
 	void Renderer::setRenderPipeline(Ref<RenderPipeline> renderPipeline) const

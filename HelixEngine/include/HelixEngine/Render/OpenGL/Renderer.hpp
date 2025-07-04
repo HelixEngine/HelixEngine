@@ -27,8 +27,8 @@ namespace helix::opengl
 		//resource method//
 
 		[[nodiscard]] Ref<helix::MemoryBuffer> createNativeMemoryBuffer(
-				MemoryBuffer::Usage usage,
-				Ref<MemoryBlock> vertexData) const override;
+				MemoryBuffer::Type type,
+				MemoryBuffer::Usage usage, Ref<MemoryBlock> vertexData) const override;
 
 		[[nodiscard]] Ref<opengl::Shader> createNativeShader(Shader::Usage usage);
 
