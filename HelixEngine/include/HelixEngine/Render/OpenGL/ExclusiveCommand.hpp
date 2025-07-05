@@ -27,6 +27,11 @@ namespace helix::opengl
 		Ref<VertexArray> vertexArray{};
 	};
 
+	struct SetGLUniformBindingAttributeCommand final : RenderCommand
+	{
+		std::vector<UniformBindingAttribute> uniformBindingAttributes{};
+	};
+
 	struct DestroyGLShaderCommand final : RenderCommand
 	{
 		GLuint shaderGL{};

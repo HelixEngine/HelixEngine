@@ -101,6 +101,9 @@ namespace helix::opengl
 				case RenderCommand::Type::SetGLVertexArray:
 					setGLVertexArrayProc();
 					break;
+				case RenderCommand::Type::SetGLUniformBindingAttribute:
+					setGLUniformBindingAttributeProc();
+					break;
 				case RenderCommand::Type::SetPrimitiveTopology:
 					setPrimitiveTopologyProc();
 					break;
@@ -252,6 +255,28 @@ namespace helix::opengl
 		glBindVertexArray(0);
 	}
 
+	void Renderer::setGLUniformBindingAttributeProc() const
+	{
+		const auto cmd = renderCmd->cast<SetGLUniformBindingAttributeCommand>();
+		if (auto& attributes = cmd->uniformBindingAttributes; !attributes.empty())
+		{
+			for (const auto& attr: attributes)
+			{
+				if (auto ubo = reinterpret_cast<opengl::MemoryBuffer*>(attr.uniformBuffer.get()))
+				{
+					attr.uniformBuffer->usable();
+					glBindBuffer(GL_UNIFORM_BUFFER, ubo->getGLBuffer());
+					glBindBufferRange(GL_UNIFORM_BUFFER, attr.binding, ubo->getGLBuffer(), attr.offset,
+					                  attr.size);
+				} else
+				{
+					Logger::error(u8"OpenGL Shader: Uniform Binding Attribute的Uniform Buffer不可为nullptr");
+				}
+			}
+			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+		}
+	}
+
 	void Renderer::createGLVertexArrayProc() const
 	{
 		auto cmd = renderCmd->cast<CreateGLVertexArrayCommand>();
@@ -304,14 +329,15 @@ namespace helix::opengl
 			return;
 
 		glGenBuffers(1, &buf->vertexBufferGL);
-		if (!cmd->bufferData)
-			return;
-		glBindBuffer(GL_ARRAY_BUFFER, buf->getGLBuffer());
-		glBufferData(GL_ARRAY_BUFFER,
-		             static_cast<GLsizeiptr>(cmd->bufferData->getSize()),
-		             cmd->bufferData->getPointer(),
-		             buf->getGLUsage());
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		if (cmd->bufferData)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, buf->getGLBuffer());
+			glBufferData(GL_ARRAY_BUFFER,
+			             static_cast<GLsizeiptr>(cmd->bufferData->getSize()),
+			             cmd->bufferData->getPointer(),
+			             buf->getGLUsage());
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
 		buf->notify();
 	}
 
@@ -378,6 +404,7 @@ namespace helix::opengl
 			glGetProgramInfoLog(pipeline->programGL, infoSize, nullptr, reinterpret_cast<GLchar*>(infoLog.data()));
 			Logger::error(u8"OpenGL Shader: 链接GL Program失败，错误信息: \n", infoLog);
 		}
+
 		pipeline->notify();
 	}
 
@@ -447,6 +474,14 @@ namespace helix::opengl
 		cmd.type = RenderCommand::Type::SetGLVertexArray;
 		cmd.vertexArray = std::move(vertexArray);
 		getRenderQueue()->addCommand<SetGLVertexArrayCommand>(std::move(cmd));
+	}
+
+	void Renderer::setGLUniformBindingAttribute(UniformBindingAttribute uniformBindingAttribute) const
+	{
+		SetGLUniformBindingAttributeCommand cmd;
+		cmd.type = RenderCommand::Type::SetGLUniformBindingAttribute;
+		cmd.uniformBindingAttributes = {std::move(uniformBindingAttribute)};
+		getRenderQueue()->addCommand<SetGLUniformBindingAttributeCommand>(std::move(cmd));
 	}
 
 	void Renderer::destroyGLShader(const Shader* shader) const

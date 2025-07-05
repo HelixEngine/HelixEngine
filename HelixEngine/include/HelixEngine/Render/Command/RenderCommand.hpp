@@ -22,6 +22,7 @@ namespace helix
 
 			//OpenGL Exclusive
 			SetGLVertexArray,
+			SetGLUniformBindingAttribute,
 			CreateGLVertexArray,
 			CreateGLShader,
 			CreateGLRenderPipeline,

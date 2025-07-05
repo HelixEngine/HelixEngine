@@ -62,6 +62,7 @@ namespace helix::opengl
 		void drawProc() const;
 		void drawIndexedProc() const;
 		void setGLVertexArrayProc();
+		void setGLUniformBindingAttributeProc() const;
 
 		void createGLVertexArrayProc() const;
 
@@ -79,6 +80,8 @@ namespace helix::opengl
 
 		[[nodiscard]] Ref<opengl::VertexArray> createGLVertexArray(VertexArray::Config config) const;
 		void setGLVertexArray(Ref<VertexArray> vertexArray) const;
+		void setGLUniformBindingAttribute(
+				UniformBindingAttribute uniformBindingAttribute) const;
 	private:
 		void destroyGLShader(const Shader* shader) const;
 

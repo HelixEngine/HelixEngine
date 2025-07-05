@@ -27,6 +27,14 @@ namespace helix::opengl
 		~Shader() override;
 	};
 
+	struct UniformBindingAttribute final
+	{
+		Ref<helix::MemoryBuffer> uniformBuffer;
+		GLuint binding = 0;
+		GLuint offset = 0;
+		GLuint size = 0;
+	};
+
 	class RenderPipeline final : public helix::RenderPipeline
 	{
 		friend class Renderer;

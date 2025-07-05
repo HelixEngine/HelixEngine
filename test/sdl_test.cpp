@@ -9,6 +9,7 @@ class RenderNode final : public Node2D
 public:
 	RenderPipeline* pipeline = nullptr;
 	opengl::VertexArray* vertexArray = nullptr;
+	Ref<MemoryBuffer> uniformBuffer;
 
 	void render(Renderer* renderer) override
 	{
@@ -22,6 +23,14 @@ public:
 		glRenderer->setScissor(scissor);
 
 		glRenderer->setRenderPipeline(pipeline);
+
+		opengl::UniformBindingAttribute uniformBindingAttribute;
+		uniformBindingAttribute.uniformBuffer = uniformBuffer;
+		uniformBindingAttribute.binding = 0;
+		uniformBindingAttribute.offset = 0;
+		uniformBindingAttribute.size = sizeof(Color);
+		glRenderer->setGLUniformBindingAttribute(uniformBindingAttribute);
+
 		glRenderer->setGLVertexArray(vertexArray);
 		glRenderer->setPrimitiveTopology(PrimitiveTopology::TriangleList);
 		glRenderer->drawIndexed(6);
@@ -70,9 +79,14 @@ void setup()
 			MemoryBuffer::Type::Geometry,
 			MemoryBuffer::Usage::Static, MemoryBlock::clone(indexData, sizeof(indexData)));
 
+	Color uniformColor = Color::Blue;
 	auto uniformBuffer = window->getRenderer()->createMemoryBuffer(
 			MemoryBuffer::Type::Uniform,
-			MemoryBuffer::Usage::Dynamic, nullptr);
+			MemoryBuffer::Usage::Dynamic, MemoryBlock::clone(&uniformColor, sizeof(uniformColor)));
+	uniformColor = Color::Red;
+	auto uniformBuffer2 = window->getRenderer()->createMemoryBuffer(
+			MemoryBuffer::Type::Uniform,
+			MemoryBuffer::Usage::Dynamic, MemoryBlock::clone(&uniformColor, sizeof(uniformColor)));
 
 	auto glRenderer = reinterpret_cast<opengl::Renderer*>(window->getRenderer().get());
 	auto glRenderer2 = reinterpret_cast<opengl::Renderer*>(window2->getRenderer().get());
@@ -92,13 +106,18 @@ void main()
 
 	auto pixelCode =
 			u8R"(
-#version 330 core
+#version 420 core
 in vec3 vertexColor;
 out vec4 FragColor;
 
+layout (std140,binding = 0) uniform UniformBlock
+{
+	vec4 color;
+};
+
 void main()
 {
-    FragColor = vec4(vertexColor,1.f);
+    FragColor = color;
 } )";
 
 	auto pixelShader = glRenderer->createGLShader(Shader::Usage::Pixel, pixelCode);
@@ -108,6 +127,13 @@ void main()
 	config.pixel = pixelShader;
 
 	auto pipeline = glRenderer->createGLRenderPipeline(config);
+	// opengl::UniformBindingAttribute uniformBindingAttribute;
+	// uniformBindingAttribute.uniformBuffer = uniformBuffer;
+	// uniformBindingAttribute.binding = 0;
+	// uniformBindingAttribute.offset = 0;
+	// uniformBindingAttribute.size = sizeof(Color);
+	// glRenderer->setGLUniformBindingAttribute(pipeline, uniformBindingAttribute);
+	// glRenderer2->setGLUniformBindingAttribute(pipeline, uniformBindingAttribute);
 
 	vertexShader.reset();
 	pixelShader.reset();
@@ -126,7 +152,9 @@ void main()
 
 	renderNode->pipeline = pipeline;
 	renderNode->vertexArray = vao;
+	renderNode->uniformBuffer = uniformBuffer;
 
 	renderNode2->pipeline = pipeline;
 	renderNode2->vertexArray = vao2;
+	renderNode2->uniformBuffer = uniformBuffer2;
 }

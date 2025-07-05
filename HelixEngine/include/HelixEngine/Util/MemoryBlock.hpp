@@ -48,7 +48,7 @@ namespace helix
 		 */
 		void copy(const void* src) const
 		{
-			memcpy(ptr, src, size);
+			copy(src, size);
 		}
 
 		/**
@@ -228,6 +228,17 @@ namespace helix
 			block->ptr = src;
 			block->size = size;
 			block->isAutoRelease = isAutoRelease;
+			return block;
+		}
+
+		/**
+		 * @brief 创建一块空内存块
+		 * @param size 内存块的大小
+		 */
+		static Ref<MemoryBlock> empty(size_t size)
+		{
+			Ref block = new MemoryBlock;
+			block->allocate(size);
 			return block;
 		}
 	};
