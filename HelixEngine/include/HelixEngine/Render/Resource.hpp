@@ -16,11 +16,11 @@ namespace helix
 		void usable()
 		{
 			std::shared_lock lock{mtx};
-			if (isUsable)
+			if (bIsUsable)
 				return;
 			cv.wait(lock, [this]
 			{
-				return isUsable;
+				return bIsUsable.load();
 			});
 		}
 
@@ -30,13 +30,18 @@ namespace helix
 		void notify()
 		{
 			std::unique_lock lock{mtx};
-			isUsable = true;
+			bIsUsable = true;
 			cv.notify_all();
+		}
+
+		[[nodiscard]] bool isUsable() const
+		{
+			return bIsUsable;
 		}
 	private:
 		std::shared_mutex mtx;
 		std::condition_variable_any cv;
-		bool isUsable = false;
+		std::atomic_bool bIsUsable = false;
 	};
 
 	class MemoryBuffer : public RenderResource
