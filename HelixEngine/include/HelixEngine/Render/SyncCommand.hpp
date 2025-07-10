@@ -101,40 +101,4 @@ namespace helix
 			return back;
 		}
 	};
-
-	template<typename CommandType>
-	class CommandPipeline final : public Object
-	{
-	public:
-		using ListType = CommandList<CommandType>;
-		using ListRef = Ref<ListType>;
-	private:
-		ListRef front = new CommandList<CommandType>;
-		ListRef back = new CommandList<CommandType>;
-
-		//同步原语
-		std::mutex mtx;
-		bool hasNewCommand = false;
-	public:
-		template<typename ActualType, typename... Args>
-		void addCommand(Args&&... args)
-		{
-			std::lock_guard lock(mtx);
-			front->template addCommand<ActualType>(std::forward<Args>(args)...);
-			hasNewCommand = true;
-		}
-
-		ListRef receive()
-		{
-			back->clear();
-			std::lock_guard lock(mtx);
-			if (hasNewCommand)
-			{
-				back.swap(front);
-				hasNewCommand = false;
-			}
-			return back;
-		}
-	};
-
 }

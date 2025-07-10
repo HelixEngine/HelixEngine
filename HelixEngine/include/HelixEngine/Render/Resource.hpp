@@ -125,4 +125,10 @@ namespace helix
 	};
 
 	using Scissor = Rect<Vector2I32, Vector2I32>;
+
+
+	class Texture : public RenderResource
+	{
+
+	};
 }
