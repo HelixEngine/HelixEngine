@@ -57,10 +57,7 @@ namespace helix
 		ListRef front = new CommandList<CommandType>;
 		ListRef back = new CommandList<CommandType>;
 
-		//同步原语
-		std::mutex mtx;
-		std::condition_variable cv;
-		bool isCommited = false;
+		std::atomic_bool isCommited = false;
 	public:
 		template<typename ActualType, typename... Args>
 		void addCommand(Args&&... args)
@@ -75,12 +72,9 @@ namespace helix
 		 */
 		void commit()
 		{
-			std::unique_lock lock{mtx};
-			isCommited = true;
-			cv.wait(lock, [&]
-			{
-				return !isCommited;
-			});
+			isCommited.store(true, std::memory_order_seq_cst);
+			while (isCommited.load(std::memory_order_seq_cst))
+				std::this_thread::yield();
 		}
 
 		/**
@@ -90,13 +84,11 @@ namespace helix
 		 */
 		[[nodiscard]] ListRef receive()
 		{
-			std::unique_lock lock{mtx};
-			if (isCommited)
+			if (isCommited.load(std::memory_order_acquire))
 			{
 				back->clear();
 				back.swap(front);
-				isCommited = false;
-				cv.notify_all();
+				isCommited.store(false, std::memory_order_release);
 			}
 			return back;
 		}
