@@ -12,6 +12,7 @@ add_subdirectory(HelixEngine/extern/glad)
 
 set(SDL_STATIC ON)
 add_subdirectory(HelixEngine/extern/SDL3.2.10)
+add_subdirectory(HelixEngine/extern/opencv)
 
 set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
 set(HELIX_UTIL_NAME HelixUtil)
@@ -37,8 +38,8 @@ file(GLOB_RECURSE HELIX_ENGINE_SOURCES
         EXCLUDE HelixEngine/src/Util
 )
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
-target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include" "HelixEngine/extern/boost")
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3-static glad ${HELIX_UTIL_NAME})
+target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include" "HelixEngine/extern/boost" "HelixEngine/extern/opencv/include")
+target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3-static glad opencv_core ${HELIX_UTIL_NAME})
 
 #set(HELIX_VULKAN_BACKEND ON)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -54,6 +55,6 @@ endif ()
 #endif ()
 
 if (HELIX_ENGINE_TEST)
-    add_executable(sdl_test test/sdl_test.cpp)
-    target_link_libraries(sdl_test PRIVATE ${PROJECT_NAME})
+    add_executable(HelixEngineTest test/main.cpp)
+    target_link_libraries(HelixEngineTest PRIVATE ${PROJECT_NAME})
 endif ()
