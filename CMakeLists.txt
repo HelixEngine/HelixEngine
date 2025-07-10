@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(ENV{http_proxy} "http://127.0.0.1:7890")
+set(ENV{https_proxy} "http://127.0.0.1:7890")
+
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(GLAD_DEBUG ON)
 endif ()
