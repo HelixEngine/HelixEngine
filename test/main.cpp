@@ -158,6 +158,4 @@ void main()
 	renderNode2->pipeline = pipeline;
 	renderNode2->vertexArray = vao2;
 	renderNode2->uniformBuffer = uniformBuffer2;
-
-	cv::Mat image = cv::imread("D:/a.jpg");
 }
