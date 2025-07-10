@@ -11,7 +11,17 @@ endif ()
 add_subdirectory(HelixEngine/extern/glad)
 
 set(SDL_STATIC ON)
+set(SDL_SHARED OFF)
+set(SDL_EXAMPLES OFF)
+set(SDL_TESTS OFF)
 add_subdirectory(HelixEngine/extern/SDL3.2.10)
+
+set(BUILD_LIST core imgcodecs CACHE STRING "List of OpenCV modules to build")
+set(BUILD_DOCS OFF CACHE BOOL "Disable docs")
+set(BUILD_EXAMPLES OFF CACHE BOOL "Disable examples")
+set(BUILD_TESTS OFF CACHE BOOL "Disable tests")
+set(BUILD_PERF_TESTS OFF CACHE BOOL "Disable performance tests")
+set(BUILD_opencv_highgui OFF CACHE BOOL "Disable highgui module")
 add_subdirectory(HelixEngine/extern/opencv)
 
 set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
