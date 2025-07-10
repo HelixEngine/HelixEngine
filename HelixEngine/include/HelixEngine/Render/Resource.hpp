@@ -13,12 +13,15 @@ namespace helix
 		 * @brief 等待资源可用
 		 * @note 对于共享资源，在渲染端使用资源时，也需要调用该方法确保资源可用
 		 */
-		void usable() const
+		void usable()
 		{
-			if (bIsUsable.load(std::memory_order_relaxed))
+			if (isUsable())
 				return;
-			while (!bIsUsable.load(std::memory_order_relaxed))
-				std::this_thread::yield(); // 等待资源可用
+			std::shared_lock lock(mtx);
+			cv.wait(lock, [&]
+			{
+				return isUsable();
+			});
 		}
 
 		/**
@@ -27,6 +30,8 @@ namespace helix
 		void notify()
 		{
 			bIsUsable.store(true, std::memory_order_relaxed);
+			std::shared_lock lock(mtx);
+			cv.notify_all();
 		}
 
 		[[nodiscard]] bool isUsable() const
@@ -35,6 +40,8 @@ namespace helix
 		}
 	private:
 		std::atomic_bool bIsUsable = false;
+		std::shared_mutex mtx;
+		std::condition_variable_any cv;
 	};
 
 	class MemoryBuffer : public RenderResource

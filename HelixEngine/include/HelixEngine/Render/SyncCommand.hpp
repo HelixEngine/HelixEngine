@@ -5,9 +5,6 @@
 #include <optional>
 #include <HelixEngine/Util/Ref.hpp>
 
-#include "HelixEngine/Core/Game.hpp"
-#include "HelixEngine/Util/Logger.hpp"
-
 namespace helix
 {
 
@@ -58,6 +55,8 @@ namespace helix
 		alignas(std::hardware_destructive_interference_size) ListRef back = new CommandList<CommandType>;
 
 		std::atomic_bool isCommited = false;
+		std::mutex mtx;
+		std::condition_variable cv;
 	public:
 		template<typename ActualType, typename... Args>
 		void addCommand(Args&&... args)
@@ -72,9 +71,12 @@ namespace helix
 		 */
 		void commit()
 		{
-			isCommited.store(true, std::memory_order_seq_cst);
-			while (isCommited.load(std::memory_order_seq_cst))
-				std::this_thread::yield();
+			std::unique_lock lock(mtx);
+			isCommited.store(true, std::memory_order_relaxed);
+			cv.wait(lock, [&]
+			{
+				return !isCommited.load(std::memory_order_relaxed);
+			});
 		}
 
 		/**
@@ -86,9 +88,11 @@ namespace helix
 		{
 			if (isCommited.load(std::memory_order_acquire))
 			{
+				std::unique_lock lock(mtx);
 				back->clear();
 				back.swap(front);
 				isCommited.store(false, std::memory_order_release);
+				cv.notify_all();
 			}
 			return back;
 		}
