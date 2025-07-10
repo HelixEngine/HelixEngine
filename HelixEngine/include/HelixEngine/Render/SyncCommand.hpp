@@ -54,8 +54,8 @@ namespace helix
 		using ListType = CommandList<CommandType>;
 		using ListRef = Ref<ListType>;
 	private:
-		ListRef front = new CommandList<CommandType>;
-		ListRef back = new CommandList<CommandType>;
+		alignas(std::hardware_destructive_interference_size) ListRef front = new CommandList<CommandType>;
+		alignas(std::hardware_destructive_interference_size) ListRef back = new CommandList<CommandType>;
 
 		std::atomic_bool isCommited = false;
 	public:
