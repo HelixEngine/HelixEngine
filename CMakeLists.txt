@@ -38,8 +38,8 @@ file(GLOB_RECURSE HELIX_ENGINE_SOURCES
         EXCLUDE HelixEngine/src/Util
 )
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
-target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include" "HelixEngine/extern/boost" "HelixEngine/extern/opencv/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3-static glad opencv_core ${HELIX_UTIL_NAME})
+target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include" "HelixEngine/extern/boost" "HelixEngine/extern/opencv-include")
+target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3-static glad opencv_core opencv_imgcodecs ${HELIX_UTIL_NAME})
 
 #set(HELIX_VULKAN_BACKEND ON)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
