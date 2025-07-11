@@ -1,8 +1,10 @@
 #pragma once
 #include <shared_mutex>
 #include <HelixEngine/Util/Ref.hpp>
+#include <HelixEngine/Util/PixelFormat.hpp>
 #include <HelixEngine/Math/Shape.hpp>
 #include <HelixEngine/Math/Vector2.hpp>
+#include <opencv2/core/mat.hpp>
 
 namespace helix
 {
@@ -131,6 +133,20 @@ namespace helix
 
 	using Scissor = Rect<Vector2I32, Vector2I32>;
 
+	class Bitmap : public RenderResource
+	{
+	public:
+		struct Config
+		{
+			PixelFormat bitmapFormat = PixelFormat::Unknown;
+		};
+
+		[[nodiscard]] static Ref<Bitmap> load(const std::u8string& filePath, const Config& config = {});
+	private:
+		void innerLoad(const std::u8string& filePath, Config config);
+		Bitmap() = default;
+		cv::Mat cvBitmap;
+	};
 
 	class Texture : public RenderResource
 	{

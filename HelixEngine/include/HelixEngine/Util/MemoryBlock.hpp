@@ -76,17 +76,18 @@ namespace helix
 			this->size = size;
 		}
 
-		void allocate(const std::string& path)
+		void allocate(const std::u8string& path)
 		{
+			auto cPath = reinterpret_cast<const char*>(path.c_str());
 			struct stat info{};
-			if (stat(path.c_str(), &info))
+			if (stat(cPath, &info))
 			{
 				Logger::error(u8"内存块读取文件信息错误！");
 				return;
 			}
 
 			std::ifstream file;
-			file.open(path, std::ios::binary | std::ios::in);
+			file.open(cPath, std::ios::binary | std::ios::in);
 
 			if (!file.is_open())
 			{
