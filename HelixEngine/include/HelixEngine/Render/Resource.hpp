@@ -143,10 +143,12 @@ namespace helix
 
 		[[nodiscard]] static Ref<Bitmap> load(const std::u8string& filePath, const Config& config = {});
 	private:
-		void innerLoad(const std::u8string& filePath, Config config);
+		void innerLoad(const std::u8string& filePath, const Config& config);
 		Bitmap() = default;
-		//cv::Mat cvBitmap;
 		sail::image image;
+		PixelFormat format;
+
+		static SailPixelFormat formatConvert(PixelFormat format);
 	};
 
 	class Texture : public RenderResource

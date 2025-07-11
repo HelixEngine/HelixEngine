@@ -71,5 +71,4 @@ namespace helix
 		       format1.colorSpace == format2.colorSpace &&
 		       format1.bitWidth == format2.bitWidth;
 	}
-
 }

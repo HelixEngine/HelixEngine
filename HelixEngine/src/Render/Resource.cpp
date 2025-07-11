@@ -9,16 +9,24 @@ helix::Ref<helix::Bitmap> helix::Bitmap::load(const std::u8string& filePath, con
 	return bitmap;
 }
 
-void helix::Bitmap::innerLoad(const std::u8string& filePath, Config config)
+void helix::Bitmap::innerLoad(const std::u8string& filePath, const Config& config)
 {
-	// int imreadFlag = cv::IMREAD_COLOR_BGR;
-	// if (config.bitmapFormat == PixelFormat::Unknown)
-	// {
-	//
-	// }
-	// cvBitmap = cv::imread(reinterpret_cast<const char*>(filePath.c_str()), cv::IMREAD_UNCHANGED);
-	//
-	// CV_8UC3;
 	image.load(reinterpret_cast<const char*>(filePath.data()));
-	auto format = image.pixel_format();
+	if (config.bitmapFormat != PixelFormat::Unknown)
+	{
+		auto sailPixelFormat = formatConvert(config.bitmapFormat);
+		if (!image.can_convert(sailPixelFormat))
+		{
+			Logger::info(u8"加载的图像（", filePath, u8"）不支持Config指定的Bitmap PixelFormat，默认不执行格式转换");
+			//...
+		}
+		image.convert(sailPixelFormat);
+		//...
+	}
+}
+
+SailPixelFormat helix::Bitmap::formatConvert(PixelFormat format)
+{
+	//...
+	return SAIL_PIXEL_FORMAT_UNKNOWN;
 }
