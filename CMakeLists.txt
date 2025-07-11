@@ -12,25 +12,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif ()
 add_subdirectory(HelixEngine/extern/glad)
 
-set(SDL_STATIC ON CACHE BOOL "Enable SDL Static Library")
-set(SDL_SHARED OFF CACHE BOOL "Disable SDL Shared Library")
-set(SDL_EXAMPLES OFF CACHE BOOL "Disable SDL Examples")
-set(SDL_TESTS OFF CACHE BOOL "Disable SDL Tests")
-set(SDL_TEST_LIBRARY OFF CACHE BOOL "Disable SDL Test Library")
-set(SDL_RENDER OFF CACHE BOOL "Disable SDL Render")
-add_subdirectory(HelixEngine/extern/SDL3.2.10)
-
+#SDL3
+find_package(SDL3 CONFIG REQUIRED)
+#SAIL-C++
 find_package(SailC++ CONFIG REQUIRED)
-
-#set(BUILD_LIST core imgcodecs CACHE STRING "List of OpenCV modules to build")
-#set(BUILD_DOCS OFF CACHE BOOL "Disable docs")
-#set(BUILD_EXAMPLES OFF CACHE BOOL "Disable examples")
-#set(BUILD_TESTS OFF CACHE BOOL "Disable tests")
-#set(BUILD_PERF_TESTS OFF CACHE BOOL "Disable performance tests")
-#set(BUILD_opencv_highgui OFF CACHE BOOL "Disable highgui module")
-#set(WITH_IPP OFF CACHE BOOL "Disable Intel IPP")
-#set(ENABLE_LIBJPEG_TURBO_SIMD OFF CACHE BOOL "Disable libjpeg-turbo SIMD")
-#add_subdirectory(HelixEngine/extern/opencv)
 
 set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
 set(HELIX_UTIL_NAME HelixUtil)
@@ -56,10 +41,8 @@ file(GLOB_RECURSE HELIX_ENGINE_SOURCES
         EXCLUDE HelixEngine/src/Util
 )
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
-target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include" #"HelixEngine/extern/opencv-include"
-)
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3-static glad #opencv_core opencv_imgcodecs
-        SAIL::sail-c++ ${HELIX_UTIL_NAME})
+target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
+target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3 glad SAIL::sail-c++ ${HELIX_UTIL_NAME})
 
 #set(HELIX_VULKAN_BACKEND ON)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
