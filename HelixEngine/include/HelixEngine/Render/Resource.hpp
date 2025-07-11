@@ -4,7 +4,7 @@
 #include <HelixEngine/Util/PixelFormat.hpp>
 #include <HelixEngine/Math/Shape.hpp>
 #include <HelixEngine/Math/Vector2.hpp>
-#include <opencv2/core/mat.hpp>
+#include <sail-c++/sail-c++.h>
 
 namespace helix
 {
@@ -145,7 +145,8 @@ namespace helix
 	private:
 		void innerLoad(const std::u8string& filePath, Config config);
 		Bitmap() = default;
-		cv::Mat cvBitmap;
+		//cv::Mat cvBitmap;
+		sail::image image;
 	};
 
 	class Texture : public RenderResource
