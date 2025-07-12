@@ -2,12 +2,69 @@
 #include <HelixEngine/Util/Logger.hpp>
 #include <sstream>
 
+void helix::RenderResource::usable()
+{
+	if (isUsable())
+		return;
+	std::shared_lock lock(mtx);
+	cv.wait(lock, [&]
+	{
+		return isUsable();
+	});
+}
+
+void helix::RenderResource::notify()
+{
+	bIsUsable.store(true, std::memory_order_relaxed);
+	std::shared_lock lock(mtx);
+	cv.notify_all();
+}
+
+bool helix::RenderResource::isUsable() const
+{
+	return bIsUsable.load(std::memory_order_relaxed);
+}
+
+helix::MemoryBuffer::Type helix::MemoryBuffer::getType() const
+{
+	return type;
+}
+
+helix::MemoryBuffer::Usage helix::MemoryBuffer::getUsage() const
+{
+	return usage;
+}
+
+void helix::MemoryBuffer::setType(Type type)
+{
+	this->type = type;
+}
+
+void helix::MemoryBuffer::setUsage(Usage usage)
+{
+	this->usage = usage;
+}
+
+void helix::Shader::setUsage(Usage usage)
+{
+	this->usage = usage;
+}
+
 helix::Ref<helix::Bitmap> helix::Bitmap::load(const std::u8string& filePath, const Config& config)
 {
 	Ref bitmap = new Bitmap;
 	bitmap->innerLoad(filePath, config);
 	bitmap->notify();
 	return bitmap;
+}
+
+bool helix::Bitmap::convert(const PixelFormat& dstFormat)
+{
+	if (!imageConvertFormat(image, formatConvert(dstFormat)))
+		return false;
+
+	format = dstFormat;
+	return true;
 }
 
 const helix::PixelFormat& helix::Bitmap::getPixelFormat() const
@@ -18,6 +75,11 @@ const helix::PixelFormat& helix::Bitmap::getPixelFormat() const
 helix::Vector2UI32 helix::Bitmap::getSize() const
 {
 	return {image.width(), image.height()};
+}
+
+const sail::image& helix::Bitmap::getSailImage() const
+{
+	return image;
 }
 
 void helix::Bitmap::innerLoad(const std::u8string& filePath, const Config& config)
@@ -106,4 +168,34 @@ bool helix::Bitmap::imageConvertFormat(sail::image& image, SailPixelFormat dstFo
 	}
 	image.convert(dstFormat);
 	return true;
+}
+
+const helix::PixelFormat& helix::Texture2D::getPixelFormat() const
+{
+	return format;
+}
+
+helix::Vector2UI32 helix::Texture2D::getSize() const
+{
+	return size;
+}
+
+helix::Texture2D::Type helix::Texture2D::getType() const
+{
+	return type;
+}
+
+void helix::Texture2D::setPixelFormat(const PixelFormat& format)
+{
+	this->format = format;
+}
+
+void helix::Texture2D::setSize(Vector2UI32 size)
+{
+	this->size = size;
+}
+
+void helix::Texture2D::setType(Type type)
+{
+	this->type = type;
 }

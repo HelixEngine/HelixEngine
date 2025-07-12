@@ -13,7 +13,7 @@ namespace helix
 			RG,
 			R,
 			BGRA,
-			BGR,
+			BGRX,
 		};
 
 		enum class StorageType

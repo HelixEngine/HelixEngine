@@ -28,6 +28,14 @@ namespace helix
 		Ref<Bitmap> bitmap{};
 	};
 
+	struct CreateTexture2DFromBitmapCommand final : RenderCommand
+	{
+		Ref<Bitmap> bitmap{};
+		Ref<Texture2D> texture2d{};
+		PixelFormat textureFormat{};
+		Texture2D::Type textureType{};
+	};
+
 	struct SetRenderPipelineCommand final : RenderCommand
 	{
 		Ref<RenderPipeline> renderPipeline{};

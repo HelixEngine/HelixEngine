@@ -83,11 +83,15 @@ namespace helix::opengl
 		[[nodiscard]] const IndexAttribute& getIndexAttribute() const;
 	};
 
-	class Texture final : public helix::Texture
+	class Texture2D final : public helix::Texture2D
 	{
 		friend class Renderer;
 		GLuint textureGL{};
 	public:
 		[[nodiscard]] GLuint getGLTexture() const;
+	private:
+		static GLint getGLColorFormat(const PixelFormat& format);
+		static GLint getGLStorageType(const PixelFormat& format);
+		static GLint getGLPixelFormat(const PixelFormat& format);
 	};
 }

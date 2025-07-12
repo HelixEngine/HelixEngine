@@ -18,10 +18,19 @@ namespace helix::opengl
 	                                                            MemoryBuffer::Usage usage,
 	                                                            Ref<MemoryBlock> vertexData) const
 	{
-		Ref vb = new MemoryBuffer;
-		vb->setUsage(usage);
-		vb->setType(type);
-		return vb;
+		Ref buf = new MemoryBuffer;
+		buf->setUsage(usage);
+		buf->setType(type);
+		return buf;
+	}
+
+	Ref<helix::Texture2D> Renderer::createNativeTexture2D(Ref<Bitmap> bitmap, const PixelFormat& textureFormat,
+	                                                      Texture2D::Type type) const
+	{
+		Ref texture2D = new Texture2D;
+		texture2D->setPixelFormat(textureFormat);
+		texture2D->setType(type);
+		return texture2D;
 	}
 
 	Ref<opengl::Shader> Renderer::createNativeShader(Shader::Usage usage)
@@ -124,6 +133,9 @@ namespace helix::opengl
 					break;
 				case RenderCommand::Type::CreateMemoryBuffer:
 					createMemoryBufferProc();
+					break;
+				case RenderCommand::Type::CreateTexture2DFromBitmap:
+					createTexture2DFromBitmapProc();
 					break;
 				case RenderCommand::Type::LoadBitmap:
 					loadBitmapProc();
@@ -342,6 +354,58 @@ namespace helix::opengl
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 		buf->notify();
+	}
+
+	void Renderer::createTexture2DFromBitmapProc() const
+	{
+		auto cmd = renderCmd->cast<CreateTexture2DFromBitmapCommand>();
+		auto tex2d = reinterpret_cast<Texture2D*>(cmd->texture2d.get());
+		if (tex2d->getGLTexture())
+			return;
+		glGenTextures(1, &tex2d->textureGL);
+		glBindTexture(GL_TEXTURE_2D, tex2d->textureGL);
+		auto& bitmap = cmd->bitmap;
+		if (!bitmap)
+		{
+			Logger::error(u8"OpenGL Renderer: 创建Texture2D时，Bitmap不可为nullptr");
+			return;
+		}
+
+		bitmap->usable();
+		tex2d->setSize(bitmap->getSize());
+
+		//Format Process
+
+		auto colorFormat = Texture2D::getGLColorFormat(bitmap->getPixelFormat());
+		auto storageType = Texture2D::getGLStorageType(bitmap->getPixelFormat());
+		if (colorFormat == -1 || storageType == -1)
+		{
+			Logger::info(u8"OpenGL Renderer: OpenGL Texture不支持Bitmap (", bitmap->getName(),
+			             u8") 的PixelFormat，Bitmap将默认转换为RGBA8UNorm格式");
+			if (bitmap->convert(PixelFormat::RGBA8UNorm))
+			{
+				Logger::error(u8"OpenGL Renderer: Bitmap (", bitmap->getName(), u8") 转换为RGBA8UNorm格式失败，无法创建Texture2D");
+				return;
+			}
+			colorFormat = GL_RGBA;
+			storageType = GL_UNSIGNED_BYTE;
+		}
+
+		if (tex2d->getPixelFormat() == PixelFormat::Unknown)
+			tex2d->setPixelFormat(bitmap->getPixelFormat());
+		auto internalFormat = Texture2D::getGLPixelFormat(tex2d->getPixelFormat());
+		if (internalFormat == -1)
+		{
+			Logger::error(u8"OpenGL Renderer: OpenGL Texture不支持需求的PixelFormat，无法创建Texture2D");
+			return;
+		}
+
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat,
+		             static_cast<GLsizei>(tex2d->getSize().x), static_cast<GLsizei>(tex2d->getSize().y),
+		             0, static_cast<GLenum>(colorFormat), static_cast<GLenum>(storageType),
+		             bitmap->getSailImage().pixels());
+		glBindTexture(GL_TEXTURE_2D, 0);
+		tex2d->notify();
 	}
 
 	void Renderer::loadBitmapProc() const

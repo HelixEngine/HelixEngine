@@ -24,11 +24,15 @@ namespace helix::opengl
 		//GL初始化时，如果多个窗口同时初始化，会出现内存访问冲突导致崩溃
 		static inline std::mutex glInitMtx;
 
-		//resource method//
+		//native resource method//
 
 		[[nodiscard]] Ref<helix::MemoryBuffer> createNativeMemoryBuffer(
 				MemoryBuffer::Type type,
 				MemoryBuffer::Usage usage, Ref<MemoryBlock> vertexData) const override;
+
+		[[nodiscard]] Ref<helix::Texture2D>
+		createNativeTexture2D(Ref<Bitmap> bitmap, const PixelFormat& textureFormat,
+		                      Texture2D::Type type) const override;
 
 		[[nodiscard]] Ref<opengl::Shader> createNativeShader(Shader::Usage usage);
 
@@ -67,6 +71,7 @@ namespace helix::opengl
 		void createGLVertexArrayProc() const;
 
 		void createMemoryBufferProc() const;
+		void createTexture2DFromBitmapProc() const;
 		void loadBitmapProc() const;
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;

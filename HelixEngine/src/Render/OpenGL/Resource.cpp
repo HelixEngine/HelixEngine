@@ -106,7 +106,87 @@ const helix::opengl::IndexAttribute& helix::opengl::VertexArray::getIndexAttribu
 	return indexAttribute;
 }
 
-GLuint helix::opengl::Texture::getGLTexture() const
+GLint helix::opengl::Texture2D::getGLColorFormat(const PixelFormat& format)
+{
+	switch (format.colorFormat)
+	{
+		case PixelFormat::ColorFormat::RGBA:
+			return GL_RGBA;
+		case PixelFormat::ColorFormat::RGB:
+			return GL_RGB;
+		case PixelFormat::ColorFormat::RG:
+			return GL_RG;
+		case PixelFormat::ColorFormat::R:
+			return GL_R;
+		case PixelFormat::ColorFormat::BGRA:
+			return GL_BGRA;
+		case PixelFormat::ColorFormat::BGRX: [[fallthrough]];
+		case PixelFormat::ColorFormat::Unknown: [[fallthrough]];
+		default:
+			break;
+	}
+	return -1; //Unknown
+}
+
+GLint helix::opengl::Texture2D::getGLStorageType(const PixelFormat& format)
+{
+	switch (format.storageType[0])
+	{
+		case PixelFormat::StorageType::Float:
+			return GL_FLOAT;
+		case PixelFormat::StorageType::UInt:
+			return GL_UNSIGNED_INT;
+		case PixelFormat::StorageType::SInt:
+			return GL_INT;
+		case PixelFormat::StorageType::UNorm:
+			if (format.bitWidth[0] == 8)
+				return GL_UNSIGNED_BYTE;
+			if (format.bitWidth[0] == 16)
+				return GL_UNSIGNED_SHORT;
+		//return GL_UNSIGNED_NORMALIZED;
+		case PixelFormat::StorageType::SNorm:
+			if (format.bitWidth[0] == 8)
+				return GL_BYTE;
+			if (format.bitWidth[0] == 16)
+				return GL_SHORT;
+		//return GL_SIGNED_NORMALIZED;
+		case PixelFormat::StorageType::Typeless:
+			Logger::error(u8"无法从Typeless格式获取OpenGL存储类型！");
+			break;
+		default:
+			break;
+	}
+	return -1;
+}
+
+GLint helix::opengl::Texture2D::getGLPixelFormat(const PixelFormat& format)
+{
+	if (format == PixelFormat::Unknown)
+		return -1; //Unknown
+	if (format == PixelFormat::RGBA8UNorm)
+		return GL_RGBA8;
+	if (format == PixelFormat::RGBA8UNormSRGB)
+		return GL_SRGB8_ALPHA8;
+	if (format == PixelFormat::RGBA16UNorm)
+		return GL_RGBA16;
+	if (format == PixelFormat::RGBA16Float)
+		return GL_RGBA16F;
+	if (format == PixelFormat::RGBA32Float)
+		return GL_RGBA32F;
+	if (format == PixelFormat::RGB32Float)
+		return GL_RGB32F;
+	if (format == PixelFormat::RG32Float)
+		return GL_RG32F;
+	if (format == PixelFormat::R32Float)
+		return GL_R32F;
+	if (format == PixelFormat::BGRA8UNorm)
+		return GL_BGRA;
+	// if (format == PixelFormat::BGRX8UNorm)
+	// 	return -1; //Unknown
+	return -1; //Unknown
+}
+
+GLuint helix::opengl::Texture2D::getGLTexture() const
 {
 	return textureGL;
 }

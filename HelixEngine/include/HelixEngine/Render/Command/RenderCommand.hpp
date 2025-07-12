@@ -20,6 +20,7 @@ namespace helix
 			DrawIndexed,
 			CreateMemoryBuffer,
 			LoadBitmap,
+			CreateTexture2DFromBitmap,
 
 			//OpenGL Exclusive
 			SetGLVertexArray,

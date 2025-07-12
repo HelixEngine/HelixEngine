@@ -15,31 +15,14 @@ namespace helix
 		 * @brief 等待资源可用
 		 * @note 对于共享资源，在渲染端使用资源时，也需要调用该方法确保资源可用
 		 */
-		void usable()
-		{
-			if (isUsable())
-				return;
-			std::shared_lock lock(mtx);
-			cv.wait(lock, [&]
-			{
-				return isUsable();
-			});
-		}
+		void usable();
 
 		/**
 		 * @brief 通知资源可用
 		 */
-		void notify()
-		{
-			bIsUsable.store(true, std::memory_order_relaxed);
-			std::shared_lock lock(mtx);
-			cv.notify_all();
-		}
+		void notify();
 
-		[[nodiscard]] bool isUsable() const
-		{
-			return bIsUsable.load(std::memory_order_relaxed);
-		}
+		[[nodiscard]] bool isUsable() const;
 	private:
 		std::atomic_bool bIsUsable = false;
 		std::shared_mutex mtx;
@@ -66,25 +49,13 @@ namespace helix
 		Type type = Type::Geometry;
 		Usage usage = Usage::Static;
 	public:
-		[[nodiscard]] Type getType() const
-		{
-			return type;
-		}
+		[[nodiscard]] Type getType() const;
 
-		[[nodiscard]] Usage getUsage() const
-		{
-			return usage;
-		}
+		[[nodiscard]] Usage getUsage() const;
 	protected:
-		void setType(Type type)
-		{
-			this->type = type;
-		}
+		void setType(Type type);
 
-		void setUsage(Usage usage)
-		{
-			this->usage = usage;
-		}
+		void setUsage(Usage usage);
 	};
 
 	class Pipeline : public RenderResource
@@ -108,10 +79,7 @@ namespace helix
 			return usage;
 		}
 	protected:
-		void setUsage(Usage usage)
-		{
-			this->usage = usage;
-		}
+		void setUsage(Usage usage);
 	};
 
 	class RenderPipeline : public Pipeline
@@ -144,8 +112,11 @@ namespace helix
 
 		[[nodiscard]] static Ref<Bitmap> load(const std::u8string& filePath, const Config& config = {});
 
+		bool convert(const PixelFormat& dstFormat);
+
 		[[nodiscard]] const PixelFormat& getPixelFormat() const;
 		[[nodiscard]] Vector2UI32 getSize() const;
+		[[nodiscard]] const sail::image& getSailImage() const;
 	private:
 		void innerLoad(const std::u8string& filePath, const Config& config);
 		Bitmap() = default;
@@ -166,8 +137,29 @@ namespace helix
 		static bool imageConvertFormat(sail::image& image, SailPixelFormat dstFormat);
 	};
 
-	class Texture : public RenderResource
+	class Texture2D : public RenderResource
 	{
+	public:
+		enum class Type
+		{
+			Default,
+			Storage,
+		};
 
+		[[nodiscard]] const PixelFormat& getPixelFormat() const;
+
+		[[nodiscard]] Vector2UI32 getSize() const;
+
+		[[nodiscard]] Type getType() const;
+	private:
+		PixelFormat format;
+		Vector2UI32 size;
+		Type type = Type::Default;
+	protected:
+		void setPixelFormat(const PixelFormat& format);
+
+		void setSize(Vector2UI32 size);
+
+		void setType(Type type);
 	};
 }
