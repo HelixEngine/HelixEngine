@@ -10,6 +10,16 @@ helix::Ref<helix::Bitmap> helix::Bitmap::load(const std::u8string& filePath, con
 	return bitmap;
 }
 
+const helix::PixelFormat& helix::Bitmap::getPixelFormat() const
+{
+	return format;
+}
+
+helix::Vector2UI32 helix::Bitmap::getSize() const
+{
+	return {image.width(), image.height()};
+}
+
 void helix::Bitmap::innerLoad(const std::u8string& filePath, const Config& config)
 {
 	image.load(reinterpret_cast<const char*>(filePath.data()));

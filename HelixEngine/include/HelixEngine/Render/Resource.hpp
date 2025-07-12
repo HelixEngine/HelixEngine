@@ -142,6 +142,9 @@ namespace helix
 		};
 
 		[[nodiscard]] static Ref<Bitmap> load(const std::u8string& filePath, const Config& config = {});
+
+		[[nodiscard]] const PixelFormat& getPixelFormat() const;
+		[[nodiscard]] Vector2UI32 getSize() const;
 	private:
 		void innerLoad(const std::u8string& filePath, const Config& config);
 		Bitmap() = default;
