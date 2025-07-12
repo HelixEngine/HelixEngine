@@ -1,10 +1,10 @@
 #include <HelixEngine/Render/Resource.hpp>
 #include <HelixEngine/Util/Logger.hpp>
+#include <sstream>
 
 helix::Ref<helix::Bitmap> helix::Bitmap::load(const std::u8string& filePath, const Config& config)
 {
 	Ref bitmap = new Bitmap;
-	bitmap->setName(u8"Bitmap:" + filePath);
 	bitmap->innerLoad(filePath, config);
 	bitmap->notify();
 	return bitmap;
@@ -22,6 +22,7 @@ helix::Vector2UI32 helix::Bitmap::getSize() const
 
 void helix::Bitmap::innerLoad(const std::u8string& filePath, const Config& config)
 {
+	setName(u8"Bitmap:" + filePath);
 	image.load(reinterpret_cast<const char*>(filePath.data()));
 	auto sailSrcFormat = image.pixel_format();
 	auto srcConvertInfo = formatConvert(sailSrcFormat);
@@ -86,6 +87,8 @@ helix::Bitmap::ConvertInfo<helix::PixelFormat, SailPixelFormat> helix::Bitmap::f
 			return {helix::PixelFormat::BGRX8UNorm, true, SAIL_PIXEL_FORMAT_BPP32_BGRX};
 		case SAIL_PIXEL_FORMAT_BPP32_BGRX:
 			return {helix::PixelFormat::BGRX8UNorm};
+		case SAIL_PIXEL_FORMAT_BPP24_RGB:
+			return {helix::PixelFormat::RGBA8UNorm, true, SAIL_PIXEL_FORMAT_BPP32_RGBA};
 		case SAIL_PIXEL_FORMAT_UNKNOWN: [[fallthrough]];
 		default:
 			break;
@@ -97,7 +100,10 @@ helix::Bitmap::ConvertInfo<helix::PixelFormat, SailPixelFormat> helix::Bitmap::f
 bool helix::Bitmap::imageConvertFormat(sail::image& image, SailPixelFormat dstFormat)
 {
 	if (!image.can_convert(dstFormat))
+	{
+		Logger::info(u8"Bitmap无法转换该PixelFormat");
 		return false;
+	}
 	image.convert(dstFormat);
 	return true;
 }

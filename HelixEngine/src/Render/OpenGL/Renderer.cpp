@@ -125,6 +125,9 @@ namespace helix::opengl
 				case RenderCommand::Type::CreateMemoryBuffer:
 					createMemoryBufferProc();
 					break;
+				case RenderCommand::Type::LoadBitmap:
+					loadBitmapProc();
+					break;
 				case RenderCommand::Type::CreateGLShader:
 					createGLShaderProc();
 					break;
@@ -339,6 +342,12 @@ namespace helix::opengl
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 		buf->notify();
+	}
+
+	void Renderer::loadBitmapProc() const
+	{
+		auto cmd = renderCmd->cast<LoadBitmapCommand>();
+		innerLoadBitmap(cmd);
 	}
 
 	void Renderer::createGLShaderProc() const

@@ -48,6 +48,18 @@ namespace helix
 		return buf;
 	}
 
+	Ref<Bitmap> Renderer::loadBitmap(std::u8string filePath, Bitmap::Config config) const
+	{
+		Ref bitmap = new Bitmap;
+		LoadBitmapCommand cmd;
+		cmd.type = RenderCommand::Type::LoadBitmap;
+		cmd.filePath = std::move(filePath);
+		cmd.config = std::move(config);
+		cmd.bitmap = bitmap;
+		renderQueue->addCommand<LoadBitmapCommand>(std::move(cmd));
+		return bitmap;
+	}
+
 	void Renderer::setRenderPipeline(Ref<RenderPipeline> renderPipeline) const
 	{
 		SetRenderPipelineCommand cmd;
@@ -94,5 +106,11 @@ namespace helix
 		cmd.type = RenderCommand::Type::DrawIndexed;
 		cmd.indexCount = indexCount;
 		renderQueue->addCommand<DrawIndexedCommand>(std::move(cmd));
+	}
+
+	void Renderer::innerLoadBitmap(const LoadBitmapCommand* cmd)
+	{
+		cmd->bitmap->innerLoad(cmd->filePath, cmd->config);
+		cmd->bitmap->notify();
 	}
 }

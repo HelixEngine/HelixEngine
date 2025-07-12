@@ -135,6 +135,7 @@ namespace helix
 
 	class Bitmap : public RenderResource
 	{
+		friend class Renderer;
 	public:
 		struct Config
 		{

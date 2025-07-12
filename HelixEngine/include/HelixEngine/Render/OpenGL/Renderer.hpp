@@ -67,6 +67,7 @@ namespace helix::opengl
 		void createGLVertexArrayProc() const;
 
 		void createMemoryBufferProc() const;
+		void loadBitmapProc() const;
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;
 		void destroyGLShaderProc() const;

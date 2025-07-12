@@ -5,6 +5,8 @@
 
 namespace helix::opengl
 {
+	class Renderer;
+
 	class MemoryBuffer final : public helix::MemoryBuffer
 	{
 		friend class Renderer;
@@ -18,7 +20,7 @@ namespace helix::opengl
 	{
 		friend class Renderer;
 		GLuint shaderGL{};
-		Renderer* renderer = nullptr;
+		opengl::Renderer* renderer = nullptr;
 	public:
 		[[nodiscard]] GLuint getGLShader() const;
 

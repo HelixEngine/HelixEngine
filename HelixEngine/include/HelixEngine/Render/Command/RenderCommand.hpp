@@ -19,6 +19,7 @@ namespace helix
 			Draw,
 			DrawIndexed,
 			CreateMemoryBuffer,
+			LoadBitmap,
 
 			//OpenGL Exclusive
 			SetGLVertexArray,

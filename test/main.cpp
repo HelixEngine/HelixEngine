@@ -158,5 +158,5 @@ void main()
 	renderNode2->vertexArray = vao2;
 	renderNode2->uniformBuffer = uniformBuffer2;
 
-	auto bitmap = Bitmap::load(u8"D:/a.jpg");
+	auto bitmap = glRenderer->loadBitmap(u8"D:/a.jpg");
 }

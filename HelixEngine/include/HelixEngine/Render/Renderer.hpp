@@ -10,6 +10,11 @@
 
 namespace helix
 {
+	struct LoadBitmapCommand;
+}
+
+namespace helix
+{
 	using RenderList = CommandList<RenderCommand>;
 	using RenderQueue = CommandQueue<RenderCommand>;
 
@@ -31,6 +36,7 @@ namespace helix
 
 		[[nodiscard]] Ref<MemoryBuffer>
 		createMemoryBuffer(MemoryBuffer::Type type, MemoryBuffer::Usage usage, Ref<MemoryBlock> bufferData) const;
+		[[nodiscard]] Ref<Bitmap> loadBitmap(std::u8string filePath, Bitmap::Config config = Bitmap::Config{}) const;
 		void setRenderPipeline(Ref<RenderPipeline> renderPipeline) const;
 		void setPrimitiveTopology(PrimitiveTopology primitiveTopology) const;
 		void setViewport(Viewport viewport) const;
@@ -46,6 +52,7 @@ namespace helix
 				MemoryBuffer::Type type,
 				MemoryBuffer::Usage usage, Ref<MemoryBlock> vertexData) const = 0;
 		std::jthread renderThread;
+		static void innerLoadBitmap(const LoadBitmapCommand* cmd);
 	private:
 		//Game run
 
