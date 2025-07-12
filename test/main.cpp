@@ -160,4 +160,5 @@ void main()
 
 	auto bitmap = glRenderer->loadBitmap(u8"D:/a.jpg");
 	auto texture2d = glRenderer->createTexture2D(bitmap);
+	bitmap.reset();
 }
