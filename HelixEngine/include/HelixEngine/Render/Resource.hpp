@@ -148,17 +148,18 @@ namespace helix
 		sail::image image;
 		PixelFormat format;
 
-		template<typename Format>
+		template<typename SrcFormat, typename DstFormat>
 		struct ConvertInfo
 		{
-			Format format;
+			SrcFormat srcFormat{};
 			bool isNeedConvert = false;
+			DstFormat dstFormat{};
 		};
 
 		static SailPixelFormat formatConvert(const PixelFormat& format);
-		static std::unordered_map<SailPixelFormat, ConvertInfo<PixelFormat>> fromSailPixelFormatMap;
-		static PixelFormat formatConvert(SailPixelFormat format);
-		static std::unordered_map<SailPixelFormat, PixelFormat> toSailPixelFormatMap;
+		static ConvertInfo<helix::PixelFormat, SailPixelFormat> formatConvert(SailPixelFormat format);
+
+		static bool imageConvertFormat(sail::image& image, SailPixelFormat dstFormat);
 	};
 
 	class Texture : public RenderResource

@@ -6,47 +6,88 @@ helix::Ref<helix::Bitmap> helix::Bitmap::load(const std::u8string& filePath, con
 	Ref bitmap = new Bitmap;
 	bitmap->setName(u8"Bitmap:" + filePath);
 	bitmap->innerLoad(filePath, config);
+	bitmap->notify();
 	return bitmap;
 }
 
 void helix::Bitmap::innerLoad(const std::u8string& filePath, const Config& config)
 {
 	image.load(reinterpret_cast<const char*>(filePath.data()));
+	auto sailSrcFormat = image.pixel_format();
+	auto srcConvertInfo = formatConvert(sailSrcFormat);
 	if (config.bitmapFormat != PixelFormat::Unknown)
 	{
-		auto sailPixelFormat = formatConvert(config.bitmapFormat);
-		if (image.can_convert(sailPixelFormat))
+		if (imageConvertFormat(image, formatConvert(config.bitmapFormat)))
 		{
-			image.convert(sailPixelFormat);
 			format = config.bitmapFormat;
 			return;
 		}
 		Logger::info(u8"加载的图像（", filePath, u8"）不支持Config指定的Bitmap PixelFormat，默认不执行格式转换");
 	}
 
-	format = formatConvert(image.pixel_format());
+	if (srcConvertInfo.isNeedConvert)
+		imageConvertFormat(image, srcConvertInfo.dstFormat);
+	format = srcConvertInfo.srcFormat;
 }
 
 SailPixelFormat helix::Bitmap::formatConvert(const PixelFormat& format)
 {
-
+	if (format.isUnknown())
+		return SAIL_PIXEL_FORMAT_UNKNOWN;
+	if (format == PixelFormat::RGBA8UNorm)
+		return SAIL_PIXEL_FORMAT_BPP32_RGBA;
+	if (format == PixelFormat::RGBA16UNorm)
+		return SAIL_PIXEL_FORMAT_BPP64_RGBA;
+	if (format == PixelFormat::RGBA32Float)
+		return SAIL_PIXEL_FORMAT_BPP128;
+	if (format == PixelFormat::RGB32Float)
+		return SAIL_PIXEL_FORMAT_BPP96;
+	if (format == PixelFormat::RG32Float)
+		return SAIL_PIXEL_FORMAT_BPP64;
+	if (format == PixelFormat::R32Float)
+		return SAIL_PIXEL_FORMAT_BPP32;
+	if (format == PixelFormat::BGRA8UNorm)
+		return SAIL_PIXEL_FORMAT_BPP32_BGRA;
+	if (format == PixelFormat::BGRX8UNorm)
+		return SAIL_PIXEL_FORMAT_BPP32_BGRX;
+	//...
+	return SAIL_PIXEL_FORMAT_UNKNOWN;
 }
 
-std::unordered_map<SailPixelFormat, helix::Bitmap::ConvertInfo<helix::PixelFormat>>
-helix::Bitmap::fromSailPixelFormatMap = {
-		{SAIL_PIXEL_FORMAT_UNKNOWN, {helix::PixelFormat::Unknown}},
-		{SAIL_PIXEL_FORMAT_BPP32_RGBA, {helix::PixelFormat::RGBA8UNorm}},
-		{SAIL_PIXEL_FORMAT_BPP64_RGBA, {helix::PixelFormat::RGBA16UNorm}},
-		{SAIL_PIXEL_FORMAT_BPP128, {helix::PixelFormat::RGBA32Float}},
-		{SAIL_PIXEL_FORMAT_BPP96, {helix::PixelFormat::RGB32Float}},
-		{SAIL_PIXEL_FORMAT_BPP64, {helix::PixelFormat::RG32Float}},
-		{SAIL_PIXEL_FORMAT_BPP32, {helix::PixelFormat::R32Float}},
-		{SAIL_PIXEL_FORMAT_BPP32_BGRA, {helix::PixelFormat::BGRA8UNorm}},
-		{SAIL_PIXEL_FORMAT_BPP24_BGR, {helix::PixelFormat::BGRX8UNorm, true}},
-		{SAIL_PIXEL_FORMAT_BPP32_BGRX, {helix::PixelFormat::BGRX8UNorm}},
-};
-
-helix::PixelFormat helix::Bitmap::formatConvert(SailPixelFormat format)
+helix::Bitmap::ConvertInfo<helix::PixelFormat, SailPixelFormat> helix::Bitmap::formatConvert(SailPixelFormat format)
 {
-	return PixelFormat::Unknown;
+	switch (format)
+	{
+		case SAIL_PIXEL_FORMAT_BPP32_RGBA:
+			return {helix::PixelFormat::RGBA8UNorm};
+		case SAIL_PIXEL_FORMAT_BPP64_RGBA:
+			return {helix::PixelFormat::RGBA16UNorm};
+		case SAIL_PIXEL_FORMAT_BPP128:
+			return {helix::PixelFormat::RGBA32Float};
+		case SAIL_PIXEL_FORMAT_BPP96:
+			return {helix::PixelFormat::RGB32Float};
+		case SAIL_PIXEL_FORMAT_BPP64:
+			return {helix::PixelFormat::RG32Float};
+		case SAIL_PIXEL_FORMAT_BPP32:
+			return {helix::PixelFormat::R32Float};
+		case SAIL_PIXEL_FORMAT_BPP32_BGRA:
+			return {helix::PixelFormat::BGRA8UNorm};
+		case SAIL_PIXEL_FORMAT_BPP24_BGR:
+			return {helix::PixelFormat::BGRX8UNorm, true, SAIL_PIXEL_FORMAT_BPP32_BGRX};
+		case SAIL_PIXEL_FORMAT_BPP32_BGRX:
+			return {helix::PixelFormat::BGRX8UNorm};
+		case SAIL_PIXEL_FORMAT_UNKNOWN: [[fallthrough]];
+		default:
+			break;
+	}
+	//...
+	return {helix::PixelFormat::Unknown};
+}
+
+bool helix::Bitmap::imageConvertFormat(sail::image& image, SailPixelFormat dstFormat)
+{
+	if (!image.can_convert(dstFormat))
+		return false;
+	image.convert(dstFormat);
+	return true;
 }
