@@ -95,3 +95,18 @@ helix::Ref<helix::MemoryBuffer> helix::opengl::VertexArray::getVertexBuffer() co
 {
 	return vertexBuffer;
 }
+
+helix::Ref<helix::MemoryBuffer> helix::opengl::VertexArray::getIndexBuffer() const
+{
+	return indexBuffer;
+}
+
+const helix::opengl::IndexAttribute& helix::opengl::VertexArray::getIndexAttribute() const
+{
+	return indexAttribute;
+}
+
+GLuint helix::opengl::Texture::getGLTexture() const
+{
+	return textureGL;
+}

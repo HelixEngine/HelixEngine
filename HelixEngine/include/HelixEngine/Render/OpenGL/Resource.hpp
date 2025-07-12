@@ -79,5 +79,15 @@ namespace helix::opengl
 	public:
 		[[nodiscard]] GLuint getGLVertexArray() const;
 		[[nodiscard]] Ref<helix::MemoryBuffer> getVertexBuffer() const;
+		[[nodiscard]] Ref<helix::MemoryBuffer> getIndexBuffer() const;
+		[[nodiscard]] const IndexAttribute& getIndexAttribute() const;
+	};
+
+	class Texture final : public helix::Texture
+	{
+		friend class Renderer;
+		GLuint textureGL{};
+	public:
+		[[nodiscard]] GLuint getGLTexture() const;
 	};
 }
