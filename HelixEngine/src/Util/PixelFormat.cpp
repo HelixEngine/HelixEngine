@@ -42,6 +42,11 @@ helix::PixelFormat::PixelFormat(Value value)
 			storageType = {StorageType::Float};
 			bitWidth = {32};
 			break;
+		case BGRA8UNorm:
+			colorFormat = ColorFormat::BGRA;
+			storageType = {StorageType::UNorm, StorageType::UNorm, StorageType::UNorm, StorageType::UNorm};
+			bitWidth = {8, 8, 8, 8};
+			break;
 		case Unknown: [[fallthrough]];
 		default:
 			colorFormat = ColorFormat::Unknown;

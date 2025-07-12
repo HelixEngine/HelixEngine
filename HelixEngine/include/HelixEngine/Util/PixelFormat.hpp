@@ -33,11 +33,13 @@ namespace helix
 		};
 
 		static constexpr uint8_t maxComponents = 4;
+		using StorageTypeArray = std::array<StorageType, maxComponents>;
+		using BitWidthArray = std::array<int32_t, maxComponents>;
 
 		ColorFormat colorFormat{};
-		std::array<StorageType, maxComponents> storageType = {};
+		StorageTypeArray storageType = {};
 		ColorSpace colorSpace{};
-		std::array<int32_t, maxComponents> bitWidth = {};
+		BitWidthArray bitWidth = {};
 
 		enum class Value
 		{
@@ -50,6 +52,8 @@ namespace helix
 			RGB32Float, // RGB bit-width:32 Float
 			RG32Float, // RG bit-width:32 Float
 			R32Float, // R bit-width:32 Float
+			BGRA8UNorm, // BGRA bit-width:8 UNorm
+			BGRX8UNorm, // BGRX bit-width:8 UNorm
 		};
 
 		using enum Value;

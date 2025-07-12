@@ -15,18 +15,38 @@ void helix::Bitmap::innerLoad(const std::u8string& filePath, const Config& confi
 	if (config.bitmapFormat != PixelFormat::Unknown)
 	{
 		auto sailPixelFormat = formatConvert(config.bitmapFormat);
-		if (!image.can_convert(sailPixelFormat))
+		if (image.can_convert(sailPixelFormat))
 		{
-			Logger::info(u8"加载的图像（", filePath, u8"）不支持Config指定的Bitmap PixelFormat，默认不执行格式转换");
-			//...
+			image.convert(sailPixelFormat);
+			format = config.bitmapFormat;
+			return;
 		}
-		image.convert(sailPixelFormat);
-		//...
+		Logger::info(u8"加载的图像（", filePath, u8"）不支持Config指定的Bitmap PixelFormat，默认不执行格式转换");
 	}
+
+	format = formatConvert(image.pixel_format());
 }
 
-SailPixelFormat helix::Bitmap::formatConvert(PixelFormat format)
+SailPixelFormat helix::Bitmap::formatConvert(const PixelFormat& format)
 {
-	//...
-	return SAIL_PIXEL_FORMAT_UNKNOWN;
+
+}
+
+std::unordered_map<SailPixelFormat, helix::Bitmap::ConvertInfo<helix::PixelFormat>>
+helix::Bitmap::fromSailPixelFormatMap = {
+		{SAIL_PIXEL_FORMAT_UNKNOWN, {helix::PixelFormat::Unknown}},
+		{SAIL_PIXEL_FORMAT_BPP32_RGBA, {helix::PixelFormat::RGBA8UNorm}},
+		{SAIL_PIXEL_FORMAT_BPP64_RGBA, {helix::PixelFormat::RGBA16UNorm}},
+		{SAIL_PIXEL_FORMAT_BPP128, {helix::PixelFormat::RGBA32Float}},
+		{SAIL_PIXEL_FORMAT_BPP96, {helix::PixelFormat::RGB32Float}},
+		{SAIL_PIXEL_FORMAT_BPP64, {helix::PixelFormat::RG32Float}},
+		{SAIL_PIXEL_FORMAT_BPP32, {helix::PixelFormat::R32Float}},
+		{SAIL_PIXEL_FORMAT_BPP32_BGRA, {helix::PixelFormat::BGRA8UNorm}},
+		{SAIL_PIXEL_FORMAT_BPP24_BGR, {helix::PixelFormat::BGRX8UNorm, true}},
+		{SAIL_PIXEL_FORMAT_BPP32_BGRX, {helix::PixelFormat::BGRX8UNorm}},
+};
+
+helix::PixelFormat helix::Bitmap::formatConvert(SailPixelFormat format)
+{
+	return PixelFormat::Unknown;
 }
