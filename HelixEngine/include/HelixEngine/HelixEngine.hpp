@@ -1,7 +1,7 @@
 #pragma once
 #include <HelixEngine/Util/Ref.hpp>
 #include <HelixEngine/Util/Object.hpp>
-#include <HelixEngine/Math/Vector2.hpp>
+#include <HelixEngine/Math/Vector.hpp>
 #include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Core/Game.hpp>
 #include <HelixEngine/Node/Scene.hpp>

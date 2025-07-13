@@ -3,7 +3,7 @@
 #include <HelixEngine/Util/Ref.hpp>
 #include <HelixEngine/Util/PixelFormat.hpp>
 #include <HelixEngine/Math/Shape.hpp>
-#include <HelixEngine/Math/Vector2.hpp>
+#include <HelixEngine/Math/Vector.hpp>
 #include <sail-c++/sail-c++.h>
 
 namespace helix
@@ -166,12 +166,19 @@ namespace helix
 	class Sampler : public RenderResource
 	{
 	public:
-		enum class WarpMode
+		enum class Warp
 		{
 			Repeat,
 			Mirror,
 			ClampEdge,
 			ClampBorder,
+		};
+
+		enum class Filter
+		{
+			Unknown,
+			Linear,
+			Nearest,
 		};
 	private:
 	};

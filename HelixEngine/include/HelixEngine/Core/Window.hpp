@@ -1,5 +1,5 @@
 #pragma once
-#include <HelixEngine/Math/Vector2.hpp>
+#include <HelixEngine/Math/Vector.hpp>
 #include <HelixEngine/Render/Renderer.hpp>
 #include <HelixEngine/Util/BitOption.hpp>
 #include <HelixEngine/Util/Object.hpp>
