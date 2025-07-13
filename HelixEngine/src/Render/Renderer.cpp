@@ -74,6 +74,16 @@ namespace helix
 		return tex;
 	}
 
+	Ref<Sampler> Renderer::createSampler(const Sampler::Config& config) const
+	{
+		auto sampler = createNativeSampler(config);
+		CreateSamplerCommand cmd;
+		cmd.type = RenderCommand::Type::CreateSampler;
+		cmd.sampler = sampler;
+		renderQueue->addCommand<CreateSamplerCommand>(std::move(cmd));
+		return sampler;
+	}
+
 	void Renderer::setRenderPipeline(Ref<RenderPipeline> renderPipeline) const
 	{
 		SetRenderPipelineCommand cmd;

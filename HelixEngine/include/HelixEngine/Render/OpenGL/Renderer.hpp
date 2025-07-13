@@ -34,6 +34,8 @@ namespace helix::opengl
 		createNativeTexture2D(Ref<Bitmap> bitmap, const PixelFormat& textureFormat,
 		                      Texture2D::Type type) const override;
 
+		[[nodiscard]] Ref<helix::Sampler> createNativeSampler(const Sampler::Config& config) const override;
+
 		[[nodiscard]] Ref<opengl::Shader> createNativeShader(Shader::Usage usage);
 
 		[[nodiscard]] static Ref<opengl::RenderPipeline> createNativeRenderPipeline();
@@ -72,6 +74,7 @@ namespace helix::opengl
 
 		void createMemoryBufferProc() const;
 		void createTexture2DFromBitmapProc() const;
+		void createSamplerProc() const;
 		void loadBitmapProc() const;
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;

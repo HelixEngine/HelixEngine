@@ -106,6 +106,11 @@ const helix::opengl::IndexAttribute& helix::opengl::VertexArray::getIndexAttribu
 	return indexAttribute;
 }
 
+GLuint helix::opengl::Texture2D::getGLTexture() const
+{
+	return textureGL;
+}
+
 GLint helix::opengl::Texture2D::getGLColorFormat(const PixelFormat& format)
 {
 	switch (format.colorFormat)
@@ -186,7 +191,7 @@ GLint helix::opengl::Texture2D::getGLPixelFormat(const PixelFormat& format)
 	return -1; //Unknown
 }
 
-GLuint helix::opengl::Texture2D::getGLTexture() const
+GLuint helix::opengl::Sampler::getGLSampler() const
 {
-	return textureGL;
+	return samplerGL;
 }

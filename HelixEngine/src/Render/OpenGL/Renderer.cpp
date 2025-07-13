@@ -33,6 +33,13 @@ namespace helix::opengl
 		return texture2D;
 	}
 
+	Ref<helix::Sampler> Renderer::createNativeSampler(const Sampler::Config& config) const
+	{
+		Ref sampler = new Sampler;
+		sampler->setConfig(config);
+		return sampler;
+	}
+
 	Ref<opengl::Shader> Renderer::createNativeShader(Shader::Usage usage)
 	{
 		Ref shader = new Shader;
@@ -136,6 +143,9 @@ namespace helix::opengl
 					break;
 				case RenderCommand::Type::CreateTexture2DFromBitmap:
 					createTexture2DFromBitmapProc();
+					break;
+				case RenderCommand::Type::CreateSampler:
+					createSamplerProc();
 					break;
 				case RenderCommand::Type::LoadBitmap:
 					loadBitmapProc();
@@ -406,6 +416,22 @@ namespace helix::opengl
 		             bitmap->getSailImage().pixels());
 		glBindTexture(GL_TEXTURE_2D, 0);
 		tex2d->notify();
+	}
+
+	void Renderer::createSamplerProc() const
+	{
+		auto cmd = renderCmd->cast<CreateSamplerCommand>();
+		auto sampler = reinterpret_cast<Sampler*>(cmd->sampler.get());
+		if (sampler->getGLSampler())
+			return;
+		glGenSamplers(1, &sampler->samplerGL);
+		auto& config = sampler->getConfig();
+		if (config.maxAnisotropy.has_value())
+		{
+
+			auto value = config.maxAnisotropy.value();
+		}
+		glSamplerParameteri(sampler->samplerGL, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
 
 	void Renderer::loadBitmapProc() const

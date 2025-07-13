@@ -194,8 +194,8 @@ namespace helix
 			//z -> r
 			//各分量根据实际的采样纹理生效
 			Vector3E<Warp> warp;
-			Filter minFilter = Filter::Linear;
 			Filter magFilter = Filter::Linear;
+			Filter minFilter = Filter::Linear;
 			//当所采样的纹理开启了Mipmap后，该项生效
 			Filter mipmapFilter = Filter::Linear;
 			//当该项为std::nullopt时，表示不开启各向异性过滤
@@ -208,6 +208,8 @@ namespace helix
 	private:
 		Config config;
 	protected:
+		void setConfig(const Config& config);
+
 		Sampler() = default;
 	};
 }

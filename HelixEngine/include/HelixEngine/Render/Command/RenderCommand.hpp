@@ -21,6 +21,7 @@ namespace helix
 			CreateMemoryBuffer,
 			LoadBitmap,
 			CreateTexture2DFromBitmap,
+			CreateSampler,
 
 			//OpenGL Exclusive
 			SetGLVertexArray,

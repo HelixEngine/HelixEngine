@@ -94,4 +94,12 @@ namespace helix::opengl
 		static GLint getGLStorageType(const PixelFormat& format);
 		static GLint getGLPixelFormat(const PixelFormat& format);
 	};
+
+	class Sampler final : public helix::Sampler
+	{
+		friend class Renderer;
+		GLuint samplerGL{};
+	public:
+		[[nodiscard]] GLuint getGLSampler() const;
+	};
 }

@@ -36,6 +36,11 @@ namespace helix
 		Texture2D::Type textureType{};
 	};
 
+	struct CreateSamplerCommand final : RenderCommand
+	{
+		Ref<Sampler> sampler{};
+	};
+
 	struct SetRenderPipelineCommand final : RenderCommand
 	{
 		Ref<RenderPipeline> renderPipeline{};
