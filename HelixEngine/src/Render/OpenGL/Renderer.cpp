@@ -36,7 +36,7 @@ namespace helix::opengl
 	Ref<helix::Sampler> Renderer::createNativeSampler(const Sampler::Config& config) const
 	{
 		Ref sampler = new Sampler;
-		sampler->setConfig(config);
+		sampler->config = config;
 		return sampler;
 	}
 
@@ -443,6 +443,7 @@ namespace helix::opengl
 				}
 
 				glSamplerParameterf(samplerGL, GL_TEXTURE_MAX_ANISOTROPY_EXT, value);
+				sampler->config.maxAnisotropy = static_cast<uint32_t>(value);
 			}
 		}
 		glSamplerParameteri(samplerGL, GL_TEXTURE_WRAP_S, Sampler::getGLWarp(config.warp.x));

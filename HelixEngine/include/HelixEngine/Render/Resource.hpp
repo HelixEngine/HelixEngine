@@ -210,10 +210,8 @@ namespace helix
 		};
 
 		[[nodiscard]] const Config& getConfig() const;
-	private:
-		Config config;
 	protected:
-		void setConfig(const Config& config);
+		Config config;
 
 		Sampler() = default;
 	};

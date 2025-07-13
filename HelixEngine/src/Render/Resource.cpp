@@ -204,8 +204,3 @@ const helix::Sampler::Config& helix::Sampler::getConfig() const
 {
 	return config;
 }
-
-void helix::Sampler::setConfig(const Config& config)
-{
-	this->config = config;
-}
