@@ -106,4 +106,11 @@ namespace helix::opengl
 		static GLint getGLFilterWithMipmap(GLint minFilter, Filter filter);
 		static GLint getGLWarp(Warp warp);
 	};
+
+	struct Texture2DUnit final
+	{
+		Ref<Texture2D> texture2d{};
+		Ref<Sampler> sampler{};
+		GLuint unitIndex = 0;
+	};
 }

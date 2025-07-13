@@ -158,6 +158,9 @@ namespace helix::opengl
 				case RenderCommand::Type::DestroyGLShader:
 					destroyGLShaderProc();
 					break;
+				case RenderCommand::Type::SetGLTexture2DUnit:
+					setGLTexture2DUnitProc();
+					break;
 				case RenderCommand::Type::Unknown:
 				default:
 					Logger::warning(u8"OpenGL Renderer: 未知的RenderCommand");
@@ -548,6 +551,28 @@ namespace helix::opengl
 		cmd->shaderGL = 0;
 	}
 
+	void Renderer::setGLTexture2DUnitProc() const
+	{
+		auto cmd = renderCmd->cast<SetGLTexture2DUnitCommand>();
+		auto unit = cmd->unit;
+		GLint unitCount{};
+		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &unitCount);
+		if (static_cast<GLint>(unit.unitIndex) >= unitCount)
+		{
+			Logger::error(u8"OpenGL Texture2D Unit 超出最大限制，无法设置");
+			return;
+		}
+
+		glActiveTexture(GL_TEXTURE0 + unit.unitIndex);
+
+		if (unit.texture2d)
+			glBindTexture(GL_TEXTURE_2D, unit.texture2d->getGLTexture());
+
+		if (unit.sampler)
+			glBindSampler(unit.unitIndex, unit.sampler);
+
+	}
+
 	void Renderer::attachGLShader(const RenderPipeline* pipeline, const helix::Shader* shader)
 	{
 		glAttachShader(pipeline->getGLProgram(), reinterpret_cast<const Shader*>(shader)->getGLShader());
@@ -613,6 +638,14 @@ namespace helix::opengl
 		cmd.type = RenderCommand::Type::SetGLUniformBindingAttribute;
 		cmd.uniformBindingAttributes = {std::move(uniformBindingAttribute)};
 		getRenderQueue()->addCommand<SetGLUniformBindingAttributeCommand>(std::move(cmd));
+	}
+
+	void Renderer::setGLTexture2DUnit(Texture2DUnit unit) const
+	{
+		SetGLTexture2DUnitCommand cmd;
+		cmd.type = RenderCommand::Type::SetGLTexture2DUnit;
+		cmd.unit = std::move(unit);
+		getRenderQueue()->addCommand<SetGLTexture2DUnitCommand>(std::move(cmd));
 	}
 
 	void Renderer::destroyGLShader(const Shader* shader) const

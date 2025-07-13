@@ -78,6 +78,7 @@ namespace helix::opengl
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;
 		void destroyGLShaderProc() const;
+		void setGLTexture2DUnitProc() const;
 
 		//gl tool func
 		static void attachGLShader(const RenderPipeline* pipeline, const helix::Shader* shader);
@@ -90,6 +91,7 @@ namespace helix::opengl
 		void setGLVertexArray(Ref<VertexArray> vertexArray) const;
 		void setGLUniformBindingAttribute(
 				UniformBindingAttribute uniformBindingAttribute) const;
+		void setGLTexture2DUnit(Texture2DUnit unit) const;
 	private:
 		void destroyGLShader(const Shader* shader) const;
 

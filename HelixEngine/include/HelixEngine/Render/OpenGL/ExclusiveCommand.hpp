@@ -2,6 +2,8 @@
 #include <HelixEngine/Render/Command/RenderCommand.hpp>
 #include <glad/glad.h>
 
+#include "Resource.hpp"
+
 namespace helix::opengl
 {
 	struct CreateGLShaderCommand final : RenderCommand
@@ -35,5 +37,10 @@ namespace helix::opengl
 	struct DestroyGLShaderCommand final : RenderCommand
 	{
 		GLuint shaderGL{};
+	};
+
+	struct SetGLTexture2DUnitCommand final : RenderCommand
+	{
+		Texture2DUnit unit{};
 	};
 }

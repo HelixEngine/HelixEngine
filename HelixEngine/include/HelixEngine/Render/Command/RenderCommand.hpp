@@ -30,6 +30,7 @@ namespace helix
 			CreateGLShader,
 			CreateGLRenderPipeline,
 			DestroyGLShader,
+			SetGLTexture2DUnit,
 		};
 
 		Type type = Type::Unknown;
