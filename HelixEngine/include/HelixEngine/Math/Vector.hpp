@@ -5,42 +5,50 @@ namespace helix
 {
 	template<typename T>
 	concept Arithmetic = std::is_arithmetic_v<T>;
+	template<typename T>
+	concept Enum = std::is_enum_v<T>;
+
 	template<Arithmetic T>
 	class Vector2T;
 	template<Arithmetic T>
 	class Vector3T;
+
+	template<Enum T>
+	class Vector2E;
+	template<Enum T>
+	class Vector3E;
 }
 
 namespace ktm
 {
-	template<helix::Arithmetic T>
+	template<typename T>
 	struct is_vector<helix::Vector2T<T>> : std::true_type
 	{
 	};
 
-	template<helix::Arithmetic T>
+	template<typename T>
 	struct is_floating_point_base<helix::Vector2T<T>> : std::true_type
 	{
 	};
 
-	template<helix::Arithmetic T>
+	template<typename T>
 	struct math_traits<helix::Vector2T<T>>
 	{
 		using base_type = T;
 		static constexpr size_t len = 2;
 	};
 
-	template<helix::Arithmetic T>
+	template<typename T>
 	struct is_vector<helix::Vector3T<T>> : std::true_type
 	{
 	};
 
-	template<helix::Arithmetic T>
+	template<typename T>
 	struct is_floating_point_base<helix::Vector3T<T>> : std::true_type
 	{
 	};
 
-	template<helix::Arithmetic T>
+	template<typename T>
 	struct math_traits<helix::Vector3T<T>>
 	{
 		using base_type = T;
@@ -50,71 +58,6 @@ namespace ktm
 
 namespace helix
 {
-	template<Arithmetic T>
-	class Vector2T
-	{
-	public:
-		using KtmVec = ktm::vec<2, T>;
-		T x{};
-		T y{};
-
-		Vector2T() = default;
-
-		explicit Vector2T(KtmVec ktmVec) :
-			x(ktmVec.x), y(ktmVec.y)
-		{
-		}
-
-		Vector2T(T x, T y):
-			x(x), y(y)
-		{
-		}
-
-		auto getLength() const
-		{
-			return ktm::length(ktmVecSelf());
-		}
-
-		Vector2T& normalize()
-		{
-			ktmVecSelf() = ktm::normalize(ktmVecSelf());
-			return *this;
-		}
-
-		bool operator==(const Vector2T& vec2) const = default;
-
-		static Vector2T normalize(const Vector2T& vector2)
-		{
-			return Vector2T{ktm::normalize(vector2.ktmVecSelf())};
-		}
-
-		explicit operator KtmVec() const
-		{
-			return KtmVec(x, y);
-		}
-
-		template<typename OtherT>
-		explicit operator Vector2T<OtherT>() const
-		{
-			return Vector2T<OtherT>(static_cast<OtherT>(x), static_cast<OtherT>(y));
-		}
-
-		Vector3T<T> vector3(T z = T{}) const
-		{
-			return Vector3T<T>(x, y, z);
-		}
-	private:
-		auto& ktmVecSelf()
-		{
-			return *reinterpret_cast<KtmVec*>(this);
-		}
-
-		const auto& ktmVecSelf() const
-		{
-			return *reinterpret_cast<const KtmVec*>(this);
-		}
-	};
-
 	template<Arithmetic T>
 	class Vector3T
 	{
@@ -186,6 +129,132 @@ namespace helix
 		}
 	};
 
+	template<Enum T>
+	class Vector3E
+	{
+	public:
+		T x{};
+		T y{};
+		T z{};
+		Vector3E() = default;
+
+		Vector3E(T x, T y, T z):
+			x(x), y(y), z(z)
+		{
+		}
+
+		template<typename OtherT>
+		explicit operator Vector3T<OtherT>() const
+		{
+			return Vector3T<OtherT>(static_cast<OtherT>(x), static_cast<OtherT>(y), static_cast<OtherT>(z));
+		}
+
+		Vector2E<T>& vector2()
+		{
+			return *reinterpret_cast<Vector2E<T>*>(this);
+		}
+
+		const Vector2E<T>& vector2() const
+		{
+			return *reinterpret_cast<const Vector2E<T>*>(this);
+		}
+
+		bool operator==(const Vector3E& vec3) const = default;
+	};
+
+	template<Arithmetic T>
+	class Vector2T
+	{
+	public:
+		using KtmVec = ktm::vec<2, T>;
+		T x{};
+		T y{};
+
+		Vector2T() = default;
+
+		explicit Vector2T(KtmVec ktmVec) :
+			x(ktmVec.x), y(ktmVec.y)
+		{
+		}
+
+		Vector2T(T x, T y):
+			x(x), y(y)
+		{
+		}
+
+		auto getLength() const
+		{
+			return ktm::length(ktmVecSelf());
+		}
+
+		Vector2T& normalize()
+		{
+			ktmVecSelf() = ktm::normalize(ktmVecSelf());
+			return *this;
+		}
+
+		bool operator==(const Vector2T& vec2) const = default;
+
+		static Vector2T normalize(const Vector2T& vector2)
+		{
+			return Vector2T{ktm::normalize(vector2.ktmVecSelf())};
+		}
+
+		explicit operator KtmVec() const
+		{
+			return KtmVec(x, y);
+		}
+
+		template<typename OtherT>
+		explicit operator Vector2T<OtherT>() const
+		{
+			return Vector2T<OtherT>(static_cast<OtherT>(x), static_cast<OtherT>(y));
+		}
+
+		Vector3T<T> vector3(T z = T{}) const
+		{
+			return Vector3T<T>(x, y, z);
+		}
+	private:
+		auto& ktmVecSelf()
+		{
+			return *reinterpret_cast<KtmVec*>(this);
+		}
+
+		const auto& ktmVecSelf() const
+		{
+			return *reinterpret_cast<const KtmVec*>(this);
+		}
+	};
+
+	template<Enum T>
+	class Vector2E
+	{
+	public:
+		T x{};
+		T y{};
+
+		Vector2E() = default;
+
+		Vector2E(T x, T y):
+			x(x), y(y)
+		{
+		}
+
+		template<typename OtherT>
+		explicit operator Vector2T<OtherT>() const
+		{
+			return Vector2T<OtherT>(static_cast<OtherT>(x), static_cast<OtherT>(y));
+		}
+
+		Vector3E<T> vector3(T z = T{}) const
+		{
+			return Vector3E<T>(x, y, z);
+		}
+
+		bool operator==(const Vector2E& vec2) const = default;
+	};
+
 	using Vector2F = Vector2T<float>;
 	using Vector2Double = Vector2T<double>;
 	using Vector2I8 = Vector2T<int8_t>;
@@ -221,6 +290,12 @@ namespace helix
 	};
 
 	template<typename T>
+	struct IsVector2<Vector2E<T>>
+	{
+		static constexpr bool value = true;
+	};
+
+	template<typename T>
 	concept Vector2Type = IsVector2<T>::value;
 
 	template<typename T>
@@ -236,5 +311,20 @@ namespace helix
 	};
 
 	template<typename T>
+	struct IsVector3<Vector3E<T>>
+	{
+		static constexpr bool value = true;
+	};
+
+	template<typename T>
+	struct IsVector
+	{
+		static constexpr bool value = IsVector2<T>::value || IsVector3<T>::value;
+	};
+
+	template<typename T>
 	concept Vector3Type = IsVector3<T>::value;
+
+	template<typename T>
+	concept VectorType = Vector2Type<T> || Vector3Type<T>;
 }

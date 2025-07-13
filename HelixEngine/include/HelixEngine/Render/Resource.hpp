@@ -176,10 +176,23 @@ namespace helix
 
 		enum class Filter
 		{
-			Unknown,
 			Linear,
 			Nearest,
 		};
+
+		[[nodiscard]] const Vector3E<Warp>& getWarp() const;
+
+		[[nodiscard]] Filter getMinFilter() const;
+
+		[[nodiscard]] Filter getMagFilter() const;
+
+		[[nodiscard]] Filter getMipmapFilter() const;
 	private:
+		//warp
+		Vector3E<Warp> warp;
+
+		Filter minFilter = Filter::Linear;
+		Filter magFilter = Filter::Linear;
+		Filter mipmapFilter = Filter::Linear;
 	};
 }
