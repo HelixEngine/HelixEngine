@@ -424,14 +424,44 @@ namespace helix::opengl
 		auto sampler = reinterpret_cast<Sampler*>(cmd->sampler.get());
 		if (sampler->getGLSampler())
 			return;
-		glGenSamplers(1, &sampler->samplerGL);
+		auto& samplerGL = sampler->samplerGL;
+		glCreateSamplers(1, &samplerGL);
 		auto& config = sampler->getConfig();
 		if (config.maxAnisotropy.has_value())
 		{
+			if (GLAD_GL_ARB_texture_filter_anisotropic || GLAD_GL_EXT_texture_filter_anisotropic)
+			{
+				auto value = static_cast<float>(config.maxAnisotropy.value());
+				GLfloat maxAnisotropyGL{};
+				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAnisotropyGL);
+				if (value == 0)
+					value = maxAnisotropyGL;
+				else if (value > maxAnisotropyGL)
+				{
+					Logger::warning(u8"OpenGL 当前不支持指定的Anisotropic值，已切换至最大值: ", maxAnisotropyGL);
+					value = maxAnisotropyGL;
+				}
 
-			auto value = config.maxAnisotropy.value();
+				glSamplerParameterf(samplerGL, GL_TEXTURE_MAX_ANISOTROPY_EXT, value);
+			}
 		}
-		glSamplerParameteri(sampler->samplerGL, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glSamplerParameteri(samplerGL, GL_TEXTURE_WRAP_S, Sampler::getGLWarp(config.warp.x));
+		glSamplerParameteri(samplerGL, GL_TEXTURE_WRAP_T, Sampler::getGLWarp(config.warp.y));
+		glSamplerParameteri(samplerGL, GL_TEXTURE_WRAP_R, Sampler::getGLWarp(config.warp.z));
+
+		if (config.warp.x == Sampler::Warp::ClampBorder ||
+		    config.warp.y == Sampler::Warp::ClampBorder ||
+		    config.warp.z == Sampler::Warp::ClampBorder)
+		{
+			glSamplerParameterfv(samplerGL, GL_TEXTURE_BORDER_COLOR,
+			                     reinterpret_cast<const GLfloat*>(&config.borderColor));
+		}
+
+		glSamplerParameteri(samplerGL, GL_TEXTURE_MAG_FILTER, Sampler::getGLFilter(config.magFilter));
+		glSamplerParameteri(samplerGL, GL_TEXTURE_MIN_FILTER, Sampler::getGLFilterWithMipmap(
+				                    Sampler::getGLFilter(config.minFilter), config.mipmapFilter));
+
+		sampler->notify();
 	}
 
 	void Renderer::loadBitmapProc() const

@@ -1,10 +1,11 @@
 #pragma once
 #include <optional>
 #include <shared_mutex>
-#include <HelixEngine/Util/Ref.hpp>
-#include <HelixEngine/Util/PixelFormat.hpp>
 #include <HelixEngine/Math/Shape.hpp>
 #include <HelixEngine/Math/Vector.hpp>
+#include <HelixEngine/Util/Color.hpp>
+#include <HelixEngine/Util/PixelFormat.hpp>
+#include <HelixEngine/Util/Ref.hpp>
 #include <sail-c++/sail-c++.h>
 
 namespace helix
@@ -194,10 +195,14 @@ namespace helix
 			//z -> r
 			//各分量根据实际的采样纹理生效
 			Vector3E<Warp> warp;
+			//指定ClampBorder的颜色，当环绕方式为ClampBorder时生效
+			Color borderColor = Color::White;
+
 			Filter magFilter = Filter::Linear;
 			Filter minFilter = Filter::Linear;
 			//当所采样的纹理开启了Mipmap后，该项生效
 			Filter mipmapFilter = Filter::Linear;
+
 			//当该项为std::nullopt时，表示不开启各向异性过滤
 			//当该项为0时，表示默认使用各向异性过滤的系统最大值
 			//当该项为非0时，表示使用指定的各向异性过滤值

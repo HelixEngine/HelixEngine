@@ -195,3 +195,63 @@ GLuint helix::opengl::Sampler::getGLSampler() const
 {
 	return samplerGL;
 }
+
+GLint helix::opengl::Sampler::getGLFilter(Filter filter)
+{
+	switch (filter)
+	{
+		case Filter::Linear:
+			return GL_LINEAR;
+			break;
+		case Filter::Nearest:
+			return GL_NEAREST;
+			break;
+	}
+	return -1;
+}
+
+GLint helix::opengl::Sampler::getGLFilterWithMipmap(GLint minFilter, Filter filter)
+{
+	switch (filter)
+	{
+		case Filter::Linear:
+			switch (minFilter)
+			{
+				case GL_LINEAR:
+					return GL_LINEAR_MIPMAP_LINEAR;
+				case GL_NEAREST:
+					return GL_LINEAR_MIPMAP_NEAREST;
+				default:
+					break;
+			}
+			break;
+		case Filter::Nearest:
+			switch (minFilter)
+			{
+				case GL_LINEAR:
+					return GL_NEAREST_MIPMAP_LINEAR;
+				case GL_NEAREST:
+					return GL_NEAREST_MIPMAP_NEAREST;
+				default:
+					break;
+			}
+			break;
+	}
+	return -1;
+}
+
+GLint helix::opengl::Sampler::getGLWarp(Warp warp)
+{
+	switch (warp)
+	{
+		case Warp::Repeat:
+			return GL_REPEAT;
+		case Warp::Mirror:
+			return GL_MIRRORED_REPEAT;
+		case Warp::ClampEdge:
+			return GL_CLAMP_TO_EDGE;
+		case Warp::ClampBorder:
+			return GL_CLAMP_TO_BORDER;
+	}
+	return -1;
+}

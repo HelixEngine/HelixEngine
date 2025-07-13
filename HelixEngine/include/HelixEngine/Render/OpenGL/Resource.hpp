@@ -101,5 +101,9 @@ namespace helix::opengl
 		GLuint samplerGL{};
 	public:
 		[[nodiscard]] GLuint getGLSampler() const;
+	private:
+		static GLint getGLFilter(Filter filter);
+		static GLint getGLFilterWithMipmap(GLint minFilter, Filter filter);
+		static GLint getGLWarp(Warp warp);
 	};
 }
