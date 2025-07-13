@@ -413,6 +413,8 @@ namespace helix::opengl
 		             static_cast<GLsizei>(tex2d->getSize().x), static_cast<GLsizei>(tex2d->getSize().y),
 		             0, static_cast<GLenum>(colorFormat), static_cast<GLenum>(storageType),
 		             bitmap->getSailImage().pixels());
+		if (cmd->bitmapConfig.isGenerateMipmap)
+			glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		tex2d->notify();
 	}

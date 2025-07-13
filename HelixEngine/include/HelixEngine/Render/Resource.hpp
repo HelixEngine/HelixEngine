@@ -156,6 +156,7 @@ namespace helix
 			Ref<Bitmap> bitmap;
 			PixelFormat textureFormat = PixelFormat::Unknown;
 			Type textureType = Type::Default;
+			bool isGenerateMipmap = false;
 		};
 
 		[[nodiscard]] const PixelFormat& getPixelFormat() const;
