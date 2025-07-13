@@ -40,7 +40,7 @@ namespace helix
 		[[nodiscard]] Ref<Texture2D> createTexture2D(Ref<Bitmap> bitmap,
 		                                             const PixelFormat& textureFormat = PixelFormat::Unknown,
 		                                             Texture2D::Type type = Texture2D::Type::Default) const;
-		[[nodiscard]] Ref<Sampler> createSampler(const Sampler::Config& config) const;
+		[[nodiscard]] Ref<Sampler> createSampler(const Sampler::Config& config = {}) const;
 		void setRenderPipeline(Ref<RenderPipeline> renderPipeline) const;
 		void setPrimitiveTopology(PrimitiveTopology primitiveTopology) const;
 		void setViewport(Viewport viewport) const;

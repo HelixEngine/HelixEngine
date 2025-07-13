@@ -162,13 +162,5 @@ void main()
 	auto texture2d = glRenderer->createTexture2D(bitmap);
 	bitmap.reset();
 
-	Sampler::Config samplerConfig;
-	samplerConfig.warp.x = Sampler::Warp::Repeat;
-	samplerConfig.warp.y = Sampler::Warp::Repeat;
-	samplerConfig.warp.z = Sampler::Warp::Repeat;
-	samplerConfig.magFilter = Sampler::Filter::Linear;
-	samplerConfig.minFilter = Sampler::Filter::Linear;
-	samplerConfig.mipmapFilter = Sampler::Filter::Linear;
-
-	auto sampler = glRenderer->createSampler(samplerConfig);
+	auto sampler = glRenderer->createSampler();
 }
