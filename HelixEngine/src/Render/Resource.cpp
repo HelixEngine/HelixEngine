@@ -200,22 +200,7 @@ void helix::Texture2D::setType(Type type)
 	this->type = type;
 }
 
-const helix::Vector3E<helix::Sampler::Warp>& helix::Sampler::getWarp() const
+const helix::Sampler::Config& helix::Sampler::getConfig() const
 {
-	return warp;
-}
-
-helix::Sampler::Filter helix::Sampler::getMinFilter() const
-{
-	return minFilter;
-}
-
-helix::Sampler::Filter helix::Sampler::getMagFilter() const
-{
-	return magFilter;
-}
-
-helix::Sampler::Filter helix::Sampler::getMipmapFilter() const
-{
-	return mipmapFilter;
+	return config;
 }

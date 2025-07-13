@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include <shared_mutex>
 #include <HelixEngine/Util/Ref.hpp>
 #include <HelixEngine/Util/PixelFormat.hpp>
@@ -56,6 +57,8 @@ namespace helix
 		void setType(Type type);
 
 		void setUsage(Usage usage);
+
+		MemoryBuffer() = default;
 	};
 
 	class Pipeline : public RenderResource
@@ -80,6 +83,7 @@ namespace helix
 		}
 	protected:
 		void setUsage(Usage usage);
+		Shader() = default;
 	};
 
 	class RenderPipeline : public Pipeline
@@ -161,6 +165,8 @@ namespace helix
 		void setSize(Vector2UI32 size);
 
 		void setType(Type type);
+
+		Texture2D() = default;
 	};
 
 	class Sampler : public RenderResource
@@ -180,19 +186,28 @@ namespace helix
 			Nearest,
 		};
 
-		[[nodiscard]] const Vector3E<Warp>& getWarp() const;
+		struct Config final
+		{
+			//纹理采样的环绕方式
+			//x -> s
+			//y -> t
+			//z -> r
+			//各分量根据实际的采样纹理生效
+			Vector3E<Warp> warp;
+			Filter minFilter = Filter::Linear;
+			Filter magFilter = Filter::Linear;
+			//当所采样的纹理开启了Mipmap后，该项生效
+			Filter mipmapFilter = Filter::Linear;
+			//当该项为std::nullopt时，表示不开启各向异性过滤
+			//当该项为0时，表示默认使用各向异性过滤的系统最大值
+			//当该项为非0时，表示使用指定的各向异性过滤值
+			std::optional<uint32_t> maxAnisotropy = std::nullopt;
+		};
 
-		[[nodiscard]] Filter getMinFilter() const;
-
-		[[nodiscard]] Filter getMagFilter() const;
-
-		[[nodiscard]] Filter getMipmapFilter() const;
+		[[nodiscard]] const Config& getConfig() const;
 	private:
-		//warp
-		Vector3E<Warp> warp;
-
-		Filter minFilter = Filter::Linear;
-		Filter magFilter = Filter::Linear;
-		Filter mipmapFilter = Filter::Linear;
+		Config config;
+	protected:
+		Sampler() = default;
 	};
 }
