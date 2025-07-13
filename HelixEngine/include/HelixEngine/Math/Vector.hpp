@@ -99,14 +99,9 @@ namespace helix
 			return Vector2T<OtherT>(static_cast<OtherT>(x), static_cast<OtherT>(y));
 		}
 
-		Vector3T<T>& vector3()
+		Vector3T<T> vector3(T z = T{}) const
 		{
-			return *reinterpret_cast<Vector3T<T>*>(this);
-		}
-
-		const Vector3T<T>& vector3() const
-		{
-			return *reinterpret_cast<const Vector3T<T>*>(this);
+			return Vector3T<T>(x, y, z);
 		}
 	private:
 		auto& ktmVecSelf()
@@ -132,12 +127,12 @@ namespace helix
 		Vector3T() = default;
 
 		explicit Vector3T(KtmVec ktmVec) :
-			x(ktmVec.x), y(ktmVec.y)
+			x(ktmVec.x), y(ktmVec.y), z(ktmVec.z)
 		{
 		}
 
-		Vector3T(T x, T y):
-			x(x), y(y)
+		Vector3T(T x, T y, T z):
+			x(x), y(y), z(z)
 		{
 		}
 
