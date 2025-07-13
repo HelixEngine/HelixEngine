@@ -31,8 +31,7 @@ namespace helix::opengl
 				MemoryBuffer::Usage usage, Ref<MemoryBlock> vertexData) const override;
 
 		[[nodiscard]] Ref<helix::Texture2D>
-		createNativeTexture2D(Ref<Bitmap> bitmap, const PixelFormat& textureFormat,
-		                      Texture2D::Type type) const override;
+		createNativeTexture2D(Texture2D::BitmapConfig config) const override;
 
 		[[nodiscard]] Ref<helix::Sampler> createNativeSampler(const Sampler::Config& config) const override;
 

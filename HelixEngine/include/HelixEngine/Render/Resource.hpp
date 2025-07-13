@@ -151,6 +151,13 @@ namespace helix
 			Storage,
 		};
 
+		struct BitmapConfig
+		{
+			Ref<Bitmap> bitmap;
+			PixelFormat textureFormat = PixelFormat::Unknown;
+			Type textureType = Type::Default;
+		};
+
 		[[nodiscard]] const PixelFormat& getPixelFormat() const;
 
 		[[nodiscard]] Vector2UI32 getSize() const;

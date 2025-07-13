@@ -63,13 +63,20 @@ namespace helix
 	Ref<Texture2D> Renderer::createTexture2D(Ref<Bitmap> bitmap, const PixelFormat& textureFormat,
 	                                         Texture2D::Type type) const
 	{
-		auto tex = createNativeTexture2D(bitmap, textureFormat, type);
+		Texture2D::BitmapConfig config;
+		config.bitmap = std::move(bitmap);
+		config.textureFormat = textureFormat;
+		config.textureType = type;
+		return createTexture2D(std::move(config));
+	}
+
+	Ref<Texture2D> Renderer::createTexture2D(Texture2D::BitmapConfig config) const
+	{
+		auto tex = createNativeTexture2D(config);
 		CreateTexture2DFromBitmapCommand cmd;
 		cmd.type = RenderCommand::Type::CreateTexture2DFromBitmap;
 		cmd.texture2d = tex;
-		cmd.textureFormat = textureFormat;
-		cmd.bitmap = std::move(bitmap);
-		cmd.textureType = type;
+		cmd.bitmapConfig = std::move(config);
 		renderQueue->addCommand<CreateTexture2DFromBitmapCommand>(std::move(cmd));
 		return tex;
 	}

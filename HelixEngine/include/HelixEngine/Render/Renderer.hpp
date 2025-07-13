@@ -40,6 +40,8 @@ namespace helix
 		[[nodiscard]] Ref<Texture2D> createTexture2D(Ref<Bitmap> bitmap,
 		                                             const PixelFormat& textureFormat = PixelFormat::Unknown,
 		                                             Texture2D::Type type = Texture2D::Type::Default) const;
+		[[nodiscard]] Ref<Texture2D> createTexture2D(Texture2D::BitmapConfig config) const;
+
 		[[nodiscard]] Ref<Sampler> createSampler(const Sampler::Config& config = {}) const;
 		void setRenderPipeline(Ref<RenderPipeline> renderPipeline) const;
 		void setPrimitiveTopology(PrimitiveTopology primitiveTopology) const;
@@ -55,9 +57,7 @@ namespace helix
 		[[nodiscard]] virtual Ref<MemoryBuffer> createNativeMemoryBuffer(
 				MemoryBuffer::Type type,
 				MemoryBuffer::Usage usage, Ref<MemoryBlock> vertexData) const = 0;
-		[[nodiscard]] virtual Ref<Texture2D> createNativeTexture2D(
-				Ref<Bitmap> bitmap,
-				const PixelFormat& textureFormat, Texture2D::Type type) const = 0;
+		[[nodiscard]] virtual Ref<Texture2D> createNativeTexture2D(Texture2D::BitmapConfig config) const = 0;
 		[[nodiscard]] virtual Ref<Sampler> createNativeSampler(const Sampler::Config& config) const = 0;
 		std::jthread renderThread;
 		static void innerLoadBitmap(const LoadBitmapCommand* cmd);

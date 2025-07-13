@@ -24,12 +24,11 @@ namespace helix::opengl
 		return buf;
 	}
 
-	Ref<helix::Texture2D> Renderer::createNativeTexture2D(Ref<Bitmap> bitmap, const PixelFormat& textureFormat,
-	                                                      Texture2D::Type type) const
+	Ref<helix::Texture2D> Renderer::createNativeTexture2D(Texture2D::BitmapConfig config) const
 	{
 		Ref texture2D = new Texture2D;
-		texture2D->setPixelFormat(textureFormat);
-		texture2D->setType(type);
+		texture2D->setPixelFormat(config.textureFormat);
+		texture2D->setType(config.textureType);
 		return texture2D;
 	}
 
@@ -374,7 +373,7 @@ namespace helix::opengl
 			return;
 		glGenTextures(1, &tex2d->textureGL);
 		glBindTexture(GL_TEXTURE_2D, tex2d->textureGL);
-		auto& bitmap = cmd->bitmap;
+		auto& bitmap = cmd->bitmapConfig.bitmap;
 		if (!bitmap)
 		{
 			Logger::error(u8"OpenGL Renderer: 创建Texture2D时，Bitmap不可为nullptr");
