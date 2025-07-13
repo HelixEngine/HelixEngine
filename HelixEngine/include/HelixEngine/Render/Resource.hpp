@@ -162,4 +162,17 @@ namespace helix
 
 		void setType(Type type);
 	};
+
+	class Sampler : public RenderResource
+	{
+	public:
+		enum class WarpMode
+		{
+			Repeat,
+			Mirror,
+			ClampEdge,
+			ClampBorder,
+		};
+	private:
+	};
 }
