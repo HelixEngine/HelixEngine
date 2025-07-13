@@ -191,6 +191,7 @@ namespace helix
 
 		enum class Filter
 		{
+			None,
 			Linear,
 			Nearest,
 		};
@@ -208,8 +209,7 @@ namespace helix
 
 			Filter magFilter = Filter::Linear;
 			Filter minFilter = Filter::Linear;
-			//当所采样的纹理开启了Mipmap后，该项生效
-			Filter mipmapFilter = Filter::Linear;
+			Filter mipmapFilter = Filter::None;
 
 			//当该项为std::nullopt时，表示不开启各向异性过滤
 			//当该项为0时，表示默认使用各向异性过滤的系统最大值

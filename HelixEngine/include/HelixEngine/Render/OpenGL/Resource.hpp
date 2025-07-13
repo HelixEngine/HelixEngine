@@ -109,8 +109,8 @@ namespace helix::opengl
 
 	struct Texture2DUnit final
 	{
-		Ref<Texture2D> texture2d{};
-		Ref<Sampler> sampler{};
 		GLuint unitIndex = 0;
+		Ref<helix::Texture2D> texture2d{};
+		Ref<helix::Sampler> sampler{};
 	};
 }

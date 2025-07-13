@@ -184,16 +184,18 @@ namespace helix::opengl
 		SDL_GL_SwapWindow(getWindow()->getSDLWindow());
 	}
 
-	void Renderer::setRenderPipelineProc() const
+	void Renderer::setRenderPipelineProc()
 	{
 		auto cmd = renderCmd->cast<SetRenderPipelineCommand>();
 		if (auto pipeline = reinterpret_cast<RenderPipeline*>(cmd->renderPipeline.get()))
 		{
 			pipeline->usable();
 			glUseProgram(pipeline->getGLProgram());
+			renderPipeline = reinterpret_cast<RenderPipeline*>(cmd->renderPipeline.get());
 			return;
 		}
 		glUseProgram(0);
+		renderPipeline = nullptr;
 	}
 
 	void Renderer::setPrimitiveTopologyProc()
@@ -412,6 +414,7 @@ namespace helix::opengl
 			return;
 		}
 
+
 		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat,
 		             static_cast<GLsizei>(tex2d->getSize().x), static_cast<GLsizei>(tex2d->getSize().y),
 		             0, static_cast<GLenum>(colorFormat), static_cast<GLenum>(storageType),
@@ -429,7 +432,7 @@ namespace helix::opengl
 		if (sampler->getGLSampler())
 			return;
 		auto& samplerGL = sampler->samplerGL;
-		glCreateSamplers(1, &samplerGL);
+		glGenSamplers(1, &samplerGL);
 		auto& config = sampler->getConfig();
 		if (config.maxAnisotropy.has_value())
 		{
@@ -565,11 +568,17 @@ namespace helix::opengl
 
 		glActiveTexture(GL_TEXTURE0 + unit.unitIndex);
 
-		if (unit.texture2d)
-			glBindTexture(GL_TEXTURE_2D, unit.texture2d->getGLTexture());
+		if (auto tex2d = reinterpret_cast<Texture2D*>(unit.texture2d.get()))
+		{
+			tex2d->usable();
+			glBindTexture(GL_TEXTURE_2D, tex2d->getGLTexture());
+		}
 
-		if (unit.sampler)
-			glBindSampler(unit.unitIndex, unit.sampler);
+		if (auto sampler = reinterpret_cast<Sampler*>(unit.sampler.get()))
+		{
+			sampler->usable();
+			glBindSampler(unit.unitIndex, sampler->getGLSampler());
+		}
 
 	}
 

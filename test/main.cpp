@@ -10,6 +10,8 @@ public:
 	RenderPipeline* pipeline = nullptr;
 	opengl::VertexArray* vertexArray = nullptr;
 	Ref<MemoryBuffer> uniformBuffer;
+	Ref<Texture2D> texture2d;
+	Ref<Sampler> sampler;
 
 	void render(Renderer* renderer) override
 	{
@@ -22,6 +24,7 @@ public:
 		glRenderer->setViewport(viewport);
 		glRenderer->setScissor(scissor);
 
+		glRenderer->setGLTexture2DUnit({0, texture2d, sampler});
 		glRenderer->setRenderPipeline(pipeline);
 
 		opengl::UniformBindingAttribute uniformBindingAttribute;
@@ -58,13 +61,14 @@ void setup()
 	{
 		Vector2F position;
 		Color color;
+		Vector2F texCoord;
 	};
 
 	VertexData vertexData[] = {
-			{{-0.5f, -0.5f}, Color::Blue},
-			{{0.5f, -0.5f}, Color::Green},
-			{{0.5f, 0.5f}, Color::Red},
-			{{-0.5f, 0.5f}, Color::DeepPink},
+			{{-0.5f, -0.5f}, Color::Blue, {0.f, 0.f}},
+			{{0.5f, -0.5f}, Color::Green, {1.0f, 0.0f}},
+			{{0.5f, 0.5f}, Color::Red, {1.f, 1.f}},
+			{{-0.5f, 0.5f}, Color::DeepPink, {0.f, 1.f}},
 	};
 
 	uint32_t indexData[] = {
@@ -95,19 +99,23 @@ void setup()
 			u8R"(
 #version 330 core
 layout (location = 0) in vec2 aPos;
-layout (location = 1) in vec3 aColor;
-out vec3 vertexColor;
+layout (location = 1) in vec4 aColor;
+layout (location = 2) in vec2 aTexCoord;
+out vec4 vertexColor;
+out vec2 TexCoord;
 void main()
 {
 	gl_Position = vec4(aPos.x, aPos.y, 0.f, 1.0);
 	vertexColor = aColor;
+	TexCoord = aTexCoord;
 })";
 	auto vertexShader = glRenderer->createGLShader(Shader::Usage::Vertex, vertexCode);
 
 	auto pixelCode =
 			u8R"(
 #version 420 core
-in vec3 vertexColor;
+in vec4 vertexColor;
+in vec2 TexCoord;
 out vec4 FragColor;
 
 layout (std140,binding = 0) uniform UniformBlock
@@ -115,9 +123,11 @@ layout (std140,binding = 0) uniform UniformBlock
 	vec4 color;
 };
 
+uniform sampler2D ourTexture;
+
 void main()
 {
-    FragColor = color;
+    FragColor = texture(ourTexture, TexCoord) * vertexColor;
 } )";
 
 	auto pixelShader = glRenderer->createGLShader(Shader::Usage::Pixel, pixelCode);
@@ -127,13 +137,6 @@ void main()
 	config.pixel = pixelShader;
 
 	auto pipeline = glRenderer->createGLRenderPipeline(config);
-	// opengl::UniformBindingAttribute uniformBindingAttribute;
-	// uniformBindingAttribute.uniformBuffer = uniformBuffer;
-	// uniformBindingAttribute.binding = 0;
-	// uniformBindingAttribute.offset = 0;
-	// uniformBindingAttribute.size = sizeof(Color);
-	// glRenderer->setGLUniformBindingAttribute(pipeline, uniformBindingAttribute);
-	// glRenderer2->setGLUniformBindingAttribute(pipeline, uniformBindingAttribute);
 
 	vertexShader.reset();
 	pixelShader.reset();
@@ -143,7 +146,8 @@ void main()
 	vaConfig.indexBuffer = indexBuffer;
 	vaConfig.vertexAttributes = {
 			{0, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), nullptr},
-			{1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), reinterpret_cast<void*>(offsetof(VertexData, color))},
+			{1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), reinterpret_cast<void*>(offsetof(VertexData, color))},
+			{2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), reinterpret_cast<void*>(offsetof(VertexData, texCoord))},
 	};
 	vaConfig.indexAttribute = {GL_UNSIGNED_INT};
 
@@ -158,9 +162,22 @@ void main()
 	renderNode2->vertexArray = vao2;
 	renderNode2->uniformBuffer = uniformBuffer2;
 
-	auto bitmap = glRenderer->loadBitmap(u8"D:/a.jpg");
-	auto texture2d = glRenderer->createTexture2D(bitmap);
+	auto bitmap = glRenderer->loadBitmap(u8"D:/b.jpg");
+	Texture2D::BitmapConfig bitmapConfig;
+	bitmapConfig.bitmap = bitmap;
+	bitmapConfig.isGenerateMipmap = true;
+	auto texture2d = glRenderer->createTexture2D(bitmapConfig);
 	bitmap.reset();
 
-	auto sampler = glRenderer->createSampler();
+	Sampler::Config samplerConfig;
+	samplerConfig.mipmapFilter = Sampler::Filter::Linear;
+	auto sampler = glRenderer->createSampler(samplerConfig);
+	samplerConfig.mipmapFilter = Sampler::Filter::None;
+	auto sampler2 = glRenderer->createSampler(samplerConfig);
+
+	renderNode->texture2d = texture2d;
+	renderNode2->texture2d = texture2d;
+
+	renderNode->sampler = sampler;
+	renderNode2->sampler = sampler2;
 }

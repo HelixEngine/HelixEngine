@@ -236,6 +236,8 @@ GLint helix::opengl::Sampler::getGLFilterWithMipmap(GLint minFilter, Filter filt
 					break;
 			}
 			break;
+		case Filter::None:
+			return minFilter;
 	}
 	return -1;
 }

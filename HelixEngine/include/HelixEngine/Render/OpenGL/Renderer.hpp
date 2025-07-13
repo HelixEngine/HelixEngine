@@ -51,6 +51,7 @@ namespace helix::opengl
 
 		//Command Status
 		PrimitiveTopology primitiveTopology = PrimitiveTopology::TriangleList;
+		Ref<RenderPipeline> renderPipeline;
 		IndexAttribute indexAttribute;
 
 		[[nodiscard]] SDL_GLContext createSDLContext() const;
@@ -60,7 +61,7 @@ namespace helix::opengl
 		void renderProc(const RenderQueue::ListRef& list);
 		void beginProc() const;
 		void endProc() const;
-		void setRenderPipelineProc() const;
+		void setRenderPipelineProc();
 		void setPrimitiveTopologyProc();
 		void setViewportProc() const;
 		void setScissorProc() const;
