@@ -127,7 +127,7 @@ uniform sampler2D ourTexture;
 
 void main()
 {
-    FragColor = texture(ourTexture, TexCoord);
+    FragColor = mix(mix(texture(ourTexture, TexCoord), vertexColor,0.5),color,0.2);
 } )";
 
 	auto pixelShader = glRenderer->createGLShader(Shader::Usage::Pixel, pixelCode);
@@ -162,22 +162,19 @@ void main()
 	renderNode2->vertexArray = vao2;
 	renderNode2->uniformBuffer = uniformBuffer2;
 
-	auto bitmap = glRenderer->loadBitmap(u8"D:/b.jpg");
+	auto bitmap = Bitmap::load(u8"D:/b.jpg");
 	Texture2D::BitmapConfig bitmapConfig;
 	bitmapConfig.bitmap = bitmap;
 	bitmapConfig.isGenerateMipmap = true;
 	auto texture2d = glRenderer->createTexture2D(bitmapConfig);
+	window->setSize(bitmap->getSize());
+	window2->setSize(bitmap->getSize());
 	bitmap.reset();
-
-	Sampler::Config samplerConfig;
-	samplerConfig.mipmapFilter = Sampler::Filter::Linear;
-	auto sampler = glRenderer->createSampler(samplerConfig);
-	samplerConfig.mipmapFilter = Sampler::Filter::None;
-	auto sampler2 = glRenderer->createSampler(samplerConfig);
+	auto sampler = glRenderer->createSampler();
 
 	renderNode->texture2d = texture2d;
 	renderNode2->texture2d = texture2d;
 
 	renderNode->sampler = sampler;
-	renderNode2->sampler = sampler2;
+	renderNode2->sampler = sampler;
 }

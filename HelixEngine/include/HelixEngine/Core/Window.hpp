@@ -32,16 +32,16 @@ namespace helix
 		struct Property
 		{
 			std::u8string title = u8"HelixEngine";
-			Vector2I32 size = {600, 600};
+			Vector2UI32 size = {600, 600};
 			bool isResizable = true;
 			bool isDisplay = true;
 			GraphicsApi graphicsApi = GraphicsApi::Default;
 			BitOption<Flag> flag = Flag::Default;
 		};
 
-		explicit Window(std::u8string_view title = u8"HelixEngine", int32_t width = 600,
-		                int32_t height = 600);
-		explicit Window(std::u8string_view title = u8"HelixEngine", Vector2I32 size = {600, 600});
+		explicit Window(std::u8string_view title = u8"HelixEngine", uint32_t width = 600,
+		                uint32_t height = 600);
+		explicit Window(std::u8string_view title = u8"HelixEngine", Vector2UI32 size = {600, 600});
 		explicit Window(const Property& property);
 		~Window() override;
 
@@ -50,8 +50,8 @@ namespace helix
 		void setDisplay(bool isDisplay = true) const;
 		[[nodiscard]] bool isDisplay() const;
 
-		void setSize(Vector2I32 newSize) const;
-		[[nodiscard]] Vector2I32 getSize() const;
+		void setSize(Vector2UI32 newSize) const;
+		[[nodiscard]] Vector2UI32 getSize() const;
 
 		[[nodiscard]] SDL_Window* getSDLWindow() const;
 

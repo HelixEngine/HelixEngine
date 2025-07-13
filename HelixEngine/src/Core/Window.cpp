@@ -5,13 +5,13 @@
 
 namespace helix
 {
-	Window::Window(std::u8string_view title, int32_t width, int32_t height) :
-		Window(title, Vector2I32{width, height})
+	Window::Window(std::u8string_view title, uint32_t width, uint32_t height) :
+		Window(title, Vector2UI32{width, height})
 	{
 
 	}
 
-	Window::Window(std::u8string_view title, Vector2I32 size) :
+	Window::Window(std::u8string_view title, Vector2UI32 size) :
 		Window(Property{.title = title.data(), .size = size})
 	{
 
@@ -19,9 +19,10 @@ namespace helix
 
 	Window::Window(const Property& property)
 	{
+		auto sSize = Vector2I32(property.size);
 		sdlWindow = SDL_CreateWindow(
 				reinterpret_cast<const char*>(property.title.data()),
-				property.size.x, property.size.y,
+				sSize.x, sSize.y,
 				(property.isResizable ? SDL_WINDOW_RESIZABLE : 0) |
 				SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY |
 				(property.graphicsApi == GraphicsApi::OpenGL ? SDL_WINDOW_OPENGL : 0));
@@ -35,7 +36,7 @@ namespace helix
 			return;
 		}
 
-		allWindows.push_back(this);
+		allWindows.emplace_back(this);
 
 		if (property.isDisplay)
 			show();
@@ -86,17 +87,18 @@ namespace helix
 		return SDL_GetWindowFlags(sdlWindow) & SDL_WINDOW_HIDDEN;
 	}
 
-	void Window::setSize(Vector2I32 newSize) const
+	void Window::setSize(Vector2UI32 newSize) const
 	{
-		if (!SDL_SetWindowSize(sdlWindow, newSize.x, newSize.y))
+		auto sSize = Vector2I32(newSize);
+		if (!SDL_SetWindowSize(sdlWindow, sSize.x, sSize.y))
 			sdlError(u8"设置SDL窗口大小失败");
 	}
 
-	Vector2I32 Window::getSize() const
+	Vector2UI32 Window::getSize() const
 	{
 		Vector2I32 size;
 		SDL_GetWindowSize(sdlWindow, &size.x, &size.y);
-		return size;
+		return Vector2UI32(size);
 	}
 
 	SDL_Window* Window::getSDLWindow() const

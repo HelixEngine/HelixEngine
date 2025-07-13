@@ -92,6 +92,11 @@ namespace helix
 
 		bool operator==(const Vector3T& vec3) const = default;
 
+		Vector3T operator*(T value) const
+		{
+			return Vector3T(x * value, y * value, z * value);
+		}
+
 		static Vector3T normalize(const Vector3T& vector3)
 		{
 			return Vector3T{ktm::normalize(vector3.ktmVecSelf())};
@@ -194,6 +199,11 @@ namespace helix
 		}
 
 		bool operator==(const Vector2T& vec2) const = default;
+
+		Vector2T operator*(T value) const
+		{
+			return Vector2T(x * value, y * value);
+		}
 
 		static Vector2T normalize(const Vector2T& vector2)
 		{
