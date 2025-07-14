@@ -223,4 +223,11 @@ namespace helix
 
 		Sampler() = default;
 	};
+
+	class Image : public RenderResource
+	{
+	public:
+	private:
+		Ref<Texture2D> texture;
+	};
 }
