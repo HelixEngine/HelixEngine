@@ -19,7 +19,6 @@ namespace helix
 			Draw,
 			DrawIndexed,
 			CreateMemoryBuffer,
-			LoadBitmap,
 			CreateTexture2DFromBitmap,
 			CreateSampler,
 

@@ -36,7 +36,6 @@ namespace helix
 
 		[[nodiscard]] Ref<MemoryBuffer>
 		createMemoryBuffer(MemoryBuffer::Type type, MemoryBuffer::Usage usage, Ref<MemoryBlock> bufferData) const;
-		[[nodiscard]] Ref<Bitmap> loadBitmap(std::u8string filePath, Bitmap::Config config = Bitmap::Config{}) const;
 		[[nodiscard]] Ref<Texture2D> createTexture2D(Ref<Bitmap> bitmap,
 		                                             const PixelFormat& textureFormat = PixelFormat::Unknown,
 		                                             Texture2D::Type type = Texture2D::Type::Default) const;
@@ -60,7 +59,6 @@ namespace helix
 		[[nodiscard]] virtual Ref<Texture2D> createNativeTexture2D(Texture2D::BitmapConfig config) const = 0;
 		[[nodiscard]] virtual Ref<Sampler> createNativeSampler(const Sampler::Config& config) const = 0;
 		std::jthread renderThread;
-		static void innerLoadBitmap(const LoadBitmapCommand* cmd);
 	private:
 		//Game run
 

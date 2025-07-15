@@ -75,7 +75,6 @@ namespace helix::opengl
 		void createMemoryBufferProc() const;
 		void createTexture2DFromBitmapProc() const;
 		void createSamplerProc() const;
-		void loadBitmapProc() const;
 		void createGLShaderProc() const;
 		void createGLRenderPipelineProc() const;
 		void destroyGLShaderProc() const;

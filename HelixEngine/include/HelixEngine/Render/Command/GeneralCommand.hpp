@@ -21,13 +21,6 @@ namespace helix
 		Ref<MemoryBlock> bufferData{};
 	};
 
-	struct LoadBitmapCommand final : RenderCommand
-	{
-		std::u8string filePath;
-		Bitmap::Config config{};
-		Ref<Bitmap> bitmap{};
-	};
-
 	struct CreateTexture2DFromBitmapCommand final : RenderCommand
 	{
 		Ref<Texture2D> texture2d{};

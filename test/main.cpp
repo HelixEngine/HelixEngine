@@ -162,7 +162,7 @@ void main()
 	renderNode2->vertexArray = vao2;
 	renderNode2->uniformBuffer = uniformBuffer2;
 
-	auto bitmap = Bitmap::load(u8"D:/b.jpg");
+	auto bitmap = Bitmap::loadAsync(u8"D:/b.jpg");
 	Texture2D::BitmapConfig bitmapConfig;
 	bitmapConfig.bitmap = bitmap;
 	bitmapConfig.isGenerateMipmap = true;

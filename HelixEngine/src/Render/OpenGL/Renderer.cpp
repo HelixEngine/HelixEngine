@@ -146,9 +146,6 @@ namespace helix::opengl
 				case RenderCommand::Type::CreateSampler:
 					createSamplerProc();
 					break;
-				case RenderCommand::Type::LoadBitmap:
-					loadBitmapProc();
-					break;
 				case RenderCommand::Type::CreateGLShader:
 					createGLShaderProc();
 					break;
@@ -472,12 +469,6 @@ namespace helix::opengl
 				                    Sampler::getGLFilter(config.minFilter), config.mipmapFilter));
 
 		sampler->notify();
-	}
-
-	void Renderer::loadBitmapProc() const
-	{
-		auto cmd = renderCmd->cast<LoadBitmapCommand>();
-		innerLoadBitmap(cmd);
 	}
 
 	void Renderer::createGLShaderProc() const
