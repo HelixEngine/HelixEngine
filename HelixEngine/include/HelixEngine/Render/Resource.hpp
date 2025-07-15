@@ -116,6 +116,7 @@ namespace helix
 		};
 
 		[[nodiscard]] static Ref<Bitmap> load(const std::u8string& filePath, const Config& config = {});
+		[[nodiscard]] static Ref<Bitmap> loadAsync(const std::u8string& filePath, const Config& config = {});
 
 		bool convert(const PixelFormat& dstFormat);
 

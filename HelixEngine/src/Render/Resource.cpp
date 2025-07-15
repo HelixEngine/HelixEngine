@@ -1,3 +1,4 @@
+#include <future>
 #include <HelixEngine/Render/Resource.hpp>
 #include <HelixEngine/Util/Logger.hpp>
 #include <sstream>
@@ -55,6 +56,17 @@ helix::Ref<helix::Bitmap> helix::Bitmap::load(const std::u8string& filePath, con
 	Ref bitmap = new Bitmap;
 	bitmap->innerLoad(filePath, config);
 	bitmap->notify();
+	return bitmap;
+}
+
+helix::Ref<helix::Bitmap> helix::Bitmap::loadAsync(const std::u8string& filePath, const Config& config)
+{
+	Ref bitmap = new Bitmap;
+	std::ignore = std::async(std::launch::async, [=]
+	{
+		bitmap->innerLoad(filePath, config);
+		bitmap->notify();
+	});
 	return bitmap;
 }
 
