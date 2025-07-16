@@ -48,11 +48,14 @@ namespace helix
 		void setScissor(Scissor scissor) const;
 		void draw(uint32_t vertexCount) const;
 		void drawIndexed(uint32_t indexCount) const;
+		[[nodiscard]] Ref<Image> loadImage(std::u8string_view filePath) const;
+		[[nodiscard]] GraphicsApi getGraphicsApi() const;
 	private:
 		Ref<RenderQueue> renderQueue = new RenderQueue;
 		Window* window = nullptr;
+		GraphicsApi graphicsApi{};
+		static inline std::unordered_map<GraphicsApi, std::unique_ptr<Image::Cache>> imageCaches;
 	protected:
-		using CommandProcessThreadFunc = std::function<void(const std::stop_token&)>;
 		[[nodiscard]] virtual Ref<MemoryBuffer> createNativeMemoryBuffer(
 				MemoryBuffer::Type type,
 				MemoryBuffer::Usage usage, Ref<MemoryBlock> vertexData) const = 0;

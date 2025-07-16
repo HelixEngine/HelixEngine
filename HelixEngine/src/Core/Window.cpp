@@ -52,6 +52,7 @@ namespace helix
 				renderer = new opengl::Renderer;
 				break;
 		}
+		renderer->graphicsApi = property.graphicsApi;
 
 		renderer->window = this;
 		graphicsApi = property.graphicsApi;

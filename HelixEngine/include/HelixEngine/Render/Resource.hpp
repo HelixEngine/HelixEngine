@@ -13,6 +13,7 @@ namespace helix
 	class RenderResource : public Object
 	{
 	public:
+		using Callback = std::function<void()>;
 		/**
 		 * @brief 等待资源可用
 		 * @note 对于共享资源，在渲染端使用资源时，也需要调用该方法确保资源可用
@@ -25,10 +26,12 @@ namespace helix
 		void notify();
 
 		[[nodiscard]] bool isUsable() const;
+		void setNotifyCallback(Callback callback);
 	private:
 		std::atomic_bool bIsUsable = false;
 		std::shared_mutex mtx;
 		std::condition_variable_any cv;
+		std::optional<Callback> callback;
 	};
 
 	class MemoryBuffer : public RenderResource
@@ -225,11 +228,16 @@ namespace helix
 		Sampler() = default;
 	};
 
-	class Image : public RenderResource
+	class Image final : public RenderResource
 	{
+		friend class Renderer;
 	public:
-		static Ref<Image> load(std::u8string_view filePath);
+		using Cache = std::unordered_map<std::u8string, Ref<Image>>;
+		explicit Image(Ref<Texture2D> texture);
+
+		[[nodiscard]] const Ref<Texture2D>& getTexture() const;
 	private:
+		Image() = default;
 		Ref<Texture2D> texture;
 	};
 }

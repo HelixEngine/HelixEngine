@@ -19,11 +19,25 @@ void helix::RenderResource::notify()
 	bIsUsable.store(true, std::memory_order_relaxed);
 	std::shared_lock lock(mtx);
 	cv.notify_all();
+	if (callback.has_value())
+		callback.value()();
 }
 
 bool helix::RenderResource::isUsable() const
 {
 	return bIsUsable.load(std::memory_order_relaxed);
+}
+
+void helix::RenderResource::setNotifyCallback(Callback callback)
+{
+	if (isUsable())
+	{
+		Logger::info(u8"渲染资源", getName(), u8"在设置NotifyCallback时，资源已经可用，直接执行callback");
+		callback();
+		return;
+	}
+	this->callback = std::move(callback);
+
 }
 
 helix::MemoryBuffer::Type helix::MemoryBuffer::getType() const
@@ -215,4 +229,14 @@ void helix::Texture2D::setType(Type type)
 const helix::Sampler::Config& helix::Sampler::getConfig() const
 {
 	return config;
+}
+
+helix::Image::Image(Ref<Texture2D> texture) :
+	texture(std::move(texture))
+{
+}
+
+const helix::Ref<helix::Texture2D>& helix::Image::getTexture() const
+{
+	return texture;
 }

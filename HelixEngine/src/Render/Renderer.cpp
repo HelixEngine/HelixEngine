@@ -125,4 +125,34 @@ namespace helix
 		cmd.indexCount = indexCount;
 		renderQueue->addCommand<DrawIndexedCommand>(std::move(cmd));
 	}
+
+	Ref<Image> Renderer::loadImage(std::u8string_view filePath) const
+	{
+		auto& cache = imageCaches[graphicsApi];
+		if (cache == nullptr)
+			cache = std::make_unique<Image::Cache>();
+		else if (auto it = cache->find(filePath.data()); it != cache->end())
+		{
+			return it->second;
+		}
+
+		Ref image = new Image;
+		image->setName(u8"Image:" + std::u8string(filePath));
+		Texture2D::BitmapConfig config;
+		config.bitmap = Bitmap::loadAsync(filePath);
+
+		image->texture = createTexture2D(std::move(config));
+		image->texture->setNotifyCallback([image]
+		{
+			image->notify();
+		});
+
+		cache->emplace(filePath, image);
+		return image;
+	}
+
+	GraphicsApi Renderer::getGraphicsApi() const
+	{
+		return graphicsApi;
+	}
 }
