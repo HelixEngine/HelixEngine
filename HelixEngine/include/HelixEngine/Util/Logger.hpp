@@ -41,7 +41,6 @@ namespace helix
 		template<typename... Args>
 		static void print(const Output& output, const MessageLevel level, Args&&... args)
 		{
-
 			output(level, fast_io::u8concat_std(args...));
 		}
 

@@ -1,6 +1,5 @@
 #include <HelixEngine/Core/Game.hpp>
 #include <HelixEngine/Core/Window.hpp>
-#include <HelixEngine/Util/Logger.hpp>
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
 
 namespace helix
@@ -203,8 +202,7 @@ namespace helix
 		while (!token.stop_requested())
 		{
 			getRenderer()->begin(getBackgroundColor());
-			auto curr = scene;
-			if (curr)
+			if (auto curr = scene)
 			{
 				auto now = SteadyClock::now();
 				curr->updateScene(now - lastUpdateTime);

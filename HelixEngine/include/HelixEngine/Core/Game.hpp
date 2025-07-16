@@ -24,10 +24,13 @@ namespace helix
 		template<typename CommandType>
 		friend class CommandQueue;
 	public:
+		using StartCallback = std::function<void()>;
 		static int run();
 		static bool isQuit();
+		static void setStartCallback(StartCallback callback);
 	private:
 		static inline bool isRunning = true;
+		static inline std::optional<StartCallback> startCallback;
 	};
 
 }

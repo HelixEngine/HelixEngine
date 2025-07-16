@@ -162,14 +162,8 @@ void main()
 	renderNode2->vertexArray = vao2;
 	renderNode2->uniformBuffer = uniformBuffer2;
 
-	auto bitmap = Bitmap::loadAsync(u8"D:/b.jpg");
-	Texture2D::BitmapConfig bitmapConfig;
-	bitmapConfig.bitmap = bitmap;
-	bitmapConfig.isGenerateMipmap = true;
-	auto texture2d = glRenderer->createTexture2D(bitmapConfig);
-	window->setSize(bitmap->getSize());
-	window2->setSize(bitmap->getSize());
-	bitmap.reset();
+	auto image = glRenderer->loadImage(u8"D:/b.jpg");
+	auto texture2d = image->getTexture2D();
 	auto sampler = glRenderer->createSampler();
 
 	renderNode->texture2d = texture2d;
@@ -177,4 +171,11 @@ void main()
 
 	renderNode->sampler = sampler;
 	renderNode2->sampler = sampler;
+
+	Game::setStartCallback([=]
+	{
+		texture2d->usable();
+		window->setSize(texture2d->getSize());
+		window2->setSize(texture2d->getSize());
+	});
 }

@@ -8,6 +8,12 @@ int helix::Game::run()
 
 	Window::startRun();
 
+	if (startCallback.has_value())
+	{
+		startCallback.value()();
+		startCallback.reset();
+	}
+
 	SDL_Event event;
 
 	while (isRunning)
@@ -39,6 +45,11 @@ int helix::Game::run()
 bool helix::Game::isQuit()
 {
 	return !isRunning;
+}
+
+void helix::Game::setStartCallback(StartCallback callback)
+{
+	startCallback = std::move(callback);
 }
 
 extern void setup();

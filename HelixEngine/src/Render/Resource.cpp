@@ -28,7 +28,7 @@ bool helix::RenderResource::isUsable() const
 	return bIsUsable.load(std::memory_order_relaxed);
 }
 
-void helix::RenderResource::setNotifyCallback(Callback callback)
+void helix::RenderResource::setNotifyCallback(NotifyCallback callback)
 {
 	if (isUsable())
 	{
@@ -236,7 +236,7 @@ helix::Image::Image(Ref<Texture2D> texture) :
 {
 }
 
-const helix::Ref<helix::Texture2D>& helix::Image::getTexture() const
+const helix::Ref<helix::Texture2D>& helix::Image::getTexture2D() const
 {
 	return texture;
 }
