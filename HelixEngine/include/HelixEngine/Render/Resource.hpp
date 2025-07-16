@@ -115,8 +115,8 @@ namespace helix
 			PixelFormat bitmapFormat = PixelFormat::Unknown;
 		};
 
-		[[nodiscard]] static Ref<Bitmap> load(const std::u8string& filePath, const Config& config = {});
-		[[nodiscard]] static Ref<Bitmap> loadAsync(const std::u8string& filePath, const Config& config = {});
+		[[nodiscard]] static Ref<Bitmap> load(std::u8string_view filePath, const Config& config = {});
+		[[nodiscard]] static Ref<Bitmap> loadAsync(std::u8string_view filePath, const Config& config = {});
 
 		bool convert(const PixelFormat& dstFormat);
 
@@ -124,7 +124,7 @@ namespace helix
 		[[nodiscard]] Vector2UI32 getSize() const;
 		[[nodiscard]] const sail::image& getSailImage() const;
 	private:
-		void innerLoad(const std::u8string& filePath, const Config& config);
+		void innerLoad(std::u8string_view filePath, const Config& config);
 		Bitmap() = default;
 		sail::image image;
 		PixelFormat format;
@@ -228,6 +228,7 @@ namespace helix
 	class Image : public RenderResource
 	{
 	public:
+		static Ref<Image> load(std::u8string_view filePath);
 	private:
 		Ref<Texture2D> texture;
 	};

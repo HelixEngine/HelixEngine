@@ -51,21 +51,21 @@ void helix::Shader::setUsage(Usage usage)
 	this->usage = usage;
 }
 
-helix::Ref<helix::Bitmap> helix::Bitmap::load(const std::u8string& filePath, const Config& config)
+helix::Ref<helix::Bitmap> helix::Bitmap::load(std::u8string_view filePath, const Config& config)
 {
 	Ref bitmap = new Bitmap;
+	bitmap->setName(u8"Bitmap:" + std::u8string(filePath));
 	bitmap->innerLoad(filePath, config);
-	bitmap->notify();
 	return bitmap;
 }
 
-helix::Ref<helix::Bitmap> helix::Bitmap::loadAsync(const std::u8string& filePath, const Config& config)
+helix::Ref<helix::Bitmap> helix::Bitmap::loadAsync(std::u8string_view filePath, const Config& config)
 {
 	Ref bitmap = new Bitmap;
+	bitmap->setName(u8"Bitmap:" + std::u8string(filePath));
 	std::ignore = std::async(std::launch::async, [=]
 	{
 		bitmap->innerLoad(filePath, config);
-		bitmap->notify();
 	});
 	return bitmap;
 }
@@ -94,9 +94,8 @@ const sail::image& helix::Bitmap::getSailImage() const
 	return image;
 }
 
-void helix::Bitmap::innerLoad(const std::u8string& filePath, const Config& config)
+void helix::Bitmap::innerLoad(std::u8string_view filePath, const Config& config)
 {
-	setName(u8"Bitmap:" + filePath);
 	image.load(reinterpret_cast<const char*>(filePath.data()));
 	auto sailSrcFormat = image.pixel_format();
 	auto srcConvertInfo = formatConvert(sailSrcFormat);
@@ -113,6 +112,7 @@ void helix::Bitmap::innerLoad(const std::u8string& filePath, const Config& confi
 	if (srcConvertInfo.isNeedConvert)
 		imageConvertFormat(image, srcConvertInfo.dstFormat);
 	format = srcConvertInfo.srcFormat;
+	notify();
 }
 
 SailPixelFormat helix::Bitmap::formatConvert(const PixelFormat& format)
