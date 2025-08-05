@@ -103,27 +103,27 @@ void setup()
 	auto glRenderer = reinterpret_cast<opengl::Renderer*>(window->getRenderer().get());
 	auto glRenderer2 = reinterpret_cast<opengl::Renderer*>(window2->getRenderer().get());
 
-	// auto vertex = [&](helix::shader::Float2 aPos,
-	//                   const helix::shader::Float4& aColor,
-	//                   const helix::shader::Float2& aTexCoord)
-	// {
-	// 	using namespace helix::shader;
-	// 	position() = Float4(aPos->x, aPos->y, 0.f, 1.f);
-	// 	PixelInput pixelInput;
-	// 	pixelInput.vertexColor = aColor;
-	// 	pixelInput.TexCoord = aTexCoord;
-	// 	return pixelInput;
-	// };
-	//
-	// helix::shader::Texture2D<ktm::fvec4> ourTexture;
-	// helix::shader::Sampler ourTextureSampler;
-	// auto pixel = [&](PixelInput input)
-	// {
-	// 	using namespace helix::shader;
-	// 	Float4 color = ourTexture.sample(ourTextureSampler, input.TexCoord);
-	// 	Float4 finalColor = mix(mix(color, input.vertexColor, 0.5f), color, 0.2f);
-	// 	return finalColor;
-	// };
+	auto vertex = [&](helix::shader::Float2 aPos,
+	                  const helix::shader::Float4& aColor,
+	                  const helix::shader::Float2& aTexCoord)
+	{
+		using namespace helix::shader;
+		position() = Float4(aPos->x, aPos->y, 0.f, 1.f);
+		Aggregate<PixelInput> pixelInput;
+		pixelInput->vertexColor = aColor;
+		pixelInput->TexCoord = aTexCoord;
+		return pixelInput;
+	};
+
+	helix::shader::Texture2D<ktm::fvec4> ourTexture;
+	helix::shader::Sampler ourTextureSampler;
+	helix::shader::Float4 color;
+	auto pixel = [&](helix::shader::Aggregate<PixelInput> input)
+	{
+		using namespace helix::shader;
+		return mix(mix(ourTexture.sample(ourTextureSampler, input->TexCoord), input->vertexColor, 0.5f),
+		           color, 0.2f);
+	};
 
 	auto vertexCode =
 			u8R"(
