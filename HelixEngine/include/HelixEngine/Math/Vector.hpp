@@ -126,7 +126,7 @@ namespace helix
 
 		explicit operator KtmVec() const
 		{
-			return KtmVec(x, y, z);
+			return KtmVec(x, y, z, w);
 		}
 
 		template<typename OtherT>
@@ -323,9 +323,9 @@ namespace helix
 			return *reinterpret_cast<const Vector2E<T>*>(this);
 		}
 
-		Vector4T<T> vector4(T w = T{}) const
+		Vector4E<T> vector4(T w = T{}) const
 		{
-			return Vector4T<T>(x, y, z, w);
+			return Vector4E<T>(x, y, z, w);
 		}
 
 		bool operator==(const Vector3E& vec3) const = default;
@@ -544,3 +544,11 @@ namespace helix
 	template<typename T>
 	concept VectorType = IsVector<T>::value;
 }
+
+#include <Codegen/VariateProxy.h>
+
+template<helix::VectorType T>
+struct EmbeddedShader::base_type<T>
+{
+	using type = typename T::KtmVec;
+};
