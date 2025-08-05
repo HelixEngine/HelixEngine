@@ -1,0 +1,3 @@
+[submodule "HelixEngine/extern/Helicon"]
+	path = HelixEngine/extern/Helicon
+	url = https://github.com/CoronaEngine/Helicon.git
