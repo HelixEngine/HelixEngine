@@ -12,6 +12,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif ()
 add_subdirectory(HelixEngine/extern/glad)
 
+add_subdirectory(HelixEngine/extern/Helicon)
+
 #SDL3
 find_package(SDL3 CONFIG REQUIRED)
 #SAIL-C++
@@ -42,7 +44,7 @@ file(GLOB_RECURSE HELIX_ENGINE_SOURCES
 )
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3 glad SAIL::sail-c++ ${HELIX_UTIL_NAME})
+target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3 glad SAIL::sail-c++ Helicon ${HELIX_UTIL_NAME})
 
 #set(HELIX_VULKAN_BACKEND ON)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
