@@ -48,7 +48,8 @@ namespace helix
 		void setScissor(Scissor scissor) const;
 		void draw(uint32_t vertexCount) const;
 		void drawIndexed(uint32_t indexCount) const;
-		Ref<RenderPipeline> createRenderPipeline(auto&& vertex, auto&& pixel);
+		Ref<RenderPipeline> createRenderPipeline(auto&& vertex, auto&& pixel,
+		                                         std::source_location location = std::source_location::current());
 		[[nodiscard]] Ref<Image> loadImage(std::u8string_view filePath) const;
 		[[nodiscard]] GraphicsApi getGraphicsApi() const;
 	private:
@@ -78,11 +79,11 @@ namespace helix
 		virtual void renderThreadFunc(const std::stop_token& token) = 0;
 	};
 
-	Ref<RenderPipeline> Renderer::createRenderPipeline(auto&& vertex, auto&& pixel)
+	Ref<RenderPipeline> Renderer::createRenderPipeline(auto&& vertex, auto&& pixel, std::source_location location)
 	{
 		EmbeddedShader::RasterizedPipelineObject object = EmbeddedShader::RasterizedPipelineObject::compile(
 				std::forward<decltype(vertex)>(vertex),
-				std::forward<decltype(pixel)>(pixel));
+				std::forward<decltype(pixel)>(pixel), location);
 		RenderPipeline::Config config;
 		config.vertex = createNativeShader(Shader::Usage::Vertex, *object.vertex);
 		config.pixel = createNativeShader(Shader::Usage::Pixel, *object.fragment);

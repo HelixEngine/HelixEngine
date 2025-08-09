@@ -103,8 +103,8 @@ void setup()
 	auto glRenderer2 = reinterpret_cast<opengl::Renderer*>(window2->getRenderer().get());
 
 	auto vertex = [&](helix::shader::Float2 aPos,
-	                  const helix::shader::Float4& aColor,
-	                  const helix::shader::Float2& aTexCoord)
+	                  helix::shader::Float4 aColor,
+	                  helix::shader::Float2 aTexCoord)
 	{
 		using namespace helix::shader;
 		position() = Float4(aPos->x, aPos->y, 0.f, 1.f);
@@ -124,7 +124,7 @@ void setup()
 		           color, 0.2f);
 	};
 
-	auto edsl = glRenderer->createRenderPipeline(vertex, pixel);
+	//auto edsl = glRenderer->createRenderPipeline(vertex, pixel);
 
 	auto vertexCode =
 			u8R"(
