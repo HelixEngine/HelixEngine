@@ -48,6 +48,7 @@ namespace helix
 		void setScissor(Scissor scissor) const;
 		void draw(uint32_t vertexCount) const;
 		void drawIndexed(uint32_t indexCount) const;
+		Ref<RenderPipeline> createRenderPipeline(auto&& vertex, auto&& pixel);
 		[[nodiscard]] Ref<Image> loadImage(std::u8string_view filePath) const;
 		[[nodiscard]] GraphicsApi getGraphicsApi() const;
 	private:
@@ -61,6 +62,13 @@ namespace helix
 				MemoryBuffer::Usage usage, Ref<MemoryBlock> vertexData) const = 0;
 		[[nodiscard]] virtual Ref<Texture2D> createNativeTexture2D(Texture2D::BitmapConfig config) const = 0;
 		[[nodiscard]] virtual Ref<Sampler> createNativeSampler(const Sampler::Config& config) const = 0;
+		[[nodiscard]] virtual Ref<RenderPipeline> createNativeRenderPipeline(RenderPipeline::Config config) const = 0;
+
+		//cmd native
+		[[nodiscard]] virtual Ref<Shader> createNativeShader(
+				Shader::Usage usage,
+				const EmbeddedShader::ShaderCodeCompiler& compiler) = 0;
+
 		std::jthread renderThread;
 	private:
 		//Game run
@@ -69,4 +77,15 @@ namespace helix
 		virtual void readyRender() = 0;
 		virtual void renderThreadFunc(const std::stop_token& token) = 0;
 	};
+
+	Ref<RenderPipeline> Renderer::createRenderPipeline(auto&& vertex, auto&& pixel)
+	{
+		EmbeddedShader::RasterizedPipelineObject object = EmbeddedShader::RasterizedPipelineObject::compile(
+				std::forward<decltype(vertex)>(vertex),
+				std::forward<decltype(pixel)>(pixel));
+		RenderPipeline::Config config;
+		config.vertex = createNativeShader(Shader::Usage::Vertex, *object.vertex);
+		config.pixel = createNativeShader(Shader::Usage::Pixel, *object.fragment);
+		return createNativeRenderPipeline(std::move(config));;
+	}
 }

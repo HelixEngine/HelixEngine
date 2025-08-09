@@ -124,6 +124,8 @@ void setup()
 		           color, 0.2f);
 	};
 
+	auto edsl = glRenderer->createRenderPipeline(vertex, pixel);
+
 	auto vertexCode =
 			u8R"(
 #version 330 core

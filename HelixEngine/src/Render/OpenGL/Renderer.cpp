@@ -47,10 +47,17 @@ namespace helix::opengl
 		return shader;
 	}
 
-	Ref<opengl::RenderPipeline> Renderer::createNativeRenderPipeline()
+	Ref<helix::Shader> Renderer::createNativeShader(Shader::Usage usage,
+	                                                const EmbeddedShader::ShaderCodeCompiler& compiler)
 	{
-		Ref pipeline = new RenderPipeline;
-		return pipeline;
+		return createGLShader(
+				usage, reinterpret_cast<const char8_t*>(std::get<1>(
+						compiler.getShaderCode(EmbeddedShader::ShaderLanguage::GLSL).shaderCode).c_str()));
+	}
+
+	Ref<helix::RenderPipeline> Renderer::createNativeRenderPipeline(helix::RenderPipeline::Config config) const
+	{
+		return createGLRenderPipeline(std::move(config));
 	}
 
 	void Renderer::startRun()
@@ -606,7 +613,7 @@ namespace helix::opengl
 
 	Ref<opengl::RenderPipeline> Renderer::createGLRenderPipeline(RenderPipeline::Config config) const
 	{
-		auto renderPipeline = createNativeRenderPipeline();
+		Ref renderPipeline = new RenderPipeline;
 		CreateGLRenderPipelineCommand cmd;
 		cmd.type = RenderCommand::Type::CreateGLRenderPipeline;
 		cmd.config = std::move(config);
