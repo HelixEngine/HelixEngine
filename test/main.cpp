@@ -114,17 +114,16 @@ void setup()
 		return pixelInput;
 	};
 
-	helix::shader::Texture2D<ktm::fvec4> ourTexture;
-	helix::shader::Sampler ourTextureSampler;
+	helix::shader::Texture2D<ktm::fvec4> ourTexture = helix::shader::Sampler{};
 	helix::shader::Float4 color;
 	auto pixel = [&](helix::shader::Aggregate<PixelInput> input)
 	{
 		using namespace helix::shader;
-		return mix(mix(ourTexture.sample(ourTextureSampler, input->TexCoord), input->vertexColor, 0.5f),
+		return mix(mix(ourTexture.sample(input->TexCoord), input->vertexColor, 0.5f),
 		           color, 0.2f);
 	};
 
-	//auto edsl = glRenderer->createRenderPipeline(vertex, pixel);
+	auto edsl = glRenderer->createRenderPipeline(vertex, pixel);
 
 	auto vertexCode =
 			u8R"(
