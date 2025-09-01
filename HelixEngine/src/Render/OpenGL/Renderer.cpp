@@ -51,7 +51,7 @@ namespace helix::opengl
 	                                                const EmbeddedShader::ShaderCodeCompiler& compiler)
 	{
 		auto shaderCode = std::get<1>(
-				compiler.getShaderCode(EmbeddedShader::ShaderLanguage::GLSL, true).shaderCode);
+				compiler.getShaderCode(EmbeddedShader::ShaderLanguage::GLSL).shaderCode);
 		return createGLShader(
 				usage, reinterpret_cast<const char8_t*>(shaderCode.c_str()));
 	}
