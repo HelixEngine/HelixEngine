@@ -61,6 +61,15 @@ namespace helix::opengl
 		return createGLRenderPipeline(std::move(config));
 	}
 
+	EmbeddedShader::ShaderCodeCompiler::CompilerOption Renderer::getCompilerOption() const
+	{
+		EmbeddedShader::ShaderCodeCompiler::CompilerOption option;
+		option.compileDXBC = false;
+		option.compileDXIL = false;
+		option.compileHLSL = false;
+		return option;
+	}
+
 	void Renderer::startRun()
 	{
 		if (!isInitDebugOutput)

@@ -42,6 +42,8 @@ namespace helix::opengl
 
 		Ref<helix::RenderPipeline> createNativeRenderPipeline(helix::RenderPipeline::Config config) const override;
 
+		EmbeddedShader::ShaderCodeCompiler::CompilerOption getCompilerOption() const override;
+
 		//render thread//
 
 		void startRun() override;

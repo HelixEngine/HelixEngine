@@ -64,6 +64,7 @@ namespace helix
 		[[nodiscard]] virtual Ref<Texture2D> createNativeTexture2D(Texture2D::BitmapConfig config) const = 0;
 		[[nodiscard]] virtual Ref<Sampler> createNativeSampler(const Sampler::Config& config) const = 0;
 		[[nodiscard]] virtual Ref<RenderPipeline> createNativeRenderPipeline(RenderPipeline::Config config) const = 0;
+		[[nodiscard]] virtual EmbeddedShader::ShaderCodeCompiler::CompilerOption getCompilerOption() const = 0;
 
 		//cmd native
 		[[nodiscard]] virtual Ref<Shader> createNativeShader(
@@ -83,10 +84,10 @@ namespace helix
 	{
 		EmbeddedShader::RasterizedPipelineObject object = EmbeddedShader::RasterizedPipelineObject::compile(
 				std::forward<decltype(vertex)>(vertex),
-				std::forward<decltype(pixel)>(pixel), location);
+				std::forward<decltype(pixel)>(pixel), getCompilerOption(), location);
 		RenderPipeline::Config config;
 		config.vertex = createNativeShader(Shader::Usage::Vertex, *object.vertex);
 		config.pixel = createNativeShader(Shader::Usage::Pixel, *object.fragment);
-		return createNativeRenderPipeline(std::move(config));;
+		return createNativeRenderPipeline(std::move(config));
 	}
 }
