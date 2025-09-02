@@ -67,6 +67,7 @@ namespace helix::opengl
 		option.compileDXBC = false;
 		option.compileDXIL = false;
 		option.compileHLSL = false;
+		option.enableBindless = false;
 		return option;
 	}
 
