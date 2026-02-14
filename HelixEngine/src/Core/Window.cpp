@@ -1,4 +1,4 @@
-#include <HelixEngine/Core/Game.hpp>
+﻿#include <HelixEngine/Core/Game.hpp>
 #include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
 

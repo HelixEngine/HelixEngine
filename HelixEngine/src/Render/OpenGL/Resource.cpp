@@ -1,4 +1,4 @@
-#include <HelixEngine/Render/OpenGL/Resource.hpp>
+﻿#include <HelixEngine/Render/OpenGL/Resource.hpp>
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
 
 GLuint helix::opengl::MemoryBuffer::getGLBuffer() const

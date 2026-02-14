@@ -1,4 +1,4 @@
-#include <HelixEngine/Core/Window.hpp>
+﻿#include <HelixEngine/Core/Window.hpp>
 #include <HelixEngine/Render/Command/GeneralCommand.hpp>
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
 #include <HelixEngine/Render/OpenGL/Resource.hpp>
@@ -61,9 +61,9 @@ namespace helix::opengl
 		return createGLRenderPipeline(std::move(config));
 	}
 
-	EmbeddedShader::ShaderCodeCompiler::CompilerOption Renderer::getCompilerOption() const
+	EmbeddedShader::CompilerOption Renderer::getCompilerOption() const
 	{
-		EmbeddedShader::ShaderCodeCompiler::CompilerOption option;
+		EmbeddedShader::CompilerOption option;
 		option.compileDXBC = false;
 		option.compileDXIL = false;
 		option.compileHLSL = false;

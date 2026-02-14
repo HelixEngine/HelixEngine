@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(HelixEngine VERSION 0.1.0)
+include(CMake/fetch.cmake)
 
 MESSAGE(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 
@@ -13,12 +14,77 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif ()
 add_subdirectory(HelixEngine/extern/glad)
 
-add_subdirectory(HelixEngine/extern/Helicon)
+#add_subdirectory(HelixEngine/extern/Helicon)
+
+fetch_git_dependency(
+        NAME SDL3
+        GIT_REPO https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-3.4.0
+)
+
+fetch_git_dependency(
+        NAME SAIL
+        GIT_REPO https://github.com/HappySeaFox/sail.git
+        GIT_TAG v0.9.10
+)
+
+fetch_git_dependency(
+        NAME boostcore
+        GIT_REPO https://github.com/boostorg/core.git
+        GIT_TAG boost-1.90.0
+)
+
+fetch_git_dependency(
+        NAME boostconfig
+        GIT_REPO https://github.com/boostorg/config.git
+        GIT_TAG boost-1.90.0
+)
+
+fetch_git_dependency(
+        NAME boostassert
+        GIT_REPO https://github.com/boostorg/assert.git
+        GIT_TAG boost-1.90.0
+)
+
+fetch_git_dependency(
+        NAME boostcontainer_hash
+        GIT_REPO https://github.com/boostorg/container_hash.git
+        GIT_TAG boost-1.90.0
+)
+
+fetch_git_dependency(
+        NAME boostdescribe
+        GIT_REPO https://github.com/boostorg/describe.git
+        GIT_TAG boost-1.90.0
+)
+
+fetch_git_dependency(
+        NAME boostthrow_exception
+        GIT_REPO https://github.com/boostorg/throw_exception.git
+        GIT_TAG boost-1.90.0
+)
+
+fetch_git_dependency(
+        NAME boostmp11
+        GIT_REPO https://github.com/boostorg/mp11.git
+        GIT_TAG boost-1.90.0
+)
+
+fetch_git_dependency(
+        NAME Helicon
+        GIT_REPO https://github.com/CoronaEngine/Helicon.git
+)
+
+# 关键：添加生成的 config.h 目录到包含路径
+include_directories(
+        ${SAIL_BINARY_DIR}/include           # sail-common 子目录的父目录
+        ${SAIL_SOURCE_DIR}/src
+)
 
 #SDL3
-find_package(SDL3 CONFIG REQUIRED)
+#find_package(SDL3 CONFIG REQUIRED)
 #SAIL-C++
-find_package(SailC++ CONFIG REQUIRED)
+#find_package(SailC++ CONFIG REQUIRED)
 
 set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
 set(HELIX_UTIL_NAME HelixUtil)
@@ -45,7 +111,7 @@ file(GLOB_RECURSE HELIX_ENGINE_SOURCES
 )
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3 glad SAIL::sail-c++ Helicon ${HELIX_UTIL_NAME})
+target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3 glad sail-c++ Helicon ${HELIX_UTIL_NAME})
 
 #set(HELIX_VULKAN_BACKEND ON)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")

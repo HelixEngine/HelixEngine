@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <fstream>
 #include <functional>
 #include <HelixEngine/Util/Object.hpp>

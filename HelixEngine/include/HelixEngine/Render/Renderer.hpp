@@ -64,7 +64,7 @@ namespace helix
 		[[nodiscard]] virtual Ref<Texture2D> createNativeTexture2D(Texture2D::BitmapConfig config) const = 0;
 		[[nodiscard]] virtual Ref<Sampler> createNativeSampler(const Sampler::Config& config) const = 0;
 		[[nodiscard]] virtual Ref<RenderPipeline> createNativeRenderPipeline(RenderPipeline::Config config) const = 0;
-		[[nodiscard]] virtual EmbeddedShader::ShaderCodeCompiler::CompilerOption getCompilerOption() const = 0;
+		[[nodiscard]] virtual EmbeddedShader::CompilerOption getCompilerOption() const = 0;
 
 		//cmd native
 		[[nodiscard]] virtual Ref<Shader> createNativeShader(
