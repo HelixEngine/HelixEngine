@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
 project(HelixEngine VERSION 0.1.0)
 include(CMake/fetch.cmake)
 
@@ -20,6 +20,25 @@ fetch_git_dependency(
         NAME SDL3
         GIT_REPO https://github.com/libsdl-org/SDL.git
         GIT_TAG release-3.4.0
+)
+
+fetch_git_dependency(
+        NAME zlib
+        GIT_REPO https://github.com/madler/zlib.git
+        GIT_TAG v1.3.1
+)
+
+fetch_git_dependency(
+        NAME OpenJPEG
+        GIT_REPO https://github.com/uclouvain/openjpeg.git
+        GIT_TAG v2.5.4
+)
+
+
+fetch_git_dependency(
+        NAME libpng
+        GIT_REPO https://github.com/pnggroup/libpng.git
+        GIT_TAG v1.6.55
 )
 
 fetch_git_dependency(
@@ -78,7 +97,6 @@ fetch_git_dependency(
 # 关键：添加生成的 config.h 目录到包含路径
 include_directories(
         ${SAIL_BINARY_DIR}/include           # sail-common 子目录的父目录
-        ${SAIL_SOURCE_DIR}/src
 )
 
 #SDL3
