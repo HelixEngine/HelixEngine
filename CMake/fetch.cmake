@@ -3,6 +3,11 @@ include(FetchContent)
 # 全局选项
 option(FORCE_REBUILD_DEPS "Force rebuild all dependencies" OFF)
 
+# 设置 FetchContent 基础目录
+if(NOT DEFINED FETCHCONTENT_BASE_DIR)
+    set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/_deps")
+endif()
+
 function(fetch_git_dependency)
     set(options "")
     set(oneValueArgs
@@ -13,15 +18,15 @@ function(fetch_git_dependency)
             SSH_URL
             HTTPS_URL
             ARCHIVE_URL
+            SOURCE_DIR
+            BINARY_DIR
     )
     cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "" ${ARGN})
 
-    # 参数校验
     if(NOT ARG_NAME)
         message(FATAL_ERROR "fetch_git_dependency: NAME is required")
     endif()
 
-    # 转换为小写（FetchContent 内部使用小写）
     string(TOLOWER "${ARG_NAME}" LOWER_NAME)
 
     # 处理 GIT_TAG / GIT_BRANCH
@@ -36,6 +41,19 @@ function(fetch_git_dependency)
         set(USE_DEFAULT_BRANCH FALSE)
     endif()
 
+    # 确定目录
+    if(ARG_SOURCE_DIR)
+        set(FINAL_SOURCE_DIR "${ARG_SOURCE_DIR}")
+    else()
+        set(FINAL_SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/${LOWER_NAME}-src")
+    endif()
+
+    if(ARG_BINARY_DIR)
+        set(FINAL_BINARY_DIR "${ARG_BINARY_DIR}")
+    else()
+        set(FINAL_BINARY_DIR "${FETCHCONTENT_BASE_DIR}/${LOWER_NAME}-build")
+    endif()
+
     # 生成 URL
     if(ARG_GIT_REPO)
         string(REGEX REPLACE "^https?://github\\.com/" "" REPO_PATH ${ARG_GIT_REPO})
@@ -46,21 +64,21 @@ function(fetch_git_dependency)
             set(ARG_SSH_URL "git@github.com:${REPO_PATH}.git")
         endif()
         if(NOT ARG_HTTPS_URL)
+            # 修复：移除 URL 中的空格
             set(ARG_HTTPS_URL "https://github.com/${REPO_PATH}.git")
         endif()
         if(NOT USE_DEFAULT_BRANCH AND NOT ARG_ARCHIVE_URL)
+            # 修复：移除 URL 中的空格
             set(ARG_ARCHIVE_URL "https://github.com/${REPO_PATH}/archive/refs/tags/${ARG_GIT_TAG}.tar.gz")
         endif()
     endif()
 
-    # 检查是否已存在（缓存）
-    if(NOT FORCE_REBUILD_DEPS)
-        FetchContent_GetProperties(${LOWER_NAME})
-        if(${LOWER_NAME}_POPULATED)
-            message(STATUS "${ARG_NAME}: Already populated at ${${LOWER_NAME}_SOURCE_DIR}, skipping")
-            return()
-        endif()
-    endif()
+    # 准备目录
+    file(MAKE_DIRECTORY "${FINAL_SOURCE_DIR}")
+    file(MAKE_DIRECTORY "${FINAL_BINARY_DIR}")
+
+    set(FETCHCONTENT_SOURCE_DIR_${LOWER_NAME} "${FINAL_SOURCE_DIR}" CACHE INTERNAL "" FORCE)
+    set(FETCHCONTENT_BINARY_DIR_${LOWER_NAME} "${FINAL_BINARY_DIR}" CACHE INTERNAL "" FORCE)
 
     # 检测 SSH
     set(TRY_SSH TRUE)
@@ -82,38 +100,12 @@ function(fetch_git_dependency)
         endif()
     endif()
 
-    # 设置不自动更新
     set(FETCHCONTENT_UPDATES_DISCONNECTED_${LOWER_NAME} ON)
 
-    # 检查成功宏（同时检查大小写）
-    macro(check_success result_var)
-        FetchContent_GetProperties(${ARG_NAME})
-        set(UPPER_POPULATED FALSE)
-        set(LOWER_POPULATED FALSE)
-
-        if(DEFINED ${ARG_NAME}_POPULATED)
-            set(UPPER_POPULATED ${${ARG_NAME}_POPULATED})
-        endif()
-        if(DEFINED ${LOWER_NAME}_POPULATED)
-            set(LOWER_POPULATED ${${LOWER_NAME}_POPULATED})
-        endif()
-
-        if(UPPER_POPULATED OR LOWER_POPULATED)
-            set(${result_var} TRUE)
-        else()
-            set(${result_var} FALSE)
-        endif()
-    endmacro()
-
-    # 尝试获取宏
     macro(try_fetch source_type)
         message(STATUS "${ARG_NAME}: Trying ${source_type}...")
         FetchContent_MakeAvailable(${ARG_NAME})
-        check_success(SUCCESS)
-        if(SUCCESS)
-            message(STATUS "${ARG_NAME}: Successfully fetched via ${source_type}")
-            return()
-        endif()
+        message(STATUS "${ARG_NAME}: Successfully fetched via ${source_type}")
     endmacro()
 
     # 策略 1: SSH
@@ -124,8 +116,13 @@ function(fetch_git_dependency)
                 GIT_TAG ${ARG_GIT_TAG}
                 GIT_SHALLOW TRUE
                 GIT_PROGRESS TRUE
+                SOURCE_DIR "${FINAL_SOURCE_DIR}"
+                BINARY_DIR "${FINAL_BINARY_DIR}"
+                OVERRIDE_FIND_PACKAGE
+                EXCLUDE_FROM_ALL
         )
         try_fetch("SSH")
+        return()
     endif()
 
     # 策略 2: HTTPS
@@ -136,8 +133,13 @@ function(fetch_git_dependency)
                 GIT_TAG ${ARG_GIT_TAG}
                 GIT_SHALLOW TRUE
                 GIT_PROGRESS TRUE
+                SOURCE_DIR "${FINAL_SOURCE_DIR}"
+                BINARY_DIR "${FINAL_BINARY_DIR}"
+                OVERRIDE_FIND_PACKAGE
+                EXCLUDE_FROM_ALL
         )
         try_fetch("HTTPS")
+        return()
     endif()
 
     # 策略 3: Archive
@@ -146,8 +148,13 @@ function(fetch_git_dependency)
                 ${ARG_NAME}
                 URL ${ARG_ARCHIVE_URL}
                 DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+                SOURCE_DIR "${FINAL_SOURCE_DIR}"
+                BINARY_DIR "${FINAL_BINARY_DIR}"
+                OVERRIDE_FIND_PACKAGE
+                EXCLUDE_FROM_ALL
         )
         try_fetch("Archive")
+        return()
     endif()
 
     message(FATAL_ERROR "${ARG_NAME}: Failed to fetch from all available sources")

@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.28)
 project(HelixEngine VERSION 0.1.0)
 include(CMake/fetch.cmake)
+include(CMake/PackageDependency.cmake)
 
-MESSAGE(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+#MESSAGE(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,31 +20,61 @@ add_subdirectory(HelixEngine/extern/glad)
 
 #add_subdirectory(HelixEngine/extern/Helicon)
 
-fetch_git_dependency(
-        NAME SDL3
+installPackage(
+        SDL3
         GIT_REPO https://github.com/libsdl-org/SDL.git
         GIT_TAG release-3.4.0
 )
+find_package(SDL3 REQUIRED)
 
+#fetch_git_dependency(
+#        NAME SDL3
+#        GIT_REPO https://github.com/libsdl-org/SDL.git
+#        GIT_TAG release-3.4.0
+#)
+
+set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 fetch_git_dependency(
         NAME zlib
         GIT_REPO https://github.com/madler/zlib.git
         GIT_TAG v1.3.1
 )
 
-fetch_git_dependency(
-        NAME OpenJPEG
-        GIT_REPO https://github.com/uclouvain/openjpeg.git
-        GIT_TAG v2.5.4
-)
+# 确保 ZLIB::ZLIB 存在
+if(NOT TARGET ZLIB::ZLIB)
+    if(TARGET zlibstatic)
+        add_library(ZLIB::ZLIB ALIAS zlibstatic)
+    elseif(TARGET zlib)
+        add_library(ZLIB::ZLIB ALIAS zlib)
+    endif()
+endif()
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
+#fetch_git_dependency(
+#        NAME OpenJPEG
+#        GIT_REPO https://github.com/uclouvain/openjpeg.git
+#        GIT_TAG v2.5.4
+#)
+#FetchContent_GetProperties(OpenJPEG)
+#include_directories(${openjpeg_SOURCE_DIR}/src/lib/openjp2)
+#include_directories(${openjpeg_BINARY_DIR}/src/lib/openjp2)
 
+#libjpeg-turbo
+add_subdirectory(HelixEngine/extern/libjpeg-turbo)
+
+set(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE)
 fetch_git_dependency(
-        NAME libpng
+        NAME PNG
         GIT_REPO https://github.com/pnggroup/libpng.git
         GIT_TAG v1.6.55
 )
+set(SKIP_INSTALL_ALL OFF CACHE BOOL "" FORCE)
+FetchContent_GetProperties(PNG)
+include_directories(${png_SOURCE_DIR})
+include_directories(${png_BINARY_DIR})
 
+
+set(SAIL_ENABLE_CODECS "png;jpeg" CACHE STRING "" FORCE)
 fetch_git_dependency(
         NAME SAIL
         GIT_REPO https://github.com/HappySeaFox/sail.git
@@ -93,14 +127,10 @@ fetch_git_dependency(
         NAME Helicon
         GIT_REPO https://github.com/CoronaEngine/Helicon.git
 )
-
-# 关键：添加生成的 config.h 目录到包含路径
 include_directories(
-        ${SAIL_BINARY_DIR}/include           # sail-common 子目录的父目录
+        ${SAIL_BINARY_DIR}/include
 )
 
-#SDL3
-#find_package(SDL3 CONFIG REQUIRED)
 #SAIL-C++
 #find_package(SailC++ CONFIG REQUIRED)
 
@@ -129,7 +159,7 @@ file(GLOB_RECURSE HELIX_ENGINE_SOURCES
 )
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3 glad sail-c++ Helicon ${HELIX_UTIL_NAME})
+target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3 glad png_static sail-c++ Helicon ${HELIX_UTIL_NAME})
 
 #set(HELIX_VULKAN_BACKEND ON)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
