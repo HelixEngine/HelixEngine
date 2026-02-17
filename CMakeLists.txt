@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
 project(HelixEngine VERSION 0.1.0)
-include(CMake/fetch.cmake)
 include(CMake/PackageDependency.cmake)
 
 #MESSAGE(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
@@ -18,8 +17,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif ()
 add_subdirectory(HelixEngine/extern/glad)
 
-#add_subdirectory(HelixEngine/extern/Helicon)
-
 installPackage(
         SDL3
         GIT_REPO https://github.com/libsdl-org/SDL.git
@@ -27,112 +24,101 @@ installPackage(
 )
 find_package(SDL3 REQUIRED)
 
-#fetch_git_dependency(
-#        NAME SDL3
-#        GIT_REPO https://github.com/libsdl-org/SDL.git
-#        GIT_TAG release-3.4.0
-#)
-
-set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
-fetch_git_dependency(
-        NAME zlib
+installPackage(
+        zlib
         GIT_REPO https://github.com/madler/zlib.git
         GIT_TAG v1.3.1
 )
+find_package(ZLIB REQUIRED)
 
-# 确保 ZLIB::ZLIB 存在
-if(NOT TARGET ZLIB::ZLIB)
-    if(TARGET zlibstatic)
-        add_library(ZLIB::ZLIB ALIAS zlibstatic)
-    elseif(TARGET zlib)
-        add_library(ZLIB::ZLIB ALIAS zlib)
-    endif()
-endif()
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+installPackage(
+        OpenJPEG
+        GIT_REPO https://github.com/uclouvain/openjpeg.git
+        GIT_TAG v2.5.4
+)
+find_package(OpenJPEG REQUIRED)
 
-#fetch_git_dependency(
-#        NAME OpenJPEG
-#        GIT_REPO https://github.com/uclouvain/openjpeg.git
-#        GIT_TAG v2.5.4
-#)
-#FetchContent_GetProperties(OpenJPEG)
-#include_directories(${openjpeg_SOURCE_DIR}/src/lib/openjp2)
-#include_directories(${openjpeg_BINARY_DIR}/src/lib/openjp2)
+installPackage(
+        libjpeg_turbo
+        GIT_REPO https://github.com/libjpeg-turbo/libjpeg-turbo.git
+        GIT_TAG 3.1.3
+)
+find_package(libjpeg-turbo REQUIRED)
+find_package(JPEG REQUIRED)
 
-#libjpeg-turbo
-add_subdirectory(HelixEngine/extern/libjpeg-turbo)
-
-set(SKIP_INSTALL_ALL ON CACHE BOOL "" FORCE)
-fetch_git_dependency(
-        NAME PNG
+installPackage(
+        libpng
         GIT_REPO https://github.com/pnggroup/libpng.git
         GIT_TAG v1.6.55
 )
-set(SKIP_INSTALL_ALL OFF CACHE BOOL "" FORCE)
-FetchContent_GetProperties(PNG)
-include_directories(${png_SOURCE_DIR})
-include_directories(${png_BINARY_DIR})
+find_package(PNG REQUIRED)
 
-
-set(SAIL_ENABLE_CODECS "png;jpeg" CACHE STRING "" FORCE)
-fetch_git_dependency(
-        NAME SAIL
+installPackage(
+        sail
         GIT_REPO https://github.com/HappySeaFox/sail.git
         GIT_TAG v0.9.10
+        CMAKE_ARGS
+            -DSAIL_COMBINE_CODECS=ON
+            -DSAIL_BUILD_APPS=OFF
+            -DSAIL_BUILD_EXAMPLES=OFF
 )
+find_package(SailC++ REQUIRED)
 
-fetch_git_dependency(
-        NAME boostcore
+installPackage(
+        boostcore
         GIT_REPO https://github.com/boostorg/core.git
         GIT_TAG boost-1.90.0
+        AS_SUBDIRECTORY
 )
 
-fetch_git_dependency(
-        NAME boostconfig
+installPackage(
+        boostconfig
         GIT_REPO https://github.com/boostorg/config.git
         GIT_TAG boost-1.90.0
+        AS_SUBDIRECTORY
 )
 
-fetch_git_dependency(
-        NAME boostassert
+installPackage(
+        boostassert
         GIT_REPO https://github.com/boostorg/assert.git
         GIT_TAG boost-1.90.0
+        AS_SUBDIRECTORY
 )
 
-fetch_git_dependency(
-        NAME boostcontainer_hash
+installPackage(
+        boostcontainer_hash
         GIT_REPO https://github.com/boostorg/container_hash.git
         GIT_TAG boost-1.90.0
+        AS_SUBDIRECTORY
 )
 
-fetch_git_dependency(
-        NAME boostdescribe
+installPackage(
+        boostdescribe
         GIT_REPO https://github.com/boostorg/describe.git
         GIT_TAG boost-1.90.0
+        AS_SUBDIRECTORY
 )
 
-fetch_git_dependency(
-        NAME boostthrow_exception
+installPackage(
+        boostthrow_exception
         GIT_REPO https://github.com/boostorg/throw_exception.git
         GIT_TAG boost-1.90.0
+        AS_SUBDIRECTORY
 )
 
-fetch_git_dependency(
-        NAME boostmp11
+installPackage(
+        boostmp11
         GIT_REPO https://github.com/boostorg/mp11.git
         GIT_TAG boost-1.90.0
+        AS_SUBDIRECTORY
 )
 
-fetch_git_dependency(
-        NAME Helicon
+installPackage(
+        Helicon
         GIT_REPO https://github.com/CoronaEngine/Helicon.git
+        GIT_BRANCH main
+        AS_SUBDIRECTORY
 )
-include_directories(
-        ${SAIL_BINARY_DIR}/include
-)
-
-#SAIL-C++
-#find_package(SailC++ CONFIG REQUIRED)
 
 set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
 set(HELIX_UTIL_NAME HelixUtil)
@@ -159,7 +145,14 @@ file(GLOB_RECURSE HELIX_ENGINE_SOURCES
 )
 add_library(${PROJECT_NAME} STATIC ${HELIX_ENGINE_SOURCES} ${HELIX_ENGINE_INCLUDE})
 target_include_directories(${PROJECT_NAME} PUBLIC HelixEngine/include "HelixEngine/extern/ktm/include")
-target_link_libraries(${PROJECT_NAME} PUBLIC SDL3::SDL3 glad png_static sail-c++ Helicon ${HELIX_UTIL_NAME})
+target_link_libraries(${PROJECT_NAME} PUBLIC
+        SDL3::SDL3 # Media Libraries
+        glad # Render Libraries
+        SAIL::sail-c++ # C++ Image Processing Library
+        openjp2 libjpeg-turbo::jpeg PNG::PNG # SAIL codecs
+        Helicon # Embedded Shader Library
+        ${HELIX_UTIL_NAME} # Util For HelixEngine
+)
 
 #set(HELIX_VULKAN_BACKEND ON)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -177,4 +170,6 @@ endif ()
 if (HELIX_ENGINE_TEST)
     add_executable(HelixEngineTest test/main.cpp)
     target_link_libraries(HelixEngineTest PRIVATE ${PROJECT_NAME})
+    deplyPackageRuntime(HelixEngineTest)
+    helicon_install_runtime_deps(HelixEngineTest)
 endif ()

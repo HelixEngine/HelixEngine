@@ -1,0 +1,15 @@
+include(@PACKAGE_DEPENDENCY_CMAKE@)
+
+set(file "${TARGET_FILE}")
+set(dumpbin_executable "@DUMPBIN_EXECUTABLE@")
+set(deps_file_dst @DEPS_FILE_DIR@)
+set(copy_dst "${COPY_DST}")
+set(search_paths "@CMAKE_PREFIX_PATH@" "@SUBDIRECTORY_PACKAGE@" ${CMAKE_SYSTEM_PREFIX_PATH} ${CMAKE_PREFIX_PATH})
+
+_copy_all_dependencies(
+    ${file}
+    ${dumpbin_executable}
+    ${deps_file_dst}
+    ${copy_dst}
+    "${search_paths}"
+)

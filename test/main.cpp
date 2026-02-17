@@ -193,7 +193,7 @@ void main()
 	renderNode2->vertexArray = vao2;
 	renderNode2->uniformBuffer = uniformBuffer2;
 
-	auto image = glRenderer->loadImage(u8"D:/b.jpg");
+	auto image = glRenderer->loadImage(u8"C:/Users/Administrator/b.jpg");
 	auto texture2d = image->getTexture2D();
 	auto sampler = glRenderer->createSampler();
 
