@@ -54,8 +54,16 @@ void helix::Game::setStartCallback(StartCallback callback)
 
 extern void setup();
 
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
 int main()
 {
+#ifdef WIN32
+	SetConsoleOutputCP(CP_UTF8);
+#endif
+
 	setup();
 	return helix::Game::run();
 }
