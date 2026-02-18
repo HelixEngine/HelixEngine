@@ -25,6 +25,7 @@ namespace helix
 		friend class CommandQueue;
 	public:
 		using StartCallback = std::function<void()>;
+		static void init();
 		static int run();
 		static bool isQuit();
 		static void setStartCallback(StartCallback callback);

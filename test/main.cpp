@@ -120,7 +120,7 @@ void setup()
 	auto pixel = [&](helix::shader::Aggregate<PixelInput> input)
 	{
 		using namespace helix::shader;
-		return mix(mix(ourTexture.sample(sampler2d,input->TexCoord), input->vertexColor, 0.5f),
+		return mix(mix(ourTexture.sample(sampler2d, input->TexCoord), input->vertexColor, 0.5f),
 		           color, 0.2f);
 	};
 
@@ -193,7 +193,7 @@ void main()
 	renderNode2->vertexArray = vao2;
 	renderNode2->uniformBuffer = uniformBuffer2;
 
-	auto image = glRenderer->loadImage(u8"C:/Users/Administrator/b.jpg");
+	auto image = glRenderer->loadImage(u8"./Resource/awesomeface.png");
 	auto texture2d = image->getTexture2D();
 	auto sampler = glRenderer->createSampler();
 

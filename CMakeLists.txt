@@ -3,9 +3,9 @@ project(HelixEngine VERSION 0.1.0)
 include(CMake/PackageDependency.cmake)
 
 #MESSAGE(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
-if(MSVC)
+if (MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-endif()
+endif ()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -58,9 +58,9 @@ installPackage(
         GIT_REPO https://github.com/HappySeaFox/sail.git
         GIT_TAG v0.9.10
         CMAKE_ARGS
-            -DSAIL_COMBINE_CODECS=ON
-            -DSAIL_BUILD_APPS=OFF
-            -DSAIL_BUILD_EXAMPLES=OFF
+        -DSAIL_COMBINE_CODECS=ON
+        -DSAIL_BUILD_APPS=OFF
+        -DSAIL_BUILD_EXAMPLES=OFF
 )
 find_package(SailC++ REQUIRED)
 
@@ -172,4 +172,11 @@ if (HELIX_ENGINE_TEST)
     target_link_libraries(HelixEngineTest PRIVATE ${PROJECT_NAME})
     deplyPackageRuntime(HelixEngineTest)
     helicon_install_runtime_deps(HelixEngineTest)
+
+    add_custom_command(
+            TARGET HelixEngineTest POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+            ${CMAKE_CURRENT_SOURCE_DIR}/test/Resource
+            $<TARGET_FILE_DIR:HelixEngineTest>/Resource
+    )
 endif ()

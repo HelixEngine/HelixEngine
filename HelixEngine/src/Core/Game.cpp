@@ -2,10 +2,20 @@
 #include <HelixEngine/Core/Window.hpp>
 #include <SDL3/SDL.h>
 
+#ifdef WIN32
+#include <Windows.h>
+#endif
+
+void helix::Game::init()
+{
+#ifdef WIN32
+	SetConsoleOutputCP(CP_UTF8);
+#endif
+	Window::SDLInit();
+}
+
 int helix::Game::run()
 {
-	Window::SDLInit();
-
 	Window::startRun();
 
 	if (startCallback.has_value())
@@ -54,16 +64,9 @@ void helix::Game::setStartCallback(StartCallback callback)
 
 extern void setup();
 
-#ifdef WIN32
-#include <Windows.h>
-#endif
-
 int main()
 {
-#ifdef WIN32
-	SetConsoleOutputCP(CP_UTF8);
-#endif
-
+	helix::Game::init();
 	setup();
 	return helix::Game::run();
 }
