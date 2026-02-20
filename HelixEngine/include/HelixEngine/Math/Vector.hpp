@@ -84,6 +84,8 @@ namespace helix
 	{
 	public:
 		using KtmVec = ktm::vec<4, T>;
+		using ValueType = T;
+		constexpr static size_t dimension = 4;
 		T x{};
 		T y{};
 		T z{};
@@ -171,6 +173,8 @@ namespace helix
 	class Vector4E
 	{
 	public:
+		using ValueType = T;
+		constexpr static size_t dimension = 4;
 		T x{};
 		T y{};
 		T z{};
@@ -217,6 +221,8 @@ namespace helix
 	{
 	public:
 		using KtmVec = ktm::vec<3, T>;
+		using ValueType = T;
+		constexpr static size_t dimension = 3;
 		T x{};
 		T y{};
 		T z{};
@@ -297,6 +303,8 @@ namespace helix
 	class Vector3E
 	{
 	public:
+		using ValueType = T;
+		constexpr static size_t dimension = 3;
 		T x{};
 		T y{};
 		T z{};
@@ -336,6 +344,8 @@ namespace helix
 	{
 	public:
 		using KtmVec = ktm::vec<2, T>;
+		using ValueType = T;
+		constexpr static size_t dimension = 2;
 		T x{};
 		T y{};
 
@@ -410,6 +420,8 @@ namespace helix
 	class Vector2E
 	{
 	public:
+		using ValueType = T;
+		constexpr static size_t dimension = 2;
 		T x{};
 		T y{};
 
@@ -544,11 +556,3 @@ namespace helix
 	template<typename T>
 	concept VectorType = IsVector<T>::value;
 }
-
-#include <Codegen/VariateProxy.h>
-
-template<helix::VectorType T>
-struct EmbeddedShader::base_type<T>
-{
-	using type = typename T::KtmVec;
-};
