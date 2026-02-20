@@ -37,9 +37,6 @@ namespace helix
 
 		allWindows.emplace_back(this);
 
-		if (property.isDisplay)
-			show();
-
 		//设置渲染器
 		switch (property.graphicsApi)
 		{
@@ -188,6 +185,11 @@ namespace helix
 			{
 				renderer->renderThreadFunc(token);
 			});
+
+			if (window->isDisplay())
+				window->show();
+			else
+				window->hide();
 		}
 	}
 
