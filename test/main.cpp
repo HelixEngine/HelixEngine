@@ -58,12 +58,6 @@ void setup()
 	Ref scene2 = new Scene2D;
 	window2->enter(scene2);
 
-	Ref renderNode = new RenderNode;
-	scene->addChild(renderNode);
-
-	Ref renderNode2 = new RenderNode;
-	scene2->addChild(renderNode2);
-
 	struct VertexData
 	{
 		Vector2F position;
@@ -185,6 +179,9 @@ void main()
 	auto vao = glRenderer->createGLVertexArray(vaConfig);
 	auto vao2 = glRenderer2->createGLVertexArray(vaConfig);
 
+	Ref renderNode = new RenderNode;
+	Ref renderNode2 = new RenderNode;
+
 	renderNode->pipeline = pipeline;
 	renderNode->vertexArray = vao;
 	renderNode->uniformBuffer = uniformBuffer;
@@ -203,10 +200,10 @@ void main()
 	renderNode->sampler = sampler;
 	renderNode2->sampler = sampler;
 
-	Game::setStartCallback([=]
-	{
-		texture2d->usable();
-		window->setSize(texture2d->getSize());
-		window2->setSize(texture2d->getSize());
-	});
+	texture2d->usable();
+	window->setSize(texture2d->getSize());
+	window2->setSize(texture2d->getSize());
+
+	scene->addChild(renderNode);
+	scene2->addChild(renderNode2);
 }

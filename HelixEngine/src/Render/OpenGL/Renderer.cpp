@@ -75,12 +75,13 @@ namespace helix::opengl
 	{
 		if (!isInitDebugOutput)
 			glad_set_post_callback(gladDebugOutput);
-		sdlContext->context = createSDLContext();
+		createSDLContext();
 		makeCurrentContext(nullptr);
 	}
 
-	SDL_GLContext Renderer::createSDLContext() const
+	void Renderer::createSDLContext() const
 	{
+		Renderer* sharedContextRenderer = nullptr;
 		for (const auto& window: Window::getAllWindows())
 		{
 			if (getWindow() == window)
@@ -90,29 +91,43 @@ namespace helix::opengl
 				auto glRenderer = reinterpret_cast<Renderer*>(window->getRenderer().get());
 				if (!glRenderer->sdlContext)
 					continue;
-				SDL_GL_MakeCurrent(window->getSDLWindow(), glRenderer->sdlContext->context);
+				sharedContextRenderer = glRenderer;
 				break;
 			}
 		}
+
+		if (sharedContextRenderer)
+		{
+			sharedContextRenderer->releaseContext = true;
+			sharedContextRenderer->resumeContext = false;
+			sharedContextRenderer->releaseContext.wait(true);
+			sharedContextRenderer->makeCurrentContext(sharedContextRenderer->sdlContext->context);
+		}
+
 		if (!SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1))
 			Window::sdlError(u8"OpenGL Renderer: 设置OpenGL共享上下文失败");
 		auto ctx = SDL_GL_CreateContext(getWindow()->getSDLWindow());
+		makeCurrentContext(nullptr);
+
+		if (sharedContextRenderer)
+		{
+			sharedContextRenderer->makeCurrentContext(nullptr);
+			sharedContextRenderer->resumeContext = true;
+			sharedContextRenderer->resumeContext.notify_one();
+		}
+
 		if (ctx == nullptr)
 			Window::sdlError(u8"OpenGL Renderer: 创建OpenGL上下文失败");
-		return ctx;
+		sdlContext->context = ctx;
 	}
 
 	void Renderer::makeCurrentContext(SDL_GLContext context) const
 	{
-		if (!SDL_GL_MakeCurrent(getWindow()->getSDLWindow(), context))
+		SDL_Window* window = nullptr;
+		if (context)
+			window = getWindow()->getSDLWindow();
+		if (!SDL_GL_MakeCurrent(window, context))
 			Window::sdlError(u8"OpenGL Renderer: 设置OpenGL上下文失败");
-	}
-
-	SDL_GLContext Renderer::createCurrentSDLContext() const
-	{
-		auto context = createSDLContext();
-		makeCurrentContext(context);
-		return context;
 	}
 
 	void Renderer::renderProc(const RenderQueue::ListRef& list)
@@ -676,19 +691,12 @@ namespace helix::opengl
 		getRenderQueue()->addCommand<DestroyGLShaderCommand>(std::move(cmd));
 	}
 
-	void Renderer::readyRender()
+	void Renderer::renderThreadFunc(const std::stop_token& token)
 	{
 		makeCurrentContext(sdlContext->context);
 		glInitMtx.lock();
 		gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress));
 		glInitMtx.unlock();
-	}
-
-	std::mutex sharedResourceMtx;
-
-	void Renderer::renderThreadFunc(const std::stop_token& token)
-	{
-		makeCurrentContext(sdlContext->context);
 		SDL_GL_SetSwapInterval(0);
 		Duration time;
 		size_t fps = 0;
@@ -705,6 +713,17 @@ namespace helix::opengl
 				Logger::info(u8"FPS: ", fps);
 				time -= 1s;
 				fps = 0;
+			}
+
+			//Release Context
+			if (releaseContext)
+			{
+				glFinish();
+				makeCurrentContext(nullptr);
+				releaseContext = false;
+				releaseContext.notify_one();
+				resumeContext.wait(false);
+				makeCurrentContext(sdlContext->context);
 			}
 		}
 	}

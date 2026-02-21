@@ -16,7 +16,7 @@ void helix::Game::init()
 
 int helix::Game::run()
 {
-	Window::startRun();
+	//Window::startRun();
 
 	if (startCallback.has_value())
 	{

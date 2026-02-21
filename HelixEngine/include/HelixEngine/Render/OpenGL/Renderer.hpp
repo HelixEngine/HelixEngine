@@ -53,15 +53,16 @@ namespace helix::opengl
 		RenderCommand* renderCmd{};
 
 		Ref<SDLOpenGLContext> sdlContext = new SDLOpenGLContext;
+		std::atomic_bool releaseContext = false;
+		std::atomic_bool resumeContext = true;
 
 		//Command Status
 		PrimitiveTopology primitiveTopology = PrimitiveTopology::TriangleList;
 		Ref<RenderPipeline> renderPipeline;
 		IndexAttribute indexAttribute;
 
-		[[nodiscard]] SDL_GLContext createSDLContext() const;
+		void createSDLContext() const;
 		void makeCurrentContext(SDL_GLContext context) const;
-		[[nodiscard]] SDL_GLContext createCurrentSDLContext() const;
 
 		void renderProc(const RenderQueue::ListRef& list);
 		void beginProc() const;
@@ -99,8 +100,6 @@ namespace helix::opengl
 		void setGLTexture2DUnit(Texture2DUnit unit) const;
 	private:
 		void destroyGLShader(const Shader* shader) const;
-
-		void readyRender() override;
 
 		void renderThreadFunc(const std::stop_token& token) override;
 

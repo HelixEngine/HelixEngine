@@ -52,6 +52,26 @@ namespace helix
 
 		renderer->window = this;
 		graphicsApi = property.graphicsApi;
+
+		if (graphicsApi == GraphicsApi::OpenGL)
+		{
+			//创建 OpenGL 上下文
+			auto glRenderer = reinterpret_cast<opengl::Renderer*>(renderer.get());
+			glRenderer->createSDLContext();
+		}
+
+		updateThread = std::jthread{[this](const std::stop_token& token)
+		{
+			updateThreadFunc(token);
+		}};
+
+		renderer->renderThread = std::jthread([this](const std::stop_token& token)
+		{
+			renderer->renderThreadFunc(token);
+		});
+
+		if (isDisplay())
+			show();
 	}
 
 	Window::~Window()
@@ -167,16 +187,16 @@ namespace helix
 			window->renderer->startRun();
 		}
 
-		std::vector<std::thread> readyThreads(Window::allWindows.size());
-		for (size_t i = 0; i < readyThreads.size(); ++i)
-		{
-			readyThreads[i] = std::thread([i] { Window::allWindows[i]->getRenderer()->readyRender(); });
-		}
-
-		for (auto& readyThread: readyThreads)
-		{
-			readyThread.join();
-		}
+		// std::vector<std::thread> readyThreads(allWindows.size());
+		// for (size_t i = 0; i < readyThreads.size(); ++i)
+		// {
+		// 	readyThreads[i] = std::thread([i] { allWindows[i]->getRenderer()->readyRender(); });
+		// }
+		//
+		// for (auto& readyThread: readyThreads)
+		// {
+		// 	readyThread.join();
+		// }
 
 		for (auto& window: Window::getAllWindows())
 		{

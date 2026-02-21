@@ -76,7 +76,6 @@ namespace helix
 		//Game run
 
 		virtual void startRun() = 0;
-		virtual void readyRender() = 0;
 		virtual void renderThreadFunc(const std::stop_token& token) = 0;
 	};
 
