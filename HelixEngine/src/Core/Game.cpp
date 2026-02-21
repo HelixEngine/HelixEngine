@@ -29,13 +29,26 @@ int helix::Game::run()
 
 	SDL_Event event;
 
-	while (isRunning)
+	while (state == State::Run)
 	{
 		//处理消息循环
 		while (SDL_PollEvent(&event))
 		{
 			switch (event.type)
 			{
+				// case SDL_EVENT_WINDOW_RESIZED:
+				// case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+				// {
+				// 	auto window = static_cast<Window*>(SDL_GetPointerProperty(
+				// 			SDL_GetWindowProperties(SDL_GetWindowFromEvent(&event)),
+				// 			Window::sdlWindowPointerProperty.data(), nullptr));
+				// 	int w,h;
+				// 	SDL_GetWindowSize(window->getSDLWindow(),&w,&h);
+				// 	window->property.size.x = w;
+				// 	window->property.size.y = h;
+				// 	Logger::info(u8"width:",w,u8"height:",h);
+				// 	break;
+				// }
 				case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 				{
 					auto window = static_cast<Window*>(SDL_GetPointerProperty(
@@ -45,7 +58,7 @@ int helix::Game::run()
 				}
 				break;
 				case SDL_EVENT_QUIT:
-					isRunning = false;
+					state = State::Quit;
 					break;
 				default: ;
 			}
@@ -55,14 +68,14 @@ int helix::Game::run()
 	return 0;
 }
 
-bool helix::Game::isQuit()
-{
-	return !isRunning;
-}
-
 void helix::Game::setStartCallback(StartCallback callback)
 {
 	startCallback = std::move(callback);
+}
+
+helix::Game::State helix::Game::getState()
+{
+	return state;
 }
 
 extern void setup();

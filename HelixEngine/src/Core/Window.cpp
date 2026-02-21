@@ -33,6 +33,11 @@ namespace helix
 		}
 		renderer->graphicsApi = property.graphicsApi;
 		renderer->window = this;
+
+		if (Game::getState() >= Game::State::Run)
+		{
+			create();
+		}
 	}
 
 	Window::~Window()
@@ -197,11 +202,18 @@ namespace helix
 		return renderer;
 	}
 
-	void Window::updateThreadFunc(const std::stop_token& token) const
+	void Window::updateThreadFunc(const std::stop_token& token)
 	{
 		SteadyClock::TimePoint lastUpdateTime = SteadyClock::now();
 		while (!token.stop_requested())
 		{
+			if (property.flag.getItem(Flag::Resizable))
+			{
+				int w,h;
+				SDL_GetWindowSizeInPixels(sdlWindow,&w,&h);
+				property.size = Vector2UI32(w,h);
+			}
+
 			getRenderer()->begin(getBackgroundColor());
 			if (auto curr = scene)
 			{

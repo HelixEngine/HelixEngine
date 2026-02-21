@@ -29,14 +29,14 @@ namespace helix
 			Setup,
 			Start,
 			Run,
+			Quit,
 		};
 		using StartCallback = std::function<void()>;
 		static void init();
 		static int run();
-		static bool isQuit();
 		static void setStartCallback(StartCallback callback);
+		static State getState();
 	private:
-		static inline bool isRunning = true;
 		static inline std::optional<StartCallback> startCallback;
 		static inline State state = State::Setup;
 	};

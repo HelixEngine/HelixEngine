@@ -206,7 +206,8 @@ void main()
 	Game::setStartCallback([=]
 	{
 		texture2d->usable();
-		window->setSize(texture2d->getSize());
-		window2->setSize(texture2d->getSize());
+		// window->setSize(texture2d->getSize());
+		// window2->setSize(texture2d->getSize());
+		Ref testWindow = new Window(u8"Test");
 	});
 }

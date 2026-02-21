@@ -39,8 +39,7 @@ namespace helix
 			BitOption<Flag> flag = Flag::Default;
 		};
 
-		explicit Window(std::u8string_view title = u8"HelixEngine", uint32_t width = 600,
-		                uint32_t height = 600);
+		explicit Window(std::u8string_view title, uint32_t width, uint32_t height);
 		explicit Window(std::u8string_view title = u8"HelixEngine", Vector2UI32 size = {600, 600});
 		explicit Window(Property nProperty);
 		~Window() override;
@@ -83,7 +82,7 @@ namespace helix
 	private:
 		Ref<NodeBase> scene;
 		std::jthread updateThread;
-		void updateThreadFunc(const std::stop_token& token) const;
+		void updateThreadFunc(const std::stop_token& token);
 	public:
 		void enter(const Ref<Scene2D>& newScene);
 	private:
