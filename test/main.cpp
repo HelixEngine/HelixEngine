@@ -200,10 +200,13 @@ void main()
 	renderNode->sampler = sampler;
 	renderNode2->sampler = sampler;
 
-	texture2d->usable();
-	window->setSize(texture2d->getSize());
-	window2->setSize(texture2d->getSize());
-
 	scene->addChild(renderNode);
 	scene2->addChild(renderNode2);
+
+	Game::setStartCallback([=]
+	{
+		texture2d->usable();
+		window->setSize(texture2d->getSize());
+		window2->setSize(texture2d->getSize());
+	});
 }

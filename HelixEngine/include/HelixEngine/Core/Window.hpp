@@ -23,18 +23,18 @@ namespace helix
 	public:
 		enum class Flag : uint32_t
 		{
-			// MaximumButton = 0b01,
-			// MinimumButton = 0b10,
-			// MinMaxButton = MaximumButton | MinimumButton,
-			Default = 0,
+			MaximumButton = 0b01,
+			MinimumButton = 0b10,
+			MinMaxButton = MaximumButton | MinimumButton,
+			Resizable = 0b100,
+			Visible = 0b1000,
+			Default = Resizable | Visible,
 		};
 
 		struct Property
 		{
 			std::u8string title = u8"HelixEngine";
 			Vector2UI32 size = {600, 600};
-			bool isResizable = true;
-			bool isDisplay = true;
 			GraphicsApi graphicsApi = GraphicsApi::Default;
 			BitOption<Flag> flag = Flag::Default;
 		};
@@ -42,29 +42,29 @@ namespace helix
 		explicit Window(std::u8string_view title = u8"HelixEngine", uint32_t width = 600,
 		                uint32_t height = 600);
 		explicit Window(std::u8string_view title = u8"HelixEngine", Vector2UI32 size = {600, 600});
-		explicit Window(const Property& property);
+		explicit Window(Property nProperty);
 		~Window() override;
 
-		void show() const;
-		void hide() const;
-		void setDisplay(bool isDisplay = true) const;
-		[[nodiscard]] bool isDisplay() const;
+		void show();
+		void hide();
+		void setVisible(bool isVisible = true);
+		[[nodiscard]] bool isVisible() const;
 
-		void setSize(Vector2UI32 newSize) const;
+		void setSize(Vector2UI32 newSize);
 		[[nodiscard]] Vector2UI32 getSize() const;
 
 		[[nodiscard]] SDL_Window* getSDLWindow() const;
 
 		[[nodiscard]] const Color& getBackgroundColor() const;
 		void setBackgroundColor(Color color);
-		void destroy();
 		static const std::vector<Ref<Window>>& getAllWindows();
 		[[nodiscard]] GraphicsApi getGraphicsApi() const;
 	private:
+		void destroy();
 		static constexpr std::string_view sdlWindowPointerProperty = "HelixEngine:Window";
 		SDL_Window* sdlWindow = nullptr;
 		Color backgroundColor;
-		GraphicsApi graphicsApi = GraphicsApi::Default;
+		Property property;
 
 		static void sdlError(std::u8string_view content);
 
@@ -72,7 +72,9 @@ namespace helix
 		static void SDLQuit();
 
 		static inline std::vector<Ref<Window>> allWindows;
-		static void startRun();
+		static void start();
+
+		void create();
 
 		//渲染器
 		Ref<Renderer> renderer;

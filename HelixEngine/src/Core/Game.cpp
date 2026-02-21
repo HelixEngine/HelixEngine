@@ -16,13 +16,16 @@ void helix::Game::init()
 
 int helix::Game::run()
 {
-	//Window::startRun();
+	state = State::Start;
+	Window::start();
 
 	if (startCallback.has_value())
 	{
 		startCallback.value()();
 		startCallback.reset();
 	}
+
+	state = State::Run;
 
 	SDL_Event event;
 

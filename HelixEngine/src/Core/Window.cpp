@@ -16,25 +16,8 @@ namespace helix
 
 	}
 
-	Window::Window(const Property& property)
+	Window::Window(Property nProperty) : property(std::move(nProperty))
 	{
-		auto sSize = Vector2I32(property.size);
-		sdlWindow = SDL_CreateWindow(
-				reinterpret_cast<const char*>(property.title.data()),
-				sSize.x, sSize.y,
-				(property.isResizable ? SDL_WINDOW_RESIZABLE : 0) |
-				SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY |
-				(property.graphicsApi == GraphicsApi::OpenGL ? SDL_WINDOW_OPENGL : 0));
-
-		SDL_SetPointerProperty(SDL_GetWindowProperties(sdlWindow), sdlWindowPointerProperty.data(), this);
-
-
-		if (sdlWindow == nullptr)
-		{
-			sdlError(u8"创建SDL窗口失败");
-			return;
-		}
-
 		allWindows.emplace_back(this);
 
 		//设置渲染器
@@ -49,29 +32,7 @@ namespace helix
 				break;
 		}
 		renderer->graphicsApi = property.graphicsApi;
-
 		renderer->window = this;
-		graphicsApi = property.graphicsApi;
-
-		if (graphicsApi == GraphicsApi::OpenGL)
-		{
-			//创建 OpenGL 上下文
-			auto glRenderer = reinterpret_cast<opengl::Renderer*>(renderer.get());
-			glRenderer->createSDLContext();
-		}
-
-		updateThread = std::jthread{[this](const std::stop_token& token)
-		{
-			updateThreadFunc(token);
-		}};
-
-		renderer->renderThread = std::jthread([this](const std::stop_token& token)
-		{
-			renderer->renderThreadFunc(token);
-		});
-
-		if (isDisplay())
-			show();
 	}
 
 	Window::~Window()
@@ -79,43 +40,49 @@ namespace helix
 		destroy();
 	}
 
-	void Window::show() const
+	void Window::show()
 	{
-		if (!SDL_ShowWindow(sdlWindow))
-			sdlError(u8"显示SDL窗口失败");
+		property.flag.setItem(Flag::Visible,true);
+		if (sdlWindow)
+			if (!SDL_ShowWindow(sdlWindow))
+				sdlError(u8"显示SDL窗口失败");
 	}
 
-	void Window::hide() const
+	void Window::hide()
 	{
-		if (!SDL_HideWindow(sdlWindow))
-			sdlError(u8"隐藏SDL窗口失败");
+		property.flag.setItem(Flag::Visible,false);
+		if (sdlWindow)
+			if (!SDL_HideWindow(sdlWindow))
+				sdlError(u8"隐藏SDL窗口失败");
 	}
 
-	void Window::setDisplay(bool isDisplay) const
+	void Window::setVisible(bool isVisible)
 	{
-		if (isDisplay)
+		if (isVisible)
 			show();
 		else
 			hide();
 	}
 
-	bool Window::isDisplay() const
+	bool Window::isVisible() const
 	{
-		return SDL_GetWindowFlags(sdlWindow) & SDL_WINDOW_HIDDEN;
+		return property.flag.getItem(Flag::Visible);
 	}
 
-	void Window::setSize(Vector2UI32 newSize) const
+	void Window::setSize(Vector2UI32 newSize)
 	{
-		auto sSize = Vector2I32(newSize);
-		if (!SDL_SetWindowSize(sdlWindow, sSize.x, sSize.y))
-			sdlError(u8"设置SDL窗口大小失败");
+		property.size = newSize;
+		if (sdlWindow)
+		{
+			auto sSize = Vector2I32(newSize);
+			if (!SDL_SetWindowSize(sdlWindow, sSize.x, sSize.y))
+				sdlError(u8"设置SDL窗口大小失败");
+		}
 	}
 
 	Vector2UI32 Window::getSize() const
 	{
-		Vector2I32 size;
-		SDL_GetWindowSize(sdlWindow, &size.x, &size.y);
-		return Vector2UI32(size);
+		return property.size;
 	}
 
 	SDL_Window* Window::getSDLWindow() const
@@ -155,7 +122,7 @@ namespace helix
 
 	GraphicsApi Window::getGraphicsApi() const
 	{
-		return graphicsApi;
+		return property.graphicsApi;
 	}
 
 	void Window::sdlError(std::u8string_view content)
@@ -176,41 +143,53 @@ namespace helix
 		SDL_Quit();
 	}
 
-	void Window::startRun()
+	void Window::start()
 	{
 		for (auto& window: allWindows)
 		{
-			window->updateThread = std::jthread{[=](const std::stop_token& token)
-			{
-				window->updateThreadFunc(token);
-			}};
-			window->renderer->startRun();
+			window->create();
 		}
+	}
 
-		// std::vector<std::thread> readyThreads(allWindows.size());
-		// for (size_t i = 0; i < readyThreads.size(); ++i)
-		// {
-		// 	readyThreads[i] = std::thread([i] { allWindows[i]->getRenderer()->readyRender(); });
-		// }
-		//
-		// for (auto& readyThread: readyThreads)
-		// {
-		// 	readyThread.join();
-		// }
+	void Window::create()
+	{
+		auto sSize = Vector2I32(property.size);
+		sdlWindow = SDL_CreateWindow(
+				reinterpret_cast<const char*>(property.title.data()),
+				sSize.x, sSize.y,
+				(property.flag.getItem(Flag::Resizable) ? SDL_WINDOW_RESIZABLE : 0) |
+				(property.flag.getItem(Flag::MinimumButton) ? SDL_WINDOW_MINIMIZED : 0) |
+				(property.flag.getItem(Flag::MaximumButton) ? SDL_WINDOW_MAXIMIZED : 0) |
+				SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY |
+				(property.graphicsApi == GraphicsApi::OpenGL ? SDL_WINDOW_OPENGL : 0));
 
-		for (auto& window: Window::getAllWindows())
+		if (!sdlWindow)
 		{
-			Renderer* renderer = window->getRenderer();
-			renderer->renderThread = std::jthread([renderer](const std::stop_token& token)
-			{
-				renderer->renderThreadFunc(token);
-			});
-
-			if (window->isDisplay())
-				window->show();
-			else
-				window->hide();
+			sdlError(u8"创建SDL窗口失败");
+			return;
 		}
+
+		SDL_SetPointerProperty(SDL_GetWindowProperties(sdlWindow), sdlWindowPointerProperty.data(), this);
+
+		if (property.graphicsApi == GraphicsApi::OpenGL)
+		{
+			//创建 OpenGL 上下文
+			auto glRenderer = reinterpret_cast<opengl::Renderer*>(renderer.get());
+			glRenderer->createSDLContext();
+		}
+
+		updateThread = std::jthread{[this](const std::stop_token& token)
+		{
+			updateThreadFunc(token);
+		}};
+
+		renderer->renderThread = std::jthread([this](const std::stop_token& token)
+		{
+			renderer->renderThreadFunc(token);
+		});
+
+		if (isVisible())
+			show();
 	}
 
 	const Ref<Renderer>& Window::getRenderer() const

@@ -89,7 +89,7 @@ namespace helix::opengl
 			if (window->getGraphicsApi() == GraphicsApi::OpenGL)
 			{
 				auto glRenderer = reinterpret_cast<Renderer*>(window->getRenderer().get());
-				if (!glRenderer->sdlContext)
+				if (!glRenderer->sdlContext || !glRenderer->sdlContext->context)
 					continue;
 				sharedContextRenderer = glRenderer;
 				break;

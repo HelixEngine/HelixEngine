@@ -24,6 +24,12 @@ namespace helix
 		template<typename CommandType>
 		friend class CommandQueue;
 	public:
+		enum class State
+		{
+			Setup,
+			Start,
+			Run,
+		};
 		using StartCallback = std::function<void()>;
 		static void init();
 		static int run();
@@ -32,6 +38,7 @@ namespace helix
 	private:
 		static inline bool isRunning = true;
 		static inline std::optional<StartCallback> startCallback;
+		static inline State state = State::Setup;
 	};
 
 }
