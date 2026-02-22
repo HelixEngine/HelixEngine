@@ -34,7 +34,7 @@ namespace helix
 		renderer->graphicsApi = property.graphicsApi;
 		renderer->window = this;
 
-		if (Game::getState() >= Game::State::Run)
+		if (Game::getState() >= Game::State::Start)
 		{
 			create();
 		}
