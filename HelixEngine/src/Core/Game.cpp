@@ -27,6 +27,9 @@ int helix::Game::run()
 
 	state = State::Run;
 
+	if (Window::getAllWindows().empty())
+		state = State::Quit;
+
 	SDL_Event event;
 
 	while (state == State::Run)

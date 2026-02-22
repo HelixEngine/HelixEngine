@@ -3,6 +3,8 @@
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
 #include <HelixEngine/Render/Shader.hpp>
 
+#include <HelixEngine/Math/Matrix.hpp>
+
 using namespace helix;
 
 class RenderNode final : public Node2D

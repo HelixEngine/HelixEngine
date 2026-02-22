@@ -555,4 +555,48 @@ namespace helix
 
 	template<typename T>
 	concept VectorType = IsVector<T>::value;
+
+	template<typename T,size_t Dimension>
+	struct VectorMap {};
+
+	template<Arithmetic T>
+	struct VectorMap<T,2>
+	{
+		using Type = Vector2T<T>;
+	};
+
+	template<Arithmetic T>
+	struct VectorMap<T,3>
+	{
+		using Type = Vector3T<T>;
+	};
+
+	template<Arithmetic T>
+	struct VectorMap<T,4>
+	{
+		using Type = Vector4T<T>;
+	};
+
+	template<Enum T>
+	struct VectorMap<T,2>
+	{
+		using Type = Vector2E<T>;
+	};
+
+	template<Enum T>
+	struct VectorMap<T,3>
+	{
+		using Type = Vector3E<T>;
+	};
+
+	template<Enum T>
+	struct VectorMap<T,4>
+	{
+		using Type = Vector4E<T>;
+	};
+
+	template<Arithmetic T,size_t Dimension>
+	using VectorT = VectorMap<T,Dimension>::Type;
+	template<Enum T,size_t Dimension>
+	using VectorE = VectorMap<T,Dimension>::Type;
 }
