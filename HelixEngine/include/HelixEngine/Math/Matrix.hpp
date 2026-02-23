@@ -236,4 +236,15 @@ namespace helix
 	using Matrix3x4UI32 = MatrixT<uint32_t,3,4>;
 	using Matrix4x2UI32 = MatrixT<uint32_t,4,2>;
 	using Matrix4x3UI32 = MatrixT<uint32_t,4,3>;
+
+	template<typename T>
+	struct IsMatrix
+	{
+		static constexpr bool value = false;
+	};
+	template<typename T,size_t Row,size_t Col>
+	struct IsMatrix<MatrixT<T,Row,Col>>
+	{
+		static constexpr bool value = true;
+	};
 }

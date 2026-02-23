@@ -1,9 +1,11 @@
 #pragma once
 #include <HelixEngine/Math/Vector.hpp>
 
+#include "HelixEngine/Math/Matrix.hpp"
+
 namespace helix::shader
 {
-	template<typename T> requires (std::is_arithmetic_v<T> || IsVector<T>::value)
+	template<typename T>
 	class Value;
 
 	template<typename T, TemplateString NAME>
@@ -11,7 +13,7 @@ namespace helix::shader
 	{
 		using AST = EmbeddedShader::Ast::AST;
 		using ValueNode = EmbeddedShader::Ast::Value;
-		template<typename Type> requires (std::is_arithmetic_v<Type> || IsVector<Type>::value)
+		template<typename Type>
 		friend class Value;
 		template<typename Type>
 		friend class Swizzle2;
@@ -71,7 +73,7 @@ namespace helix::shader
 	{
 		using AST = EmbeddedShader::Ast::AST;
 		using ValueNode = EmbeddedShader::Ast::Value;
-		template<typename Type> requires (std::is_arithmetic_v<Type> || IsVector<Type>::value)
+		template<typename Type>
 		friend class Value;
 	public:
 		union
@@ -122,7 +124,7 @@ namespace helix::shader
 	{
 		using AST = EmbeddedShader::Ast::AST;
 		using ValueNode = EmbeddedShader::Ast::Value;
-		template<typename Type> requires (std::is_arithmetic_v<Type> || IsVector<Type>::value)
+		template<typename Type>
 		friend class Value;
 	public:
 		union
@@ -264,7 +266,7 @@ namespace helix::shader
 	{
 		using AST = EmbeddedShader::Ast::AST;
 		using ValueNode = EmbeddedShader::Ast::Value;
-		template<typename Type> requires (std::is_arithmetic_v<Type> || IsVector<Type>::value)
+		template<typename Type>
 		friend class Value;
 	public:
 		union

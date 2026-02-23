@@ -5,20 +5,19 @@
 #include <HelixEngine/Util/TemplateString.hpp>
 #include <HelixEngine/Render/Swizzle.hpp>
 #include <HelixEngine/Math/Vector.hpp>
+#include <HelixEngine/Math/Matrix.hpp>
 
 namespace helix::shader
 {
-
-	template<typename T> requires (std::is_arithmetic_v<T> || IsVector<T>::value)
+	template<typename T>
 	class Value
 	{
 		using AST = EmbeddedShader::Ast::AST;
 		using ValueNode = EmbeddedShader::Ast::Value;
 		using PH = EmbeddedShader::ParseHelper;
-		using T_ = T::ValueType; // 仅限Vector
+		using T_ = T::ValueType; // 仅限Vector、Matrix
 
-		template<typename Type> requires
-			(std::is_arithmetic_v<Type> || IsVector<Type>::value)
+		template<typename Type>
 		friend class Value;
 
 		template<typename Type>
@@ -64,6 +63,23 @@ namespace helix::shader
 			node = AST::defineUniformVariate<typename T::KtmVec>();
 		}
 
+		Value() requires IsMatrix<T>::value
+		{
+			if (PH::isInShaderCodeLambda())
+			{
+				initLocal(nullptr);
+				return;
+			}
+
+			if (PH::isInInputParameter())
+			{
+				node = AST::defineInputVariate<typename T::KtmMat>(PH::getCurrentInputIndex());
+				return;
+			}
+
+			node = AST::defineUniformVariate<typename T::KtmMat>();
+		}
+
 		explicit(false) Value(T value)
 		{
 			if (PH::isInShaderCodeLambda())
@@ -84,6 +100,17 @@ namespace helix::shader
 				node = AST::defineInputVariate<typename T::KtmVec>(PH::getCurrentInputIndex());
 
 			node = AST::defineUniformVariate<typename T::KtmVec>();
+		}
+
+		explicit(false) Value(T value) requires IsMatrix<T>::value
+		{
+			if (PH::isInShaderCodeLambda())
+				initLocal(createValue(value));
+
+			if (PH::isInInputParameter())
+				node = AST::defineInputVariate<typename T::KtmMat>(PH::getCurrentInputIndex());
+
+			node = AST::defineUniformVariate<typename T::KtmMat>();
 		}
 
 		Value(Value&& other) noexcept = default;
@@ -311,13 +338,18 @@ return ret(AST::binaryOperator(createValue(value1),value2.node,#op));\
 		{
 			node = AST::defineLocalVariate(AST::createType<typename T::KtmVec>(),std::move(initValue));
 		}
-		std::shared_ptr<EmbeddedShader::Ast::BasicType> createType() requires std::is_arithmetic_v<T>
+		static std::shared_ptr<EmbeddedShader::Ast::BasicType> createType() requires std::is_arithmetic_v<T>
 		{
 			return AST::createType<T>();
 		}
-		std::shared_ptr<EmbeddedShader::Ast::VecType> createType() requires IsVector<T>::value
+		static std::shared_ptr<EmbeddedShader::Ast::VecType> createType() requires IsVector<T>::value
 		{
 			return AST::createVecType<typename T::KtmVec>();
+		}
+
+		static std::shared_ptr<EmbeddedShader::Ast::MatType> createType() requires IsMatrix<T>::value
+		{
+			return AST::createType<typename T::KtmMat>();
 		}
 
 		static std::shared_ptr<EmbeddedShader::Ast::BasicValue> createValue(T value) requires std::is_arithmetic_v<T>
@@ -328,6 +360,11 @@ return ret(AST::binaryOperator(createValue(value1),value2.node,#op));\
 		static std::shared_ptr<EmbeddedShader::Ast::VecValue> createValue(const T& value) requires IsVector<T>::value
 		{
 			return AST::createValue<typename T::KtmVec>(typename T::KtmVec(value));
+		}
+
+		static std::shared_ptr<EmbeddedShader::Ast::MatValue> createValue(const T& value) requires IsMatrix<T>::value
+		{
+			return AST::createValue<typename T::KtmMat>(typename T::KtmMat(value));
 		}
 
 		std::shared_ptr<ValueNode> node;
