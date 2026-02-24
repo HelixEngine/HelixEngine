@@ -292,7 +292,11 @@ return ret(AST::binaryOperator(createValue(value1),value2.node,#op));\
 #define DEFAULT_BIN_OP_DEF(op,rqe) BIN_OP_DEF(op,Value,rqe)
 		DEFAULT_BIN_OP_DEF(+,EMPTY)
 		DEFAULT_BIN_OP_DEF(-,EMPTY)
-		DEFAULT_BIN_OP_DEF(*,ARITHMETIC)
+		DEFAULT_BIN_OP_DEF(*,EMPTY)
+		Value& operator / (T value) requires (IsVector<T>::value || IsMatrix<T>::value)
+		{
+			return Value(AST::binaryOperator(node,createValue(value),"/"));
+		}
 		DEFAULT_BIN_OP_DEF(/,ARITHMETIC)
 		DEFAULT_BIN_OP_DEF(%,INTEGRAL) //shader-lang 仅允许整数用%取整。浮点用mod
 		DEFAULT_BIN_OP_DEF(&,INTEGRAL)
@@ -310,11 +314,15 @@ return ret(AST::binaryOperator(createValue(value1),value2.node,#op));\
 	}\
 	Value& operator op##= (T value) rqe \
 	{\
-	return (*this = (((*this) op (value))));\
+		return (*this = (((*this) op (value))));\
 	}
 		COMBINED_ASSIGN_OP(+,EMPTY)
 		COMBINED_ASSIGN_OP(-,EMPTY)
-		COMBINED_ASSIGN_OP(*,ARITHMETIC)
+		COMBINED_ASSIGN_OP(*,EMPTY)
+		Value& operator /= (T value) requires (IsVector<T>::value || IsMatrix<T>::value)
+		{
+			return *this = *this / value;
+		}
 		COMBINED_ASSIGN_OP(/,ARITHMETIC)
 		COMBINED_ASSIGN_OP(%,INTEGRAL)
 		COMBINED_ASSIGN_OP(&,INTEGRAL)
@@ -367,6 +375,43 @@ return ret(AST::binaryOperator(createValue(value1),value2.node,#op));\
 			return AST::createValue<typename T::KtmMat>(typename T::KtmMat(value));
 		}
 
+		std::shared_ptr<ValueNode> node;
+	};
+
+	class Sampler
+	{
+		using AST = EmbeddedShader::Ast::AST;
+		using ValueNode = EmbeddedShader::Ast::Value;
+		using PH = EmbeddedShader::ParseHelper;
+	public:
+		Sampler() = default;
+	private:
+		void init(std::string name)
+		{
+			if (node)
+				return;
+			auto type = std::make_shared<EmbeddedShader::Ast::SamplerType>();
+			type->name = std::move(name);
+			node = AST::defineUniformVariate(std::move(type));
+		}
+		std::shared_ptr<ValueNode> node;
+	};
+
+	template<typename Texel>
+	class Texture2D
+	{
+		using AST = EmbeddedShader::Ast::AST;
+		using ValueNode = EmbeddedShader::Ast::Value;
+		using PH = EmbeddedShader::ParseHelper;
+	public:
+		Texture2D()
+		{
+			if (PH::notInitNode())
+				return;
+
+			node = AST::defineUniversalTexture2D<Texel>();
+		}
+	private:
 		std::shared_ptr<ValueNode> node;
 	};
 
