@@ -15,7 +15,7 @@ namespace helix::shader
 		using AST = EmbeddedShader::Ast::AST;
 		using ValueNode = EmbeddedShader::Ast::Value;
 		using PH = EmbeddedShader::ParseHelper;
-		using T_ = T::ValueType; // 仅限Vector、Matrix
+		using T_ = T::ValueType; // 仅限Vector、MatrixT::ValueType
 
 		template<typename Type>
 		friend class Value;
@@ -26,7 +26,7 @@ namespace helix::shader
 		friend class Swizzle3;
 		template<typename Type>
 		friend class Swizzle4;
-		template<typename Type,TemplateString NAME>
+		template<typename Type, TemplateString NAME>
 		friend class SwizzleValue;
 	public:
 		Value()
@@ -187,62 +187,65 @@ namespace helix::shader
 		// Operators
 
 		Value& operator=(Value&& other) noexcept = default;
+
 		Value& operator=(const Value& other)
 		{
-			if (this == &other) return *this;
+			if (this == &other)
+				return *this;
 			AST::assign(node, other.node);
 			return *this;
 		}
+
 		Value& operator=(T value)
 		{
 			AST::assign(node, createValue(value));
 			return *this;
-		 }
+		}
 
 		Value& operator++() requires std::is_arithmetic_v<T>
 		{
-			return Value{AST::unaryOperator(node,"++")};
+			return Value{AST::unaryOperator(node, "++")};
 		}
 
 		Value operator++(int) requires std::is_arithmetic_v<T>
 		{
-			return Value{AST::unaryOperator(node,"++"),false};
+			return Value{AST::unaryOperator(node, "++"), false};
 		}
 
 		// 前缀 --
 		Value& operator--() requires std::is_arithmetic_v<T>
 		{
-			return Value{AST::unaryOperator(node,"--")};
+			return Value{AST::unaryOperator(node, "--")};
 		}
 
 		// 后缀 --
 		Value operator--(int) requires std::is_arithmetic_v<T>
 		{
-			return Value{AST::unaryOperator(node,"--"),false};
+			return Value{AST::unaryOperator(node, "--"), false};
 		}
 
 		// 取反
 		bool operator!() const requires std::is_arithmetic_v<T>
 		{
-			return Value{AST::unaryOperator(node,"!")};
+			return Value{AST::unaryOperator(node, "!")};
 		}
 
 		// 按位取反
 		Value operator~() const requires std::is_integral_v<T>
 		{
-			return Value{AST::unaryOperator(node,"~")};
+			return Value{AST::unaryOperator(node, "~")};
 		}
 
 		// 负号
 		Value operator-() const
 		{
-			return Value{AST::unaryOperator(node,"-")};
+			return Value{AST::unaryOperator(node, "-")};
 		}
 
 		// 正号
 		Value operator+() const
 		{
-			return Value{AST::unaryOperator(node,"+")};
+			return Value{AST::unaryOperator(node, "+")};
 		}
 
 		auto operator->() const requires IsVector2<T>::value
@@ -279,31 +282,33 @@ friend ret operator op(T value1,const Value<T>& value2) rqe\
 return ret(AST::binaryOperator(createValue(value1),value2.node,#op));\
 }
 #define RET_BOOL_BIN_OP_DEF(op,rqe) BIN_OP_DEF(op,Value<bool>, rqe)
-		RET_BOOL_BIN_OP_DEF(==,EMPTY)
-		RET_BOOL_BIN_OP_DEF(!=,EMPTY)
-		RET_BOOL_BIN_OP_DEF(<,ARITHMETIC)
-		RET_BOOL_BIN_OP_DEF(>,ARITHMETIC)
-		RET_BOOL_BIN_OP_DEF(<=,ARITHMETIC)
-		RET_BOOL_BIN_OP_DEF(>=,ARITHMETIC)
-		RET_BOOL_BIN_OP_DEF(||,ARITHMETIC)
-		RET_BOOL_BIN_OP_DEF(&&,ARITHMETIC)
+		RET_BOOL_BIN_OP_DEF(==, EMPTY)
+		RET_BOOL_BIN_OP_DEF(!=, EMPTY)
+		RET_BOOL_BIN_OP_DEF(<, ARITHMETIC)
+		RET_BOOL_BIN_OP_DEF(>, ARITHMETIC)
+		RET_BOOL_BIN_OP_DEF(<=, ARITHMETIC)
+		RET_BOOL_BIN_OP_DEF(>=, ARITHMETIC)
+		RET_BOOL_BIN_OP_DEF(||, ARITHMETIC)
+		RET_BOOL_BIN_OP_DEF(&&, ARITHMETIC)
 #undef RET_BOOL_BIN_OP_DEF
 
 #define DEFAULT_BIN_OP_DEF(op,rqe) BIN_OP_DEF(op,Value,rqe)
-		DEFAULT_BIN_OP_DEF(+,EMPTY)
-		DEFAULT_BIN_OP_DEF(-,EMPTY)
-		DEFAULT_BIN_OP_DEF(*,EMPTY)
-		Value& operator / (T value) requires (IsVector<T>::value || IsMatrix<T>::value)
+		DEFAULT_BIN_OP_DEF(+, EMPTY)
+		DEFAULT_BIN_OP_DEF(-, EMPTY)
+		DEFAULT_BIN_OP_DEF(*, EMPTY)
+
+		Value& operator /(T value) requires (IsVector<T>::value || IsMatrix<T>::value)
 		{
-			return Value(AST::binaryOperator(node,createValue(value),"/"));
+			return Value(AST::binaryOperator(node, createValue(value), "/"));
 		}
-		DEFAULT_BIN_OP_DEF(/,ARITHMETIC)
-		DEFAULT_BIN_OP_DEF(%,INTEGRAL) //shader-lang 仅允许整数用%取整。浮点用mod
-		DEFAULT_BIN_OP_DEF(&,INTEGRAL)
-		DEFAULT_BIN_OP_DEF(|,INTEGRAL)
-		DEFAULT_BIN_OP_DEF(^,INTEGRAL)
-		DEFAULT_BIN_OP_DEF(<<,INTEGRAL)
-		DEFAULT_BIN_OP_DEF(>>,INTEGRAL)
+
+		DEFAULT_BIN_OP_DEF(/, ARITHMETIC)
+		DEFAULT_BIN_OP_DEF(%, INTEGRAL) //shader-lang 仅允许整数用%取整。浮点用mod
+		DEFAULT_BIN_OP_DEF(&, INTEGRAL)
+		DEFAULT_BIN_OP_DEF(|, INTEGRAL)
+		DEFAULT_BIN_OP_DEF(^, INTEGRAL)
+		DEFAULT_BIN_OP_DEF(<<, INTEGRAL)
+		DEFAULT_BIN_OP_DEF(>>, INTEGRAL)
 #undef DEFAULT_BIN_OP_DEF
 #undef BIN_OP_DEF
 
@@ -316,40 +321,48 @@ return ret(AST::binaryOperator(createValue(value1),value2.node,#op));\
 	{\
 		return (*this = (((*this) op (value))));\
 	}
-		COMBINED_ASSIGN_OP(+,EMPTY)
-		COMBINED_ASSIGN_OP(-,EMPTY)
-		COMBINED_ASSIGN_OP(*,EMPTY)
-		Value& operator /= (T value) requires (IsVector<T>::value || IsMatrix<T>::value)
+		COMBINED_ASSIGN_OP(+, EMPTY)
+		COMBINED_ASSIGN_OP(-, EMPTY)
+		COMBINED_ASSIGN_OP(*, EMPTY)
+
+		Value& operator /=(T value) requires (IsVector<T>::value || IsMatrix<T>::value)
 		{
 			return *this = *this / value;
 		}
-		COMBINED_ASSIGN_OP(/,ARITHMETIC)
-		COMBINED_ASSIGN_OP(%,INTEGRAL)
-		COMBINED_ASSIGN_OP(&,INTEGRAL)
-		COMBINED_ASSIGN_OP(|,INTEGRAL)
-		COMBINED_ASSIGN_OP(^,INTEGRAL)
-		COMBINED_ASSIGN_OP(>>,INTEGRAL)
-		COMBINED_ASSIGN_OP(<<,INTEGRAL)
+
+		COMBINED_ASSIGN_OP(/, ARITHMETIC)
+		COMBINED_ASSIGN_OP(%, INTEGRAL)
+		COMBINED_ASSIGN_OP(&, INTEGRAL)
+		COMBINED_ASSIGN_OP(|, INTEGRAL)
+		COMBINED_ASSIGN_OP(^, INTEGRAL)
+		COMBINED_ASSIGN_OP(>>, INTEGRAL)
+		COMBINED_ASSIGN_OP(<<, INTEGRAL)
 #undef COMBINED_ASSIGN_OP
 #undef ARITHMETIC
 #undef VECTOR
 #undef INTEGRAL
 #undef EMPTY
 	private:
-		explicit Value(std::shared_ptr<ValueNode> node) : node(std::move(node)) {}
+		explicit Value(std::shared_ptr<ValueNode> node) :
+			node(std::move(node))
+		{
+		}
+
 		void initLocal(std::shared_ptr<ValueNode> initValue)
 		{
-			node = AST::defineLocalVariate(AST::createType<T>(),std::move(initValue));
+			node = AST::defineLocalVariate(AST::createType<T>(), std::move(initValue));
 		}
 
 		void initLocal(std::shared_ptr<ValueNode> initValue) requires IsVector<T>::value
 		{
-			node = AST::defineLocalVariate(AST::createType<typename T::KtmVec>(),std::move(initValue));
+			node = AST::defineLocalVariate(AST::createType<typename T::KtmVec>(), std::move(initValue));
 		}
+
 		static std::shared_ptr<EmbeddedShader::Ast::BasicType> createType() requires std::is_arithmetic_v<T>
 		{
 			return AST::createType<T>();
 		}
+
 		static std::shared_ptr<EmbeddedShader::Ast::VecType> createType() requires IsVector<T>::value
 		{
 			return AST::createVecType<typename T::KtmVec>();
@@ -394,6 +407,7 @@ return ret(AST::binaryOperator(createValue(value1),value2.node,#op));\
 			type->name = std::move(name);
 			node = AST::defineUniformVariate(std::move(type));
 		}
+
 		std::shared_ptr<ValueNode> node;
 	};
 
@@ -413,6 +427,36 @@ return ret(AST::binaryOperator(createValue(value1),value2.node,#op));\
 		}
 	private:
 		std::shared_ptr<ValueNode> node;
+	};
+
+	template<typename T>
+	class TestProxy : public EmbeddedShader::VariateProxy<T>
+	{
+		using Parent = EmbeddedShader::VariateProxy<T>;
+	public:
+		using Parent::operator=;
+
+		TestProxy()
+		{
+		}
+
+		template<typename Arg0, typename Arg1, typename... Args>
+		explicit TestProxy(Arg0&& arg0, Arg1&& arg1, Args&&... args) requires ktm::is_vector_v<T> :
+			Parent(std::forward<Arg0>(arg0), std::forward<Arg1>(arg1), std::forward<Args>(args)...)
+		{
+		}
+
+		TestProxy(const T& value) requires (!std::is_aggregate_v<T>) :
+			Parent(value)
+		{
+		}
+
+		TestProxy(const TestProxy& value) :
+			Parent(value)
+		{
+		}
+
+		TestProxy(TestProxy&& value) = default;
 	};
 
 	using namespace EmbeddedShader::TypeAlias;
