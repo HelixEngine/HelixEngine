@@ -120,14 +120,14 @@ installPackage(
         AS_SUBDIRECTORY
 )
 
+installPackage(
+        HelixUtil
+        GIT_REPO https://github.com/HelixEngine/HelixUtil.git
+        GIT_BRANCH main
+        AS_SUBDIRECTORY
+)
+
 set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
-set(HELIX_UTIL_NAME HelixUtil)
-
-file(GLOB HELIX_UTIL_INCLUDE HelixEngine/include/HelixEngine/Util/*.hpp)
-file(GLOB HELIX_UTIL_SOURCES HelixEngine/src/Util/*.cpp)
-
-add_library(${HELIX_UTIL_NAME} STATIC ${HELIX_UTIL_INCLUDE} ${HELIX_UTIL_SOURCES})
-target_include_directories(${HELIX_UTIL_NAME} PUBLIC ${HELIX_ENGINE_INCLUDE_PATH} HelixEngine/extern/fast_io/include)
 
 if (NOT DEFINED HELIX_ENGINE_TEST)
     set(HELIX_ENGINE_TEST ON)
@@ -151,7 +151,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         SAIL::sail-c++ # C++ Image Processing Library
         openjp2 libjpeg-turbo::jpeg PNG::PNG # SAIL codecs
         Helicon # Embedded Shader Library
-        ${HELIX_UTIL_NAME} # Util For HelixEngine
+        HelixUtil # Util For HelixEngine
 )
 
 #set(HELIX_VULKAN_BACKEND ON)

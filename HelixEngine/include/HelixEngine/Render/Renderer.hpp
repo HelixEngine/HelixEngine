@@ -7,6 +7,7 @@
 #include <HelixEngine/Util/MemoryBlock.hpp>
 #include <HelixEngine/Util/Ref.hpp>
 #include <HelixEngine/Render/Command/RenderCommand.hpp>
+#include <HelixEngine/Enum.hpp>
 
 namespace helix
 {
