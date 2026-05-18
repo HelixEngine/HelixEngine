@@ -110,21 +110,6 @@ void setup()
 		return pixelInput;
 	};
 
-	EmbeddedShader::Texture2D<ktm::fvec4> ourTexture;
-	EmbeddedShader::Sampler sampler2d;
-	helix::shader::Float4 color;
-	auto pixel = [&](helix::shader::Aggregate<PixelInput> input)
-	{
-		using namespace helix::shader;
-		shader::TestProxy<int> a;
-		a += 1;
-		a += 2;
-		return mix(mix(ourTexture.sample(sampler2d, input->TexCoord), input->vertexColor, 0.5f),
-		           color, 0.2f);
-	};
-
-	auto edsl = glRenderer->createRenderPipeline(vertex, pixel);
-
 	auto vertexCode =
 			u8R"(
 #version 330 core
@@ -213,6 +198,5 @@ void main()
 		texture2d->usable();
 		window->setSize(texture2d->getSize());
 		window2->setSize(texture2d->getSize());
-		Ref testWindow = new Window(u8"Test");
 	});
 }
