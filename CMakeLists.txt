@@ -120,6 +120,8 @@ installPackage(
         AS_SUBDIRECTORY
 )
 
+add_subdirectory(HelixEngine/ShaderPreprocessor)
+
 set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
 
 if (NOT DEFINED HELIX_ENGINE_TEST)
