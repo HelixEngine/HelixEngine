@@ -1,7 +1,6 @@
 #include <iostream>
 #include <HelixEngine/HelixEngine.hpp>
 #include <HelixEngine/Render/OpenGL/Renderer.hpp>
-#include <HelixEngine/Render/Shader.hpp>
 
 #include <HelixEngine/Math/Matrix.hpp>
 
@@ -41,12 +40,6 @@ public:
 		glRenderer->setPrimitiveTopology(PrimitiveTopology::TriangleList);
 		glRenderer->drawIndexed(6);
 	}
-};
-
-struct PixelInput
-{
-	helix::shader::Float4 vertexColor;
-	helix::shader::Float2 TexCoord;
 };
 
 void setup()
@@ -98,17 +91,6 @@ void setup()
 	auto glRenderer = reinterpret_cast<opengl::Renderer*>(window->getRenderer().get());
 	auto glRenderer2 = reinterpret_cast<opengl::Renderer*>(window2->getRenderer().get());
 
-	auto vertex = [&](helix::shader::Float2 aPos,
-	                  helix::shader::Float4 aColor,
-	                  helix::shader::Float2 aTexCoord)
-	{
-		using namespace helix::shader;
-		position() = Float4(aPos->x, aPos->y, 0.f, 1.f);
-		Aggregate<PixelInput> pixelInput;
-		pixelInput->vertexColor = aColor;
-		pixelInput->TexCoord = aTexCoord;
-		return pixelInput;
-	};
 
 	auto vertexCode =
 			u8R"(

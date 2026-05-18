@@ -7,7 +7,6 @@
 #include <HelixEngine/Util/PixelFormat.hpp>
 #include <HelixEngine/Util/Ref.hpp>
 #include <sail-c++/sail-c++.h>
-#include <Codegen/RasterizedPipelineObject.h>
 
 namespace helix
 {

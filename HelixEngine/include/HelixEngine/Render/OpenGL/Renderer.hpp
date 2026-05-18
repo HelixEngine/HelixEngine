@@ -37,12 +37,7 @@ namespace helix::opengl
 
 		[[nodiscard]] Ref<opengl::Shader> createNativeShader(Shader::Usage usage);
 
-		Ref<helix::Shader> createNativeShader(Shader::Usage usage,
-		                                      const EmbeddedShader::ShaderCodeCompiler& compiler) override;
-
 		Ref<helix::RenderPipeline> createNativeRenderPipeline(helix::RenderPipeline::Config config) const override;
-
-		EmbeddedShader::CompilerOption getCompilerOption() const override;
 
 		//render thread//
 

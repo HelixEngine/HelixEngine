@@ -47,28 +47,9 @@ namespace helix::opengl
 		return shader;
 	}
 
-	Ref<helix::Shader> Renderer::createNativeShader(Shader::Usage usage,
-	                                                const EmbeddedShader::ShaderCodeCompiler& compiler)
-	{
-		auto shaderCode = std::get<1>(
-				compiler.getShaderCode(EmbeddedShader::ShaderLanguage::GLSL).shaderCode);
-		return createGLShader(
-				usage, reinterpret_cast<const char8_t*>(shaderCode.c_str()));
-	}
-
 	Ref<helix::RenderPipeline> Renderer::createNativeRenderPipeline(helix::RenderPipeline::Config config) const
 	{
 		return createGLRenderPipeline(std::move(config));
-	}
-
-	EmbeddedShader::CompilerOption Renderer::getCompilerOption() const
-	{
-		EmbeddedShader::CompilerOption option;
-		option.compileDXBC = false;
-		option.compileDXIL = false;
-		option.compileHLSL = false;
-		option.enableBindless = false;
-		return option;
 	}
 
 	void Renderer::startRun()

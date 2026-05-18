@@ -65,12 +65,6 @@ namespace helix
 		[[nodiscard]] virtual Ref<Texture2D> createNativeTexture2D(Texture2D::BitmapConfig config) const = 0;
 		[[nodiscard]] virtual Ref<Sampler> createNativeSampler(const Sampler::Config& config) const = 0;
 		[[nodiscard]] virtual Ref<RenderPipeline> createNativeRenderPipeline(RenderPipeline::Config config) const = 0;
-		[[nodiscard]] virtual EmbeddedShader::CompilerOption getCompilerOption() const = 0;
-
-		//cmd native
-		[[nodiscard]] virtual Ref<Shader> createNativeShader(
-				Shader::Usage usage,
-				const EmbeddedShader::ShaderCodeCompiler& compiler) = 0;
 
 		std::jthread renderThread;
 	private:
@@ -79,15 +73,4 @@ namespace helix
 		virtual void startRun() = 0;
 		virtual void renderThreadFunc(const std::stop_token& token) = 0;
 	};
-
-	Ref<RenderPipeline> Renderer::createRenderPipeline(auto&& vertex, auto&& pixel, std::source_location location)
-	{
-		EmbeddedShader::RasterizedPipelineObject object = EmbeddedShader::RasterizedPipelineObject::compile(
-				std::forward<decltype(vertex)>(vertex),
-				std::forward<decltype(pixel)>(pixel), getCompilerOption(), location);
-		RenderPipeline::Config config;
-		config.vertex = createNativeShader(Shader::Usage::Vertex, *object.vertex);
-		config.pixel = createNativeShader(Shader::Usage::Pixel, *object.fragment);
-		return createNativeRenderPipeline(std::move(config));
-	}
 }

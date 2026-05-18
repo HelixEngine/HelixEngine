@@ -114,13 +114,6 @@ installPackage(
 )
 
 installPackage(
-        Helicon
-        GIT_REPO https://github.com/CoronaEngine/Helicon.git
-        GIT_BRANCH main
-        AS_SUBDIRECTORY
-)
-
-installPackage(
         HelixUtil
         GIT_REPO https://github.com/HelixEngine/HelixUtil.git
         GIT_BRANCH main
@@ -150,7 +143,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
         glad # Render Libraries
         SAIL::sail-c++ # C++ Image Processing Library
         openjp2 libjpeg-turbo::jpeg PNG::PNG # SAIL codecs
-        Helicon # Embedded Shader Library
         HelixUtil # Util For HelixEngine
 )
 
@@ -171,7 +163,6 @@ if (HELIX_ENGINE_TEST)
     add_executable(HelixEngineTest test/main.cpp)
     target_link_libraries(HelixEngineTest PRIVATE ${PROJECT_NAME})
     deplyPackageRuntime(HelixEngineTest)
-    helicon_install_runtime_deps(HelixEngineTest)
 
     add_custom_command(
             TARGET HelixEngineTest POST_BUILD
