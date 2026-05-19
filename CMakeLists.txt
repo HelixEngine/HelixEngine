@@ -120,6 +120,32 @@ installPackage(
         AS_SUBDIRECTORY
 )
 
+
+installPackage(
+        SPIRV-Headers
+        GIT_REPO https://github.com/KhronosGroup/SPIRV-Headers.git
+        GIT_TAG vulkan-sdk-1.4.341
+)
+find_package(SPIRV-Headers REQUIRED)
+
+installPackage(
+        SPIRV-Tools
+        GIT_REPO https://github.com/KhronosGroup/SPIRV-Tools.git
+        GIT_TAG v2026.1
+        CMAKE_ARGS
+         -DSPIRV-Headers_SOURCE_DIR=${SPIRV-Headers_SOURCE_DIR}
+)
+find_package(SPIRV-Tools REQUIRED)
+
+installPackage(
+        glslang
+        GIT_REPO https://github.com/KhronosGroup/glslang.git
+        GIT_TAG 16.3.0
+        CMAKE_ARGS
+         -DENABLE_HLSL=OFF
+)
+find_package(glslang REQUIRED)
+
 add_subdirectory(HelixEngine/ShaderPreprocessor)
 
 set(HELIX_ENGINE_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/HelixEngine/include)
