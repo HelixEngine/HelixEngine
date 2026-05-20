@@ -14,4 +14,4 @@ set_target_properties(ShaderPreprocessor PROPERTIES
         VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:ShaderPreprocessor>
 )
 
-target_link_libraries(ShaderPreprocessor PRIVATE ${PROJECT_NAME})
+target_link_libraries(ShaderPreprocessor PRIVATE ${PROJECT_NAME} glslang::glslang)
