@@ -156,7 +156,8 @@ private:
 		shader.setEnvInput(glslang::EShSourceGlsl, glslStage, glslang::EShClientOpenGL, 460);
 		shader.setEnvClient(glslang::EShClientOpenGL, glslang::EShTargetOpenGL_450); //后续vk和gl都要生成spv
 		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
-		shader.setEntryPoint("main"); //考虑no-link下这行需不需要特殊处理
+		//shader.setEntryPoint("false_main"); //考虑no-link下这行需不需要特殊处理
+		shader.setSourceEntryPoint("");
 
 
 		includer.includePaths = includePaths;
@@ -274,6 +275,7 @@ int main(int argc, char* argv[])
 		Logger::error(u8"No Output File Path Input");
 		return 1;
 	}
+	const auto& outPath = args[0].argContent[0];
 
 	if (args[1].argContent.empty())
 	{
@@ -313,6 +315,16 @@ int main(int argc, char* argv[])
 	Compiler compiler{srcPath,lang,stage};
 	compiler.includePaths = {std::filesystem::path(srcPath).parent_path()};
 	compiler.compile();
+
+	std::fstream outFile{outPath,std::ios::out | std::ios::binary | std::ios::ate};
+	if (!outFile.is_open())
+	{
+		Logger::error(u8"Failed to open output file");
+		return 1;
+	}
+	//测试SPIRV生成
+	outFile.write(reinterpret_cast<const char*>(compiler.result.spirVForOpenGL.data()), static_cast<std::streamsize>(compiler.result.spirVForOpenGL.size() * sizeof(uint32_t) / sizeof(char)));
+	outFile.close();
 
 	return 0;
 }
