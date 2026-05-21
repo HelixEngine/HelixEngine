@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <HelixEngine/Util/Logger.hpp>
 #include <glslang/Public/ShaderLang.h>
+#include <glslang/Public/ResourceLimits.h>
+#include <glslang/SPIRV/GlslangToSpv.h>
 using namespace helix;
 
 enum class ShaderLanguage
@@ -91,6 +93,13 @@ public:
 	std::vector<std::filesystem::path> includePaths;
 };
 
+struct CompileResult
+{
+	std::u8string glsl;
+	std::vector<uint32_t> spirVForOpenGL;
+	//std::vector<uint32_t> spirVForVulkan;
+};
+
 class Compiler
 {
 public:
@@ -126,24 +135,42 @@ public:
 
 		return false;
 	}
+
+	std::vector<std::filesystem::path> includePaths;
+	CompileResult result;
 private:
+	std::string sourceCode;
+	ShaderLanguage language;
+	ShaderStage stage;
+
 	bool compileGLSL()
 	{
+		result.glsl = reinterpret_cast<const char8_t*>(sourceCode.c_str());
+		//SPIR-V For OpenGL
 		Includer includer;
 		std::vector src = {sourceCode.c_str()};
 		glslang::InitializeProcess();
 		auto glslStage = GetShaderStageGLSL(stage);
 		glslang::TShader shader{glslStage};
 		shader.setStrings(src.data(), src.size());
-		shader.setEnvInput(glslang::EShSourceGlsl, glslStage, glslang::EShClientVulkan, 460);
-		shader.setEnvClient(glslang::EShClientVulkan, glslang::EShTargetVulkan_1_4); //后续vk和gl都要生成spv
+		shader.setEnvInput(glslang::EShSourceGlsl, glslStage, glslang::EShClientOpenGL, 460);
+		shader.setEnvClient(glslang::EShClientOpenGL, glslang::EShTargetOpenGL_450); //后续vk和gl都要生成spv
 		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
-		//上次的进度
+		shader.setEntryPoint("main"); //考虑no-link下这行需不需要特殊处理
+
+
+		includer.includePaths = includePaths;
+		if (!shader.parse(GetDefaultResources(), 460, false, EShMsgDefault, includer))
+		{
+			Logger::error(std::u8string_view(reinterpret_cast<const char8_t*>(shader.getInfoLog())));
+			return false;
+		}
+
+		glslang::GlslangToSpv(*shader.getIntermediate(),result.spirVForOpenGL);
+		glslang::FinalizeProcess();
+
 		return true;
 	}
-	std::string sourceCode;
-	ShaderLanguage language;
-	ShaderStage stage;
 };
 
 class CommandLineProcessor
@@ -253,32 +280,39 @@ int main(int argc, char* argv[])
 		Logger::error(u8"No Source Language Input");
 		return 1;
 	}
+	const auto& langStr = args[1].argContent[0];
 
 	if (args[2].argContent.empty())
 	{
-		Logger::error(u8"No Source Code Input");
+		Logger::error(u8"No Source Code File Path Input");
 		return 1;
 	}
+	const auto& srcPath = args[2].argContent[0];
 
 	if (args[3].argContent.empty())
 	{
 		Logger::error(u8"No Source Stage Input");
 		return 1;
 	}
+	const auto& stageStr = args[3].argContent[0];
 
-	auto lang = GetShaderLanguage(args[1].argContent[0]);
+	auto lang = GetShaderLanguage(langStr);
 	if (lang == ShaderLanguage::Unknown)
 	{
 		Logger::error(u8"Unknown Source Shader Language");
 		return 1;
 	}
 
-	auto stage = GetShaderStage(args[3].argContent[0]);
+	auto stage = GetShaderStage(stageStr);
 	if (stage == ShaderStage::Unknown)
 	{
 		Logger::error(u8"Unknown Source Shader Stage");
 		return 1;
 	}
+
+	Compiler compiler{srcPath,lang,stage};
+	compiler.includePaths = {std::filesystem::path(srcPath).parent_path()};
+	compiler.compile();
 
 	return 0;
 }
