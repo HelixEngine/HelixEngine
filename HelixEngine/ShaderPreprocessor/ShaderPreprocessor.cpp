@@ -156,8 +156,7 @@ private:
 		shader.setEnvInput(glslang::EShSourceGlsl, glslStage, glslang::EShClientOpenGL, 460);
 		shader.setEnvClient(glslang::EShClientOpenGL, glslang::EShTargetOpenGL_450); //后续vk和gl都要生成spv
 		shader.setEnvTarget(glslang::EShTargetSpv, glslang::EShTargetSpv_1_6);
-		//shader.setEntryPoint("false_main"); //考虑no-link下这行需不需要特殊处理
-		shader.setSourceEntryPoint("");
+		shader.setSourceEntryPoint("--no-entrypoint");
 
 
 		includer.includePaths = includePaths;
