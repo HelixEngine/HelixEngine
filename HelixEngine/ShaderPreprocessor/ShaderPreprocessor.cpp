@@ -255,6 +255,15 @@ int main(int argc, char* argv[])
 		fflush(stdout);
 	});
 
+	//in out lang stage
+	// if (argc == 1 || (argc - 1) % 4 != 0)
+	// {
+	// 	Logger::error(u8"Arg Input Error");
+	// 	return 1;
+	// }
+
+
+
 	CommandLineProcessor clp(argc,argv);
 	std::vector<CommandLineProcessor::Arg> args = {
 		{{"-o","-output"}, 1},
